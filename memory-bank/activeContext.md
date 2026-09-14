@@ -1,11 +1,10 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-14)
-- **اكتمل**: إزالة ميزة الأطباء بالكامل من `src/` (Complete removal of doctor feature):
-  - **حذف الملفات**: حذف `src/app/clinics/doctors/` ومكونات `DoctorCard.tsx` و`SpecialtyFilter.tsx`.
-  - **طبقة البيانات والمخططات**: إزالة `SEED_CLINIC_DOCTORS`، تحويل وسم إعادة التحقق إلى `clinicSpecialties`، حذف دالة `getClinicDoctors`، إزالة `doctorId` من مخططات التحقق، وإسقاط جداول `clinic_doctors` و`doctor_schedule_slots` و`doctor_absences` من أنواع قاعدة البيانات.
-  - **المسارات والتنقل**: تحديث `/clinics` و`/clinics/specialties` و`Footer` لإزالة كافة روابط الأطباء وتوجيهها لدليل العيادات الـ 14 والتجهيزات، وإعادة بناء `/admin/clinics` كعرض قراءة لـ 14 تخصصاً طبياً فقط.
-  - **خلو تام من الأطباء**: صفر نتائج لـ `git grep -in "doctor" -- src/` وصفر نتائج لـ `/clinics/doctors`.
+- **اكتملت**: تمريرة إصلاح طبقة `src/` (Src-layer fix pass) على ثلاثة بنود:
+  1. **رابط الاتصال المباشر**: هاتف استقبال المستوصف 03-5500002 أصبح رابط `tel:035500002` في `src/app/clinics/page.tsx` و`src/app/contact/page.tsx` (حفاظاً على النص وبصرياته مع حالة hover).
+  2. **عرض بيانات التواصل من البذرة**: مكون مشترك جديد `src/components/contact/ContactLinks.tsx` يعرض عنصراً فقط عند وجود قيمته (هاتف/واتساب/مجموعة واتساب)، وتم تركيبه في `services/[slug]` (contact_phone + contact_whatsapp)، و`meetings/[slug]` (whatsapp_group_link على كل الـ 11 اجتماعاً)، و`activities/[slug]` (whatsapp_link على 3 من 7 فقط). وتحويل أرقام الواتساب يتم عبر `toWhatsAppUrl` (تحويل الصفر البادئ إلى كود مصر 20). و`education/[slug]` لم يُلمس (لا حقول تواصل في البذرة).
+  3. **تنظيفات المراجعة**: توحيد اشتقاق الفترة الزمنية في `getMassPeriodFromTime`، وتسميات الفترة في `getMassPeriodLabel` كمصدر وحيد، وتوليد أزرار الفلترة من مصفوفة، واستنتاج عدد المذابح (`altars.length`) وعدد التخصصات (`SEED_CLINIC_SPECIALTIES.length`)، وتوحيد نص رسم الكشف في `src/lib/constants.ts`، وحذف الثوابت النصية غير المأهولة بالبذرة «المذبح الرئيسي» و«الآباء الكهنة بالتناوب»، وعرض علامة الحالة الإيجابية فقط عند `is_active === true`.
 
 ## المقارنة بين المحفوظ والمستبعد (Kept vs Dropped)
 - **ما تم الاحتفاظ به (Kept)**: دليل العيادات الـ 14 مع أرقام الغرف، والتسعيرة الرمزية (30-35 ج.م)، وهاتف الاستقبال 03-5500002، والجماليات البصرية والتصميم القبطي.
@@ -16,12 +15,14 @@
 - خلو الشفرة البرمجية: `git grep -in "doctor" -- src/` = 0 أسطر (خروج 1).
 - خلو الروابط القديمة: `git grep -rn "/clinics/doctors" src/` = 0 أسطر (خروج 1).
 - مسارات وبناء الإنتاج: 43 مساراً مفعلاً (43 routes)، وبناء الإنتاج `pnpm run build` = 55/55 صفحة بنجاح (55 pages built).
+- تحقق من HTML المولّد فعلياً [PROVEN]: `tel:035500002` في `contact.html` و`clinics.html`؛ `https://wa.me/201220000004` في `services/educational-center.html`؛ لا كتلة تواصل في `services/canteens.html` (الحقلان null)؛ لا رابط واتساب في `services/church-giftshop.html` (contact_whatsapp = null)؛ «مجموعة واتساب» مرة واحدة في `activities/scouts.html` وصفر في `activities/lending-library.html` و`social-club.html`؛ `wa.me/20122000000{1,2,3}` في `about/clergy.html`؛ صفر نتائج لـ «الآباء الكهنة بالتناوب» و«المذبح الرئيسي» في `masses.html`؛ صفر نتائج لـ «نبض»/availability/ticker في كل الصفحات المولّدة.
 
 ## الخطوة التالية الفورية
-1. معالجة ملاحظات المراجعة المزدوجة الثانية (2026-09-14): حذف §3.2.2 «نبض العيادات» و`/clinics/status` من PRD وبقية مراجع الأطباء، توحيد عدّ المسارات (IA=43)، تطهير مراجع الأطباء من `docs/agents/domain.md` و`AI_DEVELOPER_PROMPT_AND_GUIDELINES.md`، إضافة رابط `tel:` لهاتف الاستقبال 03-5500002، وتقييم عرض بيانات التواصل (tel/WhatsApp) في صفحات `[slug]`.
-2. نشر التطبيق على Vercel أو بيئة الاستضافة السحابية المعتمدة.
-3. ربط مفاتيح Supabase الحية (URL و ANON_KEY و SERVICE_ROLE_KEY) وتنفيذ DDL الرسمي.
-4. مراجعة وتحديث أرقام هواتف الآباء الكهنة والحسابات البنكية بعد التوقيع الرسمي للإدارة الكنسية.
+1. نشر التطبيق على Vercel أو بيئة الاستضافة السحابية المعتمدة.
+2. ربط مفاتيح Supabase الحية (URL و ANON_KEY و SERVICE_ROLE_KEY) وتنفيذ DDL الرسمي.
+3. مراجعة وتحديث أرقام هواتف الآباء الكهنة والحسابات البنكية بعد التوقيع الرسمي للإدارة الكنسية.
+4. [مكتمل — `e87713c`] ملاحظات المراجعة المزدوجة الثانية على مستوى الوثائق: حُذف §3.2.2 «نبض العيادات» و`/clinics/status` من PRD، وطُهّرت مراجع الأطباء من `docs/agents/domain.md` و`AI_DEVELOPER_PROMPT_AND_GUIDELINES.md`، وصُحّح عدّ المسارات إلى 43.
+5. بقايا ميزة الأطباء خارج نطاق دفعتَي الإصلاح (بانتظار قرار): `clinics/status/page.tsx` و`RealtimeAbsenceStrip.tsx` في شجرة `AI_DEVELOPER_PROMPT_AND_GUIDELINES.md`؛ وسم «أطباء المستوصف» في `src/app/admin/layout.tsx`؛ «تحديث بيانات الأطباء» و«تعديل مواعيد أطباء العيادات الخارجية التخصصية» في `src/app/admin/page.tsx`؛ و«دليل الأطباء الشامل» في `src/components/layout/MegaMenu.tsx` (وحدات غير مستوردة حالياً).
 
 ## قرارات معتمدة
 - قرار معتمد نهائي (Approved Decision): البوابة الرقمية لن تنشر أبداً أسماء الأطباء الفردية أو جداولهم الشخصية (the portal will never publish individual doctor names or schedules)، منعاً للإرباك وتضارب الاعتذارات وللحيادية الرعوية.
@@ -30,3 +31,4 @@
 - INV-03: عدم عرض شارات توفر أو غياب غير دقيقة أو وهمية.
 - ألوان وهوية قبطية ملكية: كحلي قبطي، ذهبي معتم للنصوص لضمان تباين WCAG 2.1 AA، وخطوط عربية كوفية وأميري.
 - الحقول القانونية: الالتزام الصارم بحقول البذرة ومخطط DDL دون ابتداع حقول غير مأهولة.
+- قرار معتمد: تنقية الثوابت النصية الاحتياطية غير المأهولة بالبذرة (عدم اختراع بيانات للكاهن المصلي) مع الإبقاء على التركيب المشتق من بيانات حقيقية فقط (مثل `قداس يوم ${dayName}`).
