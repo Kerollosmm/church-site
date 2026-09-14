@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(ask-matt)",
+      "mcp__tinyfish__search",
+      "mcp__tinyfish__fetch_content"
+    ]
+  }
+}
