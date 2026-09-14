@@ -56,7 +56,7 @@ export const MEGA_MENU_CATEGORIES: MegaCategory[] = [
     label: "العيادات التخصصية",
     icon: Stethoscope,
     items: [
-      { title: "دليل الأطباء الشامل", description: "أطباء واستشاريو الكنيسة في مختلف التخصصات", href: "/clinics" },
+      { title: "دليل التخصصات الطبية", description: "التخصصات الطبية المتاحة وأرقام الغرف ومواعيد العمل", href: "/clinics" },
       { title: "مواعيد العيادات", description: "الجداول الأسبوعية ومواعيد العمل بالمركز الطبي", href: "/clinics/schedule" },
       { title: "التخصصات الطبية", description: "الباطنة، الأطفال، الأسنان، العظام وغيرها", href: "/clinics/specialties" },
       { title: "خدمات الطوارئ والمختبر", description: "الإسعافات الأولية والفحوصات المخبرية", href: "/clinics/services" },

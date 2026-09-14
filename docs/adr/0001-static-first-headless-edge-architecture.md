@@ -13,10 +13,10 @@ Historically, many Orthodox parishes attempted to digitize pastoral and administ
 1. Highly confidential pastoral confession logs and priest counseling notes.
 2. Sensitive parishioner social welfare dossiers (إخوة الرب).
 3. Complex internal ecclesiastical accounting and donation tracking.
-4. Routine public parish information (mass timings, clinic doctor shifts, sunday school meetings).
+4. Routine public parish information (mass timings, clinic specialty and room directories, sunday school meetings).
 
 In practice, this monolithic ERP model created critical systemic failures:
-- **Information Lockdown for Parishioners**: Essential pastoral information—such as dawn liturgy times, clinic doctor rosters, and urgent doctor cancellations—was buried behind mandatory authentication gates or fragmented into chaotic WhatsApp and Facebook posts. Elderly parishioners and diaspora members were effectively disenfranchised.
+- **Information Lockdown for Parishioners**: Essential pastoral information—such as dawn liturgy times, clinic specialty and room directories, and clinic service notices—was buried behind mandatory authentication gates or fragmented into chaotic WhatsApp and Facebook posts. Elderly parishioners and diaspora members were effectively disenfranchised.
 - **Server Degradation During Peak Feasts**: Heavy server-side rendered ERP architectures consistently crashed or experienced multi-second latencies during high-traffic religious events (e.g., Christmas Eve, Good Friday, Easter midnight liturgies).
 - **Severe Privacy & Liability Risks**: Exposing a cloud-hosted relational database containing confession records and intimate personal dossiers created unacceptable ethical and security risks.
 
@@ -50,7 +50,7 @@ flowchart LR
 
 ### Invariant INV-01: Architectural Isolation
 > **Invariant INV-01**:
-> 1. The public parish portal shall never require authentication for public directories, liturgy schedules, clinic schedules, or doctor absence pulse notifications.
+> 1. The public parish portal shall never require authentication for public directories, liturgy schedules, clinic specialty and room directories, or clinic service notices.
 > 2. The public parish database and edge runtime shall never store, process, or interface with confidential confession records, private spiritual counseling journals, or internal financial ledgers.
 > 3. Any feature or issue proposing to bring private ERP ledger operations into this portal shall be triaged as `wontfix`.
 
@@ -61,11 +61,11 @@ flowchart LR
 1. **Framework & Runtime**: Next.js 15 App Router with React Server Components (RSC).
 2. **Delivery Strategy**: Static-First with Incremental Static Regeneration (ISR).
    - High-stability pages (History, Altars, Clergy bios, Academies) use SSG with long revalidation intervals (`revalidate = 86400` or on-demand).
-   - Dynamic schedule pages (Masses, Clinics, Meetings) use on-demand tag revalidation via the canonical registry `src/lib/tags.ts` (`revalidateTag("masses")`, `revalidateTag("clinic-doctors")`, `revalidateTag("clinic-absences")`).
+   - Dynamic schedule pages (Masses, Clinics, Meetings) use on-demand tag revalidation via the canonical registry `src/lib/tags.ts` (`revalidateTag("masses")`, `revalidateTag("clinic-specialties")`).
 3. **Database & Edge Backend**: Supabase (PostgreSQL 15+) with Row Level Security (RLS).
    - Public read policies on all active schedules and content (`USING (is_active = TRUE)`).
    - Public insert policies limited strictly to unauthenticated condolence booking submissions (`status = 'pending'`) and contact inquiries.
-   - Admin authentication restricted strictly to verified parish servants and priests (`/admin`) via a `profiles` table with role-checked RLS (`is_staff()` / `is_admin()` SECURITY DEFINER helpers) — never bare `TO authenticated` grants — for publishing schedules and logging doctor cancellations.
+   - Admin authentication restricted strictly to verified parish servants and priests (`/admin`) via a `profiles` table with role-checked RLS (`is_staff()` / `is_admin()` SECURITY DEFINER helpers) — never bare `TO authenticated` grants — for publishing schedules and content updates.
 4. **Performance Target**: First Contentful Paint (FCP) < 800ms and Largest Contentful Paint (LCP) < 1.2s on standard 3G/4G Egyptian mobile networks.
 
 ---
@@ -86,7 +86,7 @@ flowchart LR
 
 ## 5. Amendment (v1.1 — 2026-09-14)
 
-- Revalidation tag names aligned to the canonical registry (`src/lib/tags.ts`): `masses`, `clinic-doctors`, `clinic-absences`, `meetings`, `news`, `stream`, `alerts`, `condolence-bookings`.
+- Revalidation tag names aligned to the canonical registry (`src/lib/tags.ts`): `masses`, `clinic-specialties`, `meetings`, `news`, `stream`, `alerts`, `condolence-bookings`.
 - Admin authorization specified via `profiles.role` + `is_staff()` / `is_admin()` RLS helpers (replacing any bare `TO authenticated USING (TRUE)` grants).
 - Added `mass_exceptions`, `site_alerts`, and `stream_events` tables so feast-specific schedules, alert banners, and live-stream status ride the same static-first + on-demand-revalidation pipeline (no long-lived SSR).
 - Public condolence booking tracking specified as a `track_condolence_booking(ref)` SECURITY DEFINER RPC (no anon SELECT on the underlying table).

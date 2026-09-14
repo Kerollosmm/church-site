@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
             لوحة الإشراف والمتابعة الإدارية
           </h1>
           <p className="text-xs text-slate-500">
-            إدارة الجداول الطقسية، مراجعة طلبات حجز قاعة العزاء، وتحديث بيانات الأطباء.
+            إدارة الجداول الطقسية، مراجعة طلبات حجز قاعة العزاء، وتحديث دليل التخصصات الطبية.
           </p>
         </div>
 
@@ -166,7 +166,7 @@ export default function AdminDashboardPage() {
               href="/admin/clinics"
               className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
             >
-              <span className="font-bold text-slate-800">تعديل مواعيد أطباء العيادات الخارجية التخصصية</span>
+              <span className="font-bold text-slate-800">تعديل بيانات العيادات التخصصية وأرقام الغرف ومواعيد العمل</span>
               <ArrowLeft className="w-4 h-4 text-copticNavy" />
             </Link>
           </div>

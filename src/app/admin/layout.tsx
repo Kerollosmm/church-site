@@ -19,7 +19,7 @@ export default function AdminLayout({
     { href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard },
     { href: "/admin/masses", label: "إدارة القداسات", icon: Calendar },
     { href: "/admin/bookings", label: "حجوزات العزاء", icon: HeartHandshake },
-    { href: "/admin/clinics", label: "أطباء المستوصف", icon: Stethoscope },
+    { href: "/admin/clinics", label: "دليل التخصصات الطبية", icon: Stethoscope },
   ];
 
   return (

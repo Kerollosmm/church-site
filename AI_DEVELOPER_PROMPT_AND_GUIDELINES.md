@@ -113,8 +113,7 @@ church-site/
 │   │   ├── masses/page.tsx
 │   │   ├── clinics/
 │   │   │   ├── page.tsx
-│   │   │   ├── specialties/page.tsx
-│   │   │   └── status/page.tsx
+│   │   │   └── specialties/page.tsx
 │   │   ├── meetings/
 │   │   │   ├── [slug]/page.tsx
 │   │   │   └── page.tsx
@@ -161,8 +160,6 @@ church-site/
 │   │   │   ├── QuickServiceGrid.tsx
 │   │   │   ├── BibleVerseDaily.tsx
 │   │   │   └── LatestNewsCarousel.tsx
-│   │   ├── clinics/
-│   │   │   └── RealtimeAbsenceStrip.tsx
 │   │   ├── masses/
 │   │   │   ├── WeeklyMassTable.tsx
 │   │   │   ├── AltarSelectDropdown.tsx
