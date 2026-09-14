@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
-import { Compass, Clock, MapPin, CheckCircle2, ChevronLeft } from "lucide-react";
+import { ContactLinks } from "@/components/contact/ContactLinks";
+import { Compass, Clock, MapPin, CheckCircle2, ChevronLeft, MessageCircle } from "lucide-react";
 import { getActivityBySlug, SEED_ACTIVITIES } from "@/lib/queries";
 
 export const revalidate = 86400;
@@ -66,6 +67,16 @@ export default async function ActivityDetailPage({ params }: PageProps) {
               <p className="text-sm font-bold text-copticNavy">{activity.location_ar}</p>
             </div>
           </div>
+
+          {activity.whatsapp_link && (
+            <div className="bg-copticGold-50 p-4 rounded-2xl border border-copticGold-200">
+              <div className="flex items-center gap-2 text-copticGold-800 font-bold text-xs mb-3">
+                <MessageCircle className="w-4 h-4" />
+                <span>للتواصل ومتابعة النشاط:</span>
+              </div>
+              <ContactLinks whatsappGroupUrl={activity.whatsapp_link} />
+            </div>
+          )}
 
           <div className="space-y-4">
             <h3 className="font-heading font-bold text-xl text-copticNavy">

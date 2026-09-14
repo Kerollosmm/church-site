@@ -135,7 +135,12 @@ export default async function ClinicsOverviewPage() {
             <div className="bg-copticGold-50 p-4 rounded-xl border border-copticGold-200 space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-slateText-muted">تليفون استقبال المستوصف:</span>
-                <span className="font-english font-bold text-copticNavy">03-5500002</span>
+                <a
+                  href="tel:035500002"
+                  className="font-english font-bold text-copticNavy hover:text-copticGold-800 underline-offset-4 hover:underline transition"
+                >
+                  03-5500002
+                </a>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slateText-muted">الموقع:</span>

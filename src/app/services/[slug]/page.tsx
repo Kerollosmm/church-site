@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
+import { ContactLinks } from "@/components/contact/ContactLinks";
 import { HeartHandshake, Clock, MapPin, CheckCircle2, ChevronLeft, Phone, Building2 } from "lucide-react";
 import { getServiceBySlug, SEED_PUBLIC_SERVICES } from "@/lib/queries";
 
@@ -66,6 +67,19 @@ export default async function ServiceDetailPage({ params }: PageProps) {
               <p className="text-sm font-bold text-copticNavy">{service.location_ar}</p>
             </div>
           </div>
+
+          {(service.contact_phone || service.contact_whatsapp) && (
+            <div className="bg-copticGold-50 p-4 rounded-2xl border border-copticGold-200">
+              <div className="flex items-center gap-2 text-copticGold-800 font-bold text-xs mb-3">
+                <Phone className="w-4 h-4" />
+                <span>للتواصل والاستفسار:</span>
+              </div>
+              <ContactLinks
+                phone={service.contact_phone}
+                whatsappNumber={service.contact_whatsapp}
+              />
+            </div>
+          )}
 
           <div className="space-y-4">
             <h3 className="font-heading font-bold text-xl text-copticNavy">

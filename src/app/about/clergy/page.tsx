@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Users, Phone, MessageSquare, Calendar, Clock, Award, Shield } from "lucide-react";
 import { getClergy } from "@/lib/queries";
+import { toWhatsAppUrl } from "@/lib/utils/parish-contact";
 
 export const metadata: Metadata = {
   title: "مجمع الآباء الكهنة ومواعيد الاعترافات",
@@ -94,7 +95,7 @@ export default async function ClergyPage() {
               <div className="pt-4 border-t border-copticGold-100 flex items-center gap-2">
                 {priest.whatsapp_number && (
                   <a
-                    href={`https://wa.me/${priest.whatsapp_number.replace(/[^0-9]/g, "")}`}
+                    href={toWhatsAppUrl(priest.whatsapp_number)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 rounded-xl transition"

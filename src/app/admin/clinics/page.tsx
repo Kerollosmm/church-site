@@ -9,6 +9,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
+import { CLINIC_CONSULTATION_FEE_LABEL } from "@/lib/constants";
 
 export default function AdminClinicsPage() {
   const [search, setSearch] = useState("");
@@ -32,7 +33,7 @@ export default function AdminClinicsPage() {
             <span>إدارة عيادات وتخصصات المستوصف الطبي الخيري</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            دليل العيادات التخصصية الـ 14 المجهزة بمبنى الخدمات، أرقام الغرف وحالة الخدمة.
+            دليل العيادات التخصصية الـ {SEED_CLINIC_SPECIALTIES.length} المجهزة بمبنى الخدمات، أرقام الغرف وحالة الخدمة.
           </p>
         </div>
 
@@ -71,7 +72,7 @@ export default function AdminClinicsPage() {
                   <span>غرفة {spec.room_number}</span>
                 </span>
                 <span className="text-xs text-copticGold-800 font-bold">
-                  30 - 35 ج.م
+                  {CLINIC_CONSULTATION_FEE_LABEL}
                 </span>
               </div>
 
@@ -93,10 +94,17 @@ export default function AdminClinicsPage() {
             </div>
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-emerald-700 font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{spec.is_active ? "نشطة ومجهزة" : "تحت التجهيز"}</span>
-              </span>
+              {spec.is_active ? (
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>نشطة ومجهزة</span>
+                </span>
+              ) : (
+                <span className="text-slate-500 font-bold flex items-center gap-1">
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>تحت التجهيز</span>
+                </span>
+              )}
               <span className="text-slate-400 flex items-center gap-1">
                 <Layers className="w-3 h-3" />
                 <span>الترتيب: {spec.display_order}</span>

@@ -8,6 +8,7 @@ import { DayTabFilter } from "@/components/masses/DayTabFilter";
 import { AltarSelectDropdown } from "@/components/masses/AltarSelectDropdown";
 import { PrintScheduleButton } from "@/components/masses/PrintScheduleButton";
 import { SEED_MASS_SCHEDULES, SEED_ALTARS } from "@/lib/data/seed-data";
+import { getMassPeriodFromTime, type MassPeriod } from "@/lib/utils/parish-contact";
 import { cn } from "@/lib/utils";
 
 const DAY_MAP: Record<string, { name: string; index: number }> = {
@@ -20,10 +21,16 @@ const DAY_MAP: Record<string, { name: string; index: number }> = {
   Saturday: { name: "السبت", index: 6 },
 };
 
+const PERIOD_FILTERS: Array<{ value: "all" | MassPeriod; label: string }> = [
+  { value: "all", label: "كافة الفترات" },
+  { value: "morning", label: "قداسات صباحية" },
+  { value: "evening", label: "قداسات مسائية" },
+];
+
 export default function MassesPage() {
   const [selectedDay, setSelectedDay] = useState<number | "all">("all");
   const [selectedAltar, setSelectedAltar] = useState<string>("all");
-  const [selectedPeriod, setSelectedPeriod] = useState<"all" | "morning" | "evening">("all");
+  const [selectedPeriod, setSelectedPeriod] = useState<"all" | MassPeriod>("all");
 
   const altarOptions = useMemo(() => {
     return SEED_ALTARS.map((a) => ({
@@ -35,12 +42,10 @@ export default function MassesPage() {
   const filteredMasses = useMemo(() => {
     return SEED_MASS_SCHEDULES.filter((mass) => {
       const dayIndex = DAY_MAP[mass.day_of_week]?.index;
-      const hour = parseInt(mass.start_time.split(":")[0], 10);
-      const period: "morning" | "evening" = hour < 12 ? "morning" : "evening";
-
       const matchDay = selectedDay === "all" || dayIndex === selectedDay;
       const matchAltar = selectedAltar === "all" || mass.altar_id === selectedAltar;
-      const matchPeriod = selectedPeriod === "all" || period === selectedPeriod;
+      const matchPeriod =
+        selectedPeriod === "all" || getMassPeriodFromTime(mass.start_time) === selectedPeriod;
 
       return matchDay && matchAltar && matchPeriod;
     });
@@ -49,8 +54,6 @@ export default function MassesPage() {
   const massItems: MassScheduleItem[] = useMemo(() => {
     return filteredMasses.map((mass) => {
       const dayInfo = DAY_MAP[mass.day_of_week] || { name: mass.day_of_week, index: 0 };
-      const hour = parseInt(mass.start_time.split(":")[0], 10);
-      const period: "morning" | "evening" = hour < 12 ? "morning" : "evening";
 
       return {
         id: mass.id,
@@ -60,10 +63,10 @@ export default function MassesPage() {
         altarName: mass.altar?.name_ar || "المذبح الرئيسي",
         altarId: mass.altar_id,
         hours: `${mass.start_time.slice(0, 5)} - ${mass.end_time.slice(0, 5)}`,
-        priestName: mass.celebrant?.clerical_name_ar || "الآباء الكهنة بالتناوب",
+        priestName: mass.celebrant?.clerical_name_ar,
         targetAudience: mass.target_group_ar,
         notes: mass.notes_ar || undefined,
-        period,
+        period: getMassPeriodFromTime(mass.start_time),
       };
     });
   }, [filteredMasses]);
@@ -104,42 +107,22 @@ export default function MassesPage() {
               aria-label="تصفية فترات القداسات"
               className="flex items-center gap-1 bg-copticGold-50 p-1 rounded-2xl border border-copticGold-200 text-xs font-heading font-bold"
             >
-              <button
-                type="button"
-                onClick={() => setSelectedPeriod("all")}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl transition-all select-none",
-                  selectedPeriod === "all"
-                    ? "bg-copticNavy text-white shadow-xs"
-                    : "text-slateText-primary hover:bg-copticGold-100"
-                )}
-              >
-                كافة الفترات
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedPeriod("morning")}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl transition-all select-none",
-                  selectedPeriod === "morning"
-                    ? "bg-copticNavy text-white shadow-xs"
-                    : "text-slateText-primary hover:bg-copticGold-100"
-                )}
-              >
-                قداسات صباحية
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedPeriod("evening")}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl transition-all select-none",
-                  selectedPeriod === "evening"
-                    ? "bg-copticNavy text-white shadow-xs"
-                    : "text-slateText-primary hover:bg-copticGold-100"
-                )}
-              >
-                قداسات مسائية
-              </button>
+              {PERIOD_FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={selectedPeriod === option.value}
+                  onClick={() => setSelectedPeriod(option.value)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl transition-all select-none",
+                    selectedPeriod === option.value
+                      ? "bg-copticNavy text-white shadow-xs"
+                      : "text-slateText-primary hover:bg-copticGold-100"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
 
             <AltarSelectDropdown

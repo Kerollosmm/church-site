@@ -41,7 +41,7 @@ export default function AdminDashboardPage() {
     {
       title: "عيادات المستوصف",
       value: `${SEED_CLINIC_SPECIALTIES.length} عيادة`,
-      desc: "14 تخصصاً طبياً مجهزاً",
+      desc: `${SEED_CLINIC_SPECIALTIES.length} تخصصاً طبياً مجهزاً`,
       icon: Stethoscope,
       href: "/admin/clinics",
       color: "bg-emerald-50 text-emerald-800 border-emerald-200",

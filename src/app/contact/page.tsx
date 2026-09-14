@@ -108,9 +108,13 @@ export default function ContactPage() {
                   <Building className="w-5 h-5 text-copticGold-700 shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-copticNavy block mb-0.5">استقبال المستوصف الخيري:</strong>
-                    <p className="text-slateText-secondary font-english text-xs font-bold" dir="ltr">
+                    <a
+                      href="tel:035500002"
+                      className="text-slateText-secondary hover:text-copticNavy font-english text-xs font-bold underline-offset-4 hover:underline transition"
+                      dir="ltr"
+                    >
                       03-5500002
-                    </p>
+                    </a>
                   </div>
                 </div>
               </div>

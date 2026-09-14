@@ -2,11 +2,12 @@ import React from "react";
 import { Clock, MapPin, User, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
+import type { MassPeriod } from "@/lib/utils/parish-contact";
 
 export interface MassScheduleItem {
   id: string;
   dayName: string; // e.g. "الأحد"
-  dayIndex: number; // 0 = Sun, etc.
+  dayIndex?: number; // 0 = Sun, etc.
   title?: string; // e.g. "قداس الأحد الصباحي الأول"
   altarName: string; // e.g. "المذبح الأوسط الرئيسي"
   altarId?: string;
@@ -14,7 +15,12 @@ export interface MassScheduleItem {
   priestName?: string; // e.g. "القمص مكسيموس وصفي"
   targetAudience?: string; // e.g. "عام لجميع الشعب"
   notes?: string; // notes_ar
-  period?: "morning" | "evening";
+  period: MassPeriod; // derived via getMassPeriodFromTime(start_time)
+}
+
+/** Single source for the morning/evening display label (card view + print table). */
+export function getMassPeriodLabel(period: MassPeriod): string {
+  return period === "evening" ? "قداس مسائي" : "قداس صباحي";
 }
 
 export interface WeeklyMassTableProps {
@@ -38,10 +44,7 @@ export function WeeklyMassTable({ schedules, className }: WeeklyMassTableProps) 
       {/* Responsive Card View (Mobile, Tablet, Desktop) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 print:hidden">
         {schedules.map((mass, idx) => {
-          const isEvening =
-            mass.period === "evening" ||
-            (!mass.period && parseInt(mass.hours.slice(0, 2), 10) >= 12);
-          const periodText = isEvening ? "قداس مسائي" : "قداس صباحي";
+          const periodText = getMassPeriodLabel(mass.period);
 
           return (
             <div
@@ -137,7 +140,7 @@ export function WeeklyMassTable({ schedules, className }: WeeklyMassTableProps) 
                   </div>
                 </td>
                 <td className="py-3 px-4 whitespace-nowrap">
-                  {mass.period === "evening" ? "قداس مسائي" : "قداس صباحي"}
+                  {getMassPeriodLabel(mass.period)}
                 </td>
                 <td className="py-3 px-4 whitespace-nowrap">
                   <div className="flex items-center gap-1.5 font-english font-bold text-copticNavy">

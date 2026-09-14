@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Layers, Building2 } from "lucide-react";
 import { getClinicSpecialties } from "@/lib/queries";
+import { CLINIC_CONSULTATION_FEE_SHORT_LABEL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "دليل التخصصات الطبية والعيادات الـ 14",
@@ -70,7 +71,7 @@ export default async function ClinicSpecialtiesPage() {
               </div>
 
               <div className="pt-4 border-t border-copticGold-100 flex items-center justify-between text-xs">
-                <span className="text-copticGold-800 font-bold">رسم الكشف: 30-35 ج.م</span>
+                <span className="text-copticGold-800 font-bold">{CLINIC_CONSULTATION_FEE_SHORT_LABEL}</span>
               </div>
             </div>
           ))}

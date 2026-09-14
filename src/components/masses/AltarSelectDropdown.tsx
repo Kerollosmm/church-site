@@ -35,7 +35,7 @@ export function AltarSelectDropdown({
           onChange={(e) => onSelect(e.target.value)}
           className="appearance-none w-full bg-white border-2 border-copticGold-300 hover:border-copticGold-400 focus:border-copticGold-500 text-copticNavy text-xs sm:text-sm font-heading font-bold rounded-2xl pr-9 pl-8 py-2 shadow-xs focus:outline-none focus:ring-2 focus:ring-copticGold-500/30 cursor-pointer transition-colors"
         >
-          <option value="all">كافة مذابح الكنيسة (٣ مذابح)</option>
+          <option value="all">{`كافة مذابح الكنيسة (${altars.length} مذابح)`}</option>
           {altars.map((altar) => (
             <option key={altar.id} value={altar.id}>
               {altar.name}

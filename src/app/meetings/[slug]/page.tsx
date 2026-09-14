@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
+import { ContactLinks } from "@/components/contact/ContactLinks";
 import { Users, Clock, MapPin, UserCheck, BookOpen, ChevronLeft, Heart, CheckCircle2 } from "lucide-react";
 import { getMeetingBySlug, SEED_CHURCH_MEETINGS } from "@/lib/queries";
 
@@ -94,6 +95,16 @@ export default async function MeetingDetailPage({ params }: PageProps) {
                   {meeting.supervisor_priest_ar || meeting.servant_in_charge_ar}
                 </p>
               </div>
+            </div>
+          )}
+
+          {meeting.whatsapp_group_link && (
+            <div className="bg-copticGold-50 p-4 rounded-2xl border border-copticGold-200">
+              <div className="flex items-center gap-2 text-copticGold-800 font-bold text-xs mb-3">
+                <Users className="w-4 h-4" />
+                <span>قناة التواصل مع أمانة القطاع:</span>
+              </div>
+              <ContactLinks whatsappGroupUrl={meeting.whatsapp_group_link} />
             </div>
           )}
 
