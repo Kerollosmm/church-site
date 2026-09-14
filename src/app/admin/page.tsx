@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import {
   SEED_MASS_SCHEDULES,
-  SEED_CLINIC_DOCTORS,
   SEED_CLINIC_SPECIALTIES,
   SEED_CHURCH_MEETINGS,
 } from "@/lib/queries";
@@ -40,9 +39,9 @@ export default function AdminDashboardPage() {
       color: "bg-amber-50 text-amber-800 border-amber-200",
     },
     {
-      title: "أطباء المستوصف",
-      value: `${SEED_CLINIC_DOCTORS.length} طبيباً`,
-      desc: "في 14 عيادة تخصصية",
+      title: "عيادات المستوصف",
+      value: `${SEED_CLINIC_SPECIALTIES.length} عيادة`,
+      desc: "14 تخصصاً طبياً مجهزاً",
       icon: Stethoscope,
       href: "/admin/clinics",
       color: "bg-emerald-50 text-emerald-800 border-emerald-200",

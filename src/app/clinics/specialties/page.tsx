@@ -1,8 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
-import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
-import { Layers, Users, ArrowLeft, Building2 } from "lucide-react";
+import { Layers, Building2 } from "lucide-react";
 import { getClinicSpecialties } from "@/lib/queries";
 
 export const metadata: Metadata = {
@@ -33,13 +32,6 @@ export default async function ClinicSpecialtiesPage() {
           <p className="text-xs sm:text-sm text-slateText-secondary">
             إجمالي العيادات المجهزة: <strong className="text-copticNavy">{specialties.length} عيادة متخصصة</strong>
           </p>
-          <Link
-            href="/clinics/doctors"
-            className="inline-flex items-center gap-1.5 bg-copticNavy text-white hover:bg-copticNavy-700 font-bold text-xs px-3.5 py-2 rounded-xl transition"
-          >
-            <Users className="w-4 h-4" />
-            <span>عرض جدول أطباء العيادات</span>
-          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -79,13 +71,6 @@ export default async function ClinicSpecialtiesPage() {
 
               <div className="pt-4 border-t border-copticGold-100 flex items-center justify-between text-xs">
                 <span className="text-copticGold-800 font-bold">رسم الكشف: 30-35 ج.م</span>
-                <Link
-                  href="/clinics/doctors"
-                  className="font-bold text-copticNavy hover:text-copticGold-700 flex items-center gap-1"
-                >
-                  <span>أطباء التخصص</span>
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </Link>
               </div>
             </div>
           ))}

@@ -49,10 +49,10 @@ export function DayTabFilter({
             aria-selected={isSelected}
             onClick={() => onSelectDay(item.dayIndex)}
             className={cn(
-              "shrink-0 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-heading transition-all select-none",
+              "shrink-0 px-3.5 py-2 rounded-xl text-xs font-heading font-bold transition-all select-none border",
               isSelected
-                ? "bg-copticNavy-700 text-white font-bold shadow-xs"
-                : "bg-surfaceCard text-slateText-secondary hover:text-copticNavy-700 hover:bg-copticGold-50 border border-copticGold-200"
+                ? "bg-copticNavy text-white border-copticNavy shadow-xs"
+                : "bg-copticGold-50 text-slateText-primary hover:bg-copticGold-100 border-copticGold-200"
             )}
           >
             {item.label}

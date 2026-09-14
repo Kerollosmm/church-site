@@ -14,7 +14,6 @@ import {
   SEED_CLERGY,
   SEED_MASS_SCHEDULES,
   SEED_CLINIC_SPECIALTIES,
-  SEED_CLINIC_DOCTORS,
   SEED_CHURCH_MEETINGS,
   SEED_SCHOOLS,
   SEED_ACTIVITIES,
@@ -113,43 +112,7 @@ export const getClinicSpecialties = unstable_cache(
     }
   },
   ["clinic-specialties"],
-  { tags: [REVALIDATION_TAGS.clinicDoctors], revalidate: 3600 }
-);
-
-export const getClinicDoctors = unstable_cache(
-  async (specialtySlug?: string) => {
-    try {
-      const supabase = await createSupabaseServerClient();
-      let query = supabase
-        .from("clinic_doctors")
-        .select("*, specialty:clinic_specialties(id, name_ar, slug, room_number)")
-        .eq("is_active", true)
-        .order("display_order");
-
-      if (specialtySlug) {
-        const specialty = SEED_CLINIC_SPECIALTIES.find((s) => s.slug === specialtySlug);
-        if (specialty) {
-          query = query.eq("specialty_id", specialty.id);
-        }
-      }
-
-      const { data, error } = await query;
-      if (error || !data || data.length === 0) {
-        if (specialtySlug) {
-          return SEED_CLINIC_DOCTORS.filter((d) => d.specialty?.slug === specialtySlug);
-        }
-        return SEED_CLINIC_DOCTORS;
-      }
-      return data;
-    } catch {
-      if (specialtySlug) {
-        return SEED_CLINIC_DOCTORS.filter((d) => d.specialty?.slug === specialtySlug);
-      }
-      return SEED_CLINIC_DOCTORS;
-    }
-  },
-  ["clinic-doctors"],
-  { tags: [REVALIDATION_TAGS.clinicDoctors], revalidate: 3600 }
+  { tags: [REVALIDATION_TAGS.clinicSpecialties], revalidate: 3600 }
 );
 
 export const getChurchMeetings = unstable_cache(

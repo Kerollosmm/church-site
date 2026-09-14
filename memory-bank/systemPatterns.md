@@ -16,7 +16,7 @@
 `mass_schedules` لا "فعاليات" — `parishioners` لا "users" — `condolence_booking` لا "إيجار" — `consultation_fee_egp` لا "ticket".
 
 ## 5. هيكل المستودع
-`src/app` (45 مساراً)، `src/actions` (Server Actions)، `src/lib/{supabase,queries,tags,validations,security}`، `docs/{adr,agents}`، `memory-bank/` (يُزامن بداية ونهاية كل مهمة).
+`src/app` (44 مساراً)، `src/actions` (Server Actions)، `src/lib/{supabase,queries,tags,validations,security}`، `docs/{adr,agents}`، `memory-bank/` (يُزامن بداية ونهاية كل مهمة).
 
 ## 6. الخصوصية
 لا جداول اعترافات أو ماليّة داخلية أصلاً — غياب البنية هو الضمانة (INV-01).

@@ -215,47 +215,7 @@ CREATE TABLE clinic_specialties (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. الأطباء (clinic_doctors) — تغيير v1.1: تسمية العمود وفق الثابت اللفظي في CONTEXT.md §3
-CREATE TABLE clinic_doctors (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    specialty_id UUID NOT NULL REFERENCES clinic_specialties(id) ON DELETE RESTRICT,
-    full_name_ar VARCHAR(255) NOT NULL,
-    full_name_en VARCHAR(255),
-    academic_title_ar VARCHAR(150) NOT NULL,
-    sub_specialty_ar VARCHAR(255),
-    photo_url TEXT,
-    schedule_details_ar TEXT NOT NULL,
-    consultation_fee_egp NUMERIC(8, 2) DEFAULT 30.00,  -- كان ticket_price_egp
-    is_active BOOLEAN DEFAULT TRUE,
-    display_order INT DEFAULT 1,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 6. سلوتات عمل الأطباء (doctor_schedule_slots) — بلا تغيير
-CREATE TABLE doctor_schedule_slots (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    doctor_id UUID NOT NULL REFERENCES clinic_doctors(id) ON DELETE CASCADE,
-    day_of_week day_of_week_enum NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    max_patients INT DEFAULT 20,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 7. اعتذارات الأطباء (doctor_absences) — بلا تغيير
-CREATE TABLE doctor_absences (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    doctor_id UUID NOT NULL REFERENCES clinic_doctors(id) ON DELETE CASCADE,
-    absence_date DATE NOT NULL,
-    reason_ar VARCHAR(255) DEFAULT 'اعتذار لظرف طارئ',
-    substitute_doctor_id UUID REFERENCES clinic_doctors(id) ON DELETE SET NULL,
-    recorded_by_servant VARCHAR(150),
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- 8. الاجتماعات (church_meetings) — بلا تغيير (11 قطاعاً في البذر)
+-- 5. الاجتماعات (church_meetings) — بلا تغيير (11 قطاعاً في البذر)
 CREATE TABLE church_meetings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name_ar VARCHAR(200) NOT NULL,
@@ -576,14 +536,10 @@ GRANT EXECUTE ON FUNCTION search_bible(text, int) TO anon, authenticated;
 ```sql
 -- فهارس تحسين الاستعلامات الشائعة
 CREATE INDEX idx_mass_day_altar ON mass_schedules (day_of_week, altar_id) WHERE is_active = TRUE;
-CREATE INDEX idx_doctor_specialty ON clinic_doctors (specialty_id) WHERE is_active = TRUE;
-CREATE INDEX idx_doctor_slots_day ON doctor_schedule_slots (day_of_week, doctor_id);
-CREATE INDEX idx_doctor_absence_date ON doctor_absences (absence_date, doctor_id);
 CREATE INDEX idx_condolence_date_status ON condolence_bookings (event_date, status);
 CREATE INDEX idx_news_published ON news_articles (published_at DESC) WHERE is_published = TRUE;
 
 -- فهارس البحث النصي الذكي (Trigram GIN)
-CREATE INDEX idx_doctors_name_trgm ON clinic_doctors USING gin (full_name_ar gin_trgm_ops);
 CREATE INDEX idx_news_title_trgm ON news_articles USING gin (title_ar gin_trgm_ops);
 
 -- جديد v1.1
@@ -615,9 +571,6 @@ ALTER TABLE mass_exceptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE site_alerts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stream_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clinic_specialties ENABLE ROW LEVEL SECURITY;
-ALTER TABLE clinic_doctors ENABLE ROW LEVEL SECURITY;
-ALTER TABLE doctor_schedule_slots ENABLE ROW LEVEL SECURITY;
-ALTER TABLE doctor_absences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE church_meetings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE schools_academies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
@@ -650,10 +603,6 @@ CREATE POLICY "Public read active alerts" ON site_alerts FOR SELECT
     USING (is_active = TRUE AND starts_at <= NOW() AND (ends_at IS NULL OR ends_at >= NOW()));
 CREATE POLICY "Public read stream events" ON stream_events FOR SELECT USING (TRUE);
 CREATE POLICY "Public read active specialties" ON clinic_specialties FOR SELECT USING (is_active = TRUE);
-CREATE POLICY "Public read active clinic doctors" ON clinic_doctors FOR SELECT USING (is_active = TRUE);
-CREATE POLICY "Public read active doctor slots" ON doctor_schedule_slots FOR SELECT USING (is_active = TRUE);
-CREATE POLICY "Public read recent doctor absences" ON doctor_absences FOR SELECT
-    USING (absence_date >= CURRENT_DATE - INTERVAL '2 days');
 CREATE POLICY "Public read active meetings" ON church_meetings FOR SELECT USING (is_active = TRUE);
 CREATE POLICY "Public read active schools" ON schools_academies FOR SELECT USING (is_active = TRUE);
 CREATE POLICY "Public read active activities" ON activities FOR SELECT USING (is_active = TRUE);
@@ -704,9 +653,6 @@ CREATE POLICY "Staff manage mass_exceptions" ON mass_exceptions FOR ALL TO authe
 CREATE POLICY "Staff manage site_alerts" ON site_alerts FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
 CREATE POLICY "Staff manage stream_events" ON stream_events FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
 CREATE POLICY "Staff manage specialties" ON clinic_specialties FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage clinic_doctors" ON clinic_doctors FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage doctor_slots" ON doctor_schedule_slots FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage doctor_absences" ON doctor_absences FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
 CREATE POLICY "Staff manage meetings" ON church_meetings FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
 CREATE POLICY "Staff manage schools" ON schools_academies FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
 CREATE POLICY "Staff manage activities" ON activities FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
@@ -731,8 +677,7 @@ CREATE POLICY "Staff manage clinic_alert_subscriptions" ON clinic_alert_subscrip
 | الوسم (Tag) | يُبطل بواسطة (Server Action) | الصفحات المتأثرة |
 | :--- | :--- | :--- |
 | `masses` | إدارة القداسات + الاستثناءات | `/`, `/masses` |
-| `clinic-doctors` | إدارة الأطباء والتخصصات والسلوتات | `/clinics`, `/clinics/doctors`, `/clinics/specialties` |
-| `clinic-absences` | `toggleDoctorAbsence` | `/`, `/clinics`, `/clinics/status` |
+| `clinic-specialties` | إدارة التخصصات | `/clinics`, `/clinics/specialties` |
 | `meetings` | إدارة الاجتماعات | `/meetings/*` |
 | `education` | إدارة المدارس + الطلبات | `/education/*` |
 | `activities` | إدارة الأنشطة | `/activities/*` |
@@ -749,8 +694,7 @@ CREATE POLICY "Staff manage clinic_alert_subscriptions" ON clinic_alert_subscrip
 // src/lib/tags.ts
 export const REVALIDATION_TAGS = {
   masses: "masses",
-  clinicDoctors: "clinic-doctors",
-  clinicAbsences: "clinic-absences",
+  clinicSpecialties: "clinic-specialties",
   meetings: "meetings",
   education: "education",
   activities: "activities",
@@ -803,20 +747,6 @@ export const getWeeklyMasses = unstable_cache(
   ["weekly-masses"],
   { tags: [REVALIDATION_TAGS.masses], revalidate: 300 }
 );
-
-export const getActiveAbsencesToday = unstable_cache(
-  async () => {
-    const supabase = await createSupabaseServerClient();
-    const { data } = await supabase
-      .from("doctor_absences")
-      .select("*, doctor:clinic_doctors(full_name_ar, academic_title_ar, specialty:clinic_specialties(name_ar, slug))")
-      .gte("absence_date", new Date().toISOString().slice(0, 10))
-      .order("absence_date");
-    return data ?? [];
-  },
-  ["absences-today"],
-  { tags: [REVALIDATION_TAGS.clinicAbsences], revalidate: 60 }
-);
 ```
 
 > كل صفحة تُصرّح بـ `export const revalidate = <N>` وفق مصفوفة المسارات في `INFORMATION_ARCHITECTURE.md §3`، والتغييرات الفورية تأتي من `revalidateTag` في الإجراءات (§7).
@@ -848,15 +778,7 @@ export const CondolenceBookingSchema = z.object({
   turnstileToken: z.string().min(1, "تحقق التحقق من الروبوت مطلوب"),
 });
 
-// 2. اعتذار طبيب
-export const DoctorAbsenceSchema = z.object({
-  doctorId: z.string().uuid("معرف الطبيب غير صالح"),
-  absenceDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "صيغة التاريخ يجب أن تكون YYYY-MM-DD"),
-  reason: z.string().min(3, "سبب الاعتذار مطلوب للتوضيح للمرضى").default("اعتذار لظرف طارئ"),
-  substituteDoctorId: z.string().uuid().optional(),
-});
-
-// 3. رسالة تواصل
+// 2. رسالة تواصل
 export const ContactMessageSchema = z.object({
   senderName: z.string().min(3, "الاسم مطلوب"),
   senderPhone: egyptianPhone,
@@ -867,7 +789,7 @@ export const ContactMessageSchema = z.object({
   turnstileToken: z.string().min(1),
 });
 
-// 4. جديد v1.1: طلب تسجيل في برنامج كنسي
+// 3. جديد v1.1: طلب تسجيل في برنامج كنسي
 export const ProgramApplicationSchema = z.object({
   programSlug: z.enum(["deacon-school", "karouz-academy", "children-bible", "cithara-choir", "summer-club", "educational-center"]),
   applicantName: z.string().min(3, "اسم المتقدم مطلوب"),
@@ -881,7 +803,7 @@ export const ProgramApplicationSchema = z.object({
   turnstileToken: z.string().min(1),
 });
 
-// 5. جديد v1.1: طلب توظيف
+// 4. جديد v1.1: طلب توظيف
 export const JobApplicationSchema = z.object({
   fullName: z.string().min(3, "الاسم مطلوب"),
   phone: egyptianPhone,
@@ -893,14 +815,13 @@ export const JobApplicationSchema = z.object({
   turnstileToken: z.string().min(1),
 });
 
-// 6. جديد v1.1: اشتراك تنبيهات عيادة
+// 5. جديد v1.1: اشتراك تنبيهات عيادة
 export const ClinicAlertSubscriptionSchema = z.object({
   phone: egyptianPhone,
   specialtySlug: z.string().min(2),
 });
 
 export type CondolenceBookingInput = z.infer<typeof CondolenceBookingSchema>;
-export type DoctorAbsenceInput = z.infer<typeof DoctorAbsenceSchema>;
 export type ContactMessageInput = z.infer<typeof ContactMessageSchema>;
 export type ProgramApplicationInput = z.infer<typeof ProgramApplicationSchema>;
 export type JobApplicationInput = z.infer<typeof JobApplicationSchema>;
@@ -1011,56 +932,6 @@ export async function submitCondolenceBooking(rawInput: unknown) {
 ```
 
 ```typescript
-// src/actions/clinic-actions.ts
-"use server";
-
-import { revalidateTag } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { DoctorAbsenceSchema } from "@/lib/validations/church-schemas";
-import { REVALIDATION_TAGS } from "@/lib/tags";
-
-export async function toggleDoctorAbsence(input: unknown) {
-  const parse = DoctorAbsenceSchema.safeParse(input);
-  if (!parse.success) {
-    return { success: false as const, message: "بيانات الاعتذار غير صالحة" };
-  }
-
-  const supabase = await createSupabaseServerClient();
-
-  // التحقق من الهوية والدور — v1.1: getUser() بدلاً من getSession()، ثم فحص is_staff()
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false as const, message: "غير مصرح لك بإجراء هذا التعديل" };
-  }
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, is_active")
-    .eq("id", user.id)
-    .single();
-  if (!profile?.is_active) {
-    return { success: false as const, message: "غير مصرح لك بإجراء هذا التعديل" };
-  }
-
-  const { error } = await supabase.from("doctor_absences").insert({
-    doctor_id: parse.data.doctorId,
-    absence_date: parse.data.absenceDate,
-    reason_ar: parse.data.reason,
-    substitute_doctor_id: parse.data.substituteDoctorId || null,
-    recorded_by_servant: user.email,
-  });
-
-  if (error) {
-    return { success: false as const, message: "فشل تسجيل اعتذار الطبيب في قاعدة البيانات" };
-  }
-
-  revalidateTag(REVALIDATION_TAGS.clinicAbsences);
-  revalidateTag(REVALIDATION_TAGS.clinicDoctors);
-
-  return { success: true as const, message: "تم تحديث لوحة العيادات اللحظية واعتذار الطبيب بنجاح" };
-}
-```
-
-```typescript
 // src/actions/condolence-actions.ts (جزء تتبع الحجز) — جديد v1.1
 "use server";
 
@@ -1156,7 +1027,7 @@ export async function submitJobApplication(rawInput: unknown) {
 graph LR
     subgraph Admin_Portal[/admin]
         D1[لوحة القيادة والموجز السريع]
-        D2[إدارة اعتذارات العيادات الفورية]
+        D2[إدارة دليل تخصصات العيادات]
         D3[مراجعة واعتماد حجوزات العزاء]
         D4[تحديث مواعيد القداسات والاستثناءات]
         D5[صندوق رسائل التواصل والاستفسارات]
@@ -1168,14 +1039,13 @@ graph LR
 ```
 
 ### الميزات التشغيلية للوحة التحكم:
-1. **شاشة التبديل الفوري لحضور الأطباء (Fast Clinic Toggle)**: قائمة الأطباء المقررين لليوم الحالي، وزر تبديل مفرد لتحويل الحالة مع سبب مختصر — ينفذ `toggleDoctorAbsence` ويحرك وسمي `clinic-absences` و`clinic-doctors`.
-2. **شاشة إدارة حجوزات قاعة العزاء**: عرض طلبات `pending`، اعتماد/رفض مع السبب، وتقويم مرئي للأيام الشاغرة والمحجوزة (الفهرس الفريد `uq_condolence_active_date` يمنع التعارض على مستوى قاعدة البيانات).
-3. **محرر جداول القداسات والاستثناءات (جديد v1.1)**: إدارة `mass_schedules` الأسبوعي + `mass_exceptions` الموسمية (إلغاء/إضافة/تعديل ليوم محدد خلال الأصوام والأعياد) دون مبرمج — كل تغيير يحرك وسم `masses`.
-4. **محرر شريط التنبيهات (جديد v1.1)**: إنشاء تنبيه بدرجة أهمية (`info | warning | urgent`) ونافذة زمنية وموضع ظهور — يحرك وسم `alerts`.
-5. **جدولة البث المباشر (جديد v1.1)**: إدخال أحداث `stream_events` بحالة `scheduled`، وزر تبديل `live` عند بدء البث الفعلي (أو تكامل اختياري لاحق مع YouTube Data API — Phase 2)، وأرشفة تلقائية لما يصبح `completed` — يحرك وسم `stream`.
-6. **مراجعة الطلبات (جديد v1.1)**: صناديق `program_applications` و`job_applications` بفلترة الحالة وتحديث `status` مع ملاحظات إدارية.
-7. **سجل الرسائل الرعوية**: فلترة الرسائل حسب `spiritual_urgent` أو `confession_request` وتوجيهها للأب الكاهن المعني.
-8. **إدارة الطاقم (admin فقط)**: ترقية/تعطيل ملفات `profiles` — لا تظهر للمسؤولين دون دور `admin`.
+1. **شاشة إدارة حجوزات قاعة العزاء**: عرض طلبات `pending`، اعتماد/رفض مع السبب، وتقويم مرئي للأيام الشاغرة والمحجوزة (الفهرس الفريد `uq_condolence_active_date` يمنع التعارض على مستوى قاعدة البيانات).
+2. **محرر جداول القداسات والاستثناءات (جديد v1.1)**: إدارة `mass_schedules` الأسبوعي + `mass_exceptions` الموسمية (إلغاء/إضافة/تعديل ليوم محدد خلال الأصوام والأعياد) دون مبرمج — كل تغيير يحرك وسم `masses`.
+3. **محرر شريط التنبيهات (جديد v1.1)**: إنشاء تنبيه بدرجة أهمية (`info | warning | urgent`) ونافذة زمنية وموضع ظهور — يحرك وسم `alerts`.
+4. **جدولة البث المباشر (جديد v1.1)**: إدخال أحداث `stream_events` بحالة `scheduled`، وزر تبديل `live` عند بدء البث الفعلي (أو تكامل اختياري لاحق مع YouTube Data API — Phase 2)، وأرشفة تلقائية لما يصبح `completed` — يحرك وسم `stream`.
+5. **مراجعة الطلبات (جديد v1.1)**: صناديق `program_applications` و`job_applications` بفلترة الحالة وتحديث `status` مع ملاحظات إدارية.
+6. **سجل الرسائل الرعوية**: فلترة الرسائل حسب `spiritual_urgent` أو `confession_request` وتوجيهها للأب الكاهن المعني.
+7. **إدارة الطاقم (admin فقط)**: ترقية/تعطيل ملفات `profiles` — لا تظهر للمسؤولين دون دور `admin`.
 
 ---
 
@@ -1204,7 +1074,7 @@ graph LR
 3. **التحقق البشري الإلزامي من بيانات البذر**: أسماء الآباء الكهنة والهواتف وأرقام الحسابات البنكية/IBAN وسعر الكشف — اعتماد رسمي من إدارة الكنيسة قبل النشر (بيانات قابلة للتغيير).
 4. تحميل نص الكتاب المقدس (ترجمة فان دايك + الأسفار القانونية الثانية) في `bible_books` / `bible_verses` والتحقق من عدد الأسفار (46 + 27) والفهرسة.
 5. تهيئة Turnstile (نطاق الموقع) واختبار استمارة الحجز من طرف إلى طرف (إدراج + رمز تتبع + تتبع ناجح).
-6. اختبار انعكاس التغييرات: تعديل موعد قداس/اعتذار طبيب من `/admin` ورصد ظهوره خلال ثوانٍ عبر الوسوم (§6.1).
+6. اختبار انعكاس التغييرات: تعديل موعد قداس من `/admin` ورصد ظهوره خلال ثوانٍ عبر الوسوم (§6.1).
 7. ضبط النطاقات: `sitemap.xml` و`robots.txt` المولدة برمجياً، وملكية Google Search Console.
 
 ---

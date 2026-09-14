@@ -42,7 +42,6 @@ export const ClinicInquirySchema = z.object({
   patientName: z.string().min(3, "اسم المريض مطلوب"),
   patientPhone: egyptianPhone,
   specialtySlug: z.string().min(2, "التخصص مطلوب"),
-  doctorId: z.string().uuid().optional().or(z.literal("")),
   notes: z.string().max(500).optional(),
 });
 

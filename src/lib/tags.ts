@@ -3,7 +3,7 @@
 
 export const REVALIDATION_TAGS = {
   masses: "masses",
-  clinicDoctors: "clinic-doctors",
+  clinicSpecialties: "clinic-specialties",
   meetings: "meetings",
   education: "education",
   activities: "activities",

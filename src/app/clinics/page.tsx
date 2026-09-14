@@ -5,7 +5,6 @@ import { PageHero } from "@/components/layout/PageHero";
 import {
   Stethoscope,
   Heart,
-  Users,
   Clock,
   CheckCircle2,
   ArrowLeft,
@@ -52,15 +51,8 @@ export default async function ClinicsOverviewPage() {
 
           <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
             <Link
-              href="/clinics/doctors"
-              className="inline-flex items-center justify-center gap-1.5 bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs px-5 py-3 rounded-xl transition shadow-xs"
-            >
-              <Users className="w-4 h-4" />
-              <span>دليل الأطباء والمواعيد</span>
-            </Link>
-            <Link
               href="/clinics/specialties"
-              className="inline-flex items-center justify-center gap-1.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-5 py-3 rounded-xl transition border border-emerald-400/40"
+              className="inline-flex items-center justify-center gap-1.5 bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs px-5 py-3 rounded-xl transition shadow-xs"
             >
               <Layers className="w-4 h-4" />
               <span>دليل العيادات الـ 14</span>

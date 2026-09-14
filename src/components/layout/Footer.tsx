@@ -91,8 +91,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/clinics/doctors" className="hover:text-copticGold-300 transition-colors">
-                  دليل الأطباء ومواعيد العيادات
+                <Link href="/clinics/specialties" className="hover:text-copticGold-300 transition-colors">
+                  دليل العيادات والتجهيزات (14 تخصصاً)
                 </Link>
               </li>
               <li>

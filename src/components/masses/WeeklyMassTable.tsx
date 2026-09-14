@@ -1,5 +1,5 @@
 import React from "react";
-import { Clock, MapPin, User, Users, Info } from "lucide-react";
+import { Clock, MapPin, User, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
 
@@ -7,12 +7,14 @@ export interface MassScheduleItem {
   id: string;
   dayName: string; // e.g. "الأحد"
   dayIndex: number; // 0 = Sun, etc.
+  title?: string; // e.g. "قداس الأحد الصباحي الأول"
   altarName: string; // e.g. "المذبح الأوسط الرئيسي"
   altarId?: string;
-  hours: string; // e.g. "٦:٣٠ ص - ٩:٠٠ ص"
-  priestName?: string; // e.g. "أبونا أنطونيوس" or "الآباء الكهنة بالتناوب"
-  targetAudience?: string; // e.g. "عام لجميع الشعب", "طلبة المدارس والجامعيين"
-  notes?: string; // e.g. "قداس باكر يليه فصول مدارس الأحد"
+  hours: string; // e.g. "06:00 - 08:30"
+  priestName?: string; // e.g. "القمص مكسيموس وصفي"
+  targetAudience?: string; // e.g. "عام لجميع الشعب"
+  notes?: string; // notes_ar
+  period?: "morning" | "evening";
 }
 
 export interface WeeklyMassTableProps {
@@ -32,49 +34,118 @@ export function WeeklyMassTable({ schedules, className }: WeeklyMassTableProps) 
   }
 
   return (
-    <div className={cn("w-full space-y-4", className)}>
-      {/* Desktop Table View */}
-      <div className="hidden md:block overflow-hidden rounded-2xl border border-copticGold-300 bg-surfaceCard shadow-sm">
+    <div className={cn("w-full space-y-6", className)}>
+      {/* Responsive Card View (Mobile, Tablet, Desktop) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 print:hidden">
+        {schedules.map((mass, idx) => {
+          const isEvening =
+            mass.period === "evening" ||
+            (!mass.period && parseInt(mass.hours.slice(0, 2), 10) >= 12);
+          const periodText = isEvening ? "قداس مسائي" : "قداس صباحي";
+
+          return (
+            <div
+              key={mass.id || idx}
+              className="bg-white rounded-2xl p-5 border-2 border-copticGold-200 hover:border-copticGold-400 transition shadow-xs flex flex-col justify-between"
+            >
+              <div>
+                {/* Badges at top */}
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="text-xs font-bold text-white bg-copticNavy px-3 py-1 rounded-full">
+                    {mass.dayName}
+                  </span>
+                  <span className="text-[11px] font-bold text-copticGold-800 bg-copticGold-100 px-2.5 py-0.5 rounded-full border border-copticGold-300">
+                    {mass.altarName}
+                  </span>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border border-copticGold-300 bg-copticGold-50 text-copticGold-900">
+                    {periodText}
+                  </span>
+                </div>
+
+                {/* Mass title */}
+                <h3 className="font-heading font-bold text-sm text-copticNavy mb-1">
+                  {mass.title || `قداس يوم ${mass.dayName}`}
+                </h3>
+
+                {/* Details list */}
+                <div className="space-y-2 mt-3 text-xs font-body">
+                  {/* Time range: Clock icon + {hours} (font-english font-bold text-copticNavy) */}
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-copticGold-700 shrink-0" />
+                    <span className="font-english font-bold text-copticNavy">
+                      {mass.hours}
+                    </span>
+                  </div>
+
+                  {/* Priest name: celebrant.clerical_name_ar with User icon */}
+                  {mass.priestName && (
+                    <div className="flex items-center gap-2 text-slateText-secondary">
+                      <User className="w-4 h-4 text-copticGold-700 shrink-0" />
+                      <span className="font-medium text-slateText-primary">
+                        {mass.priestName}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Audience: target_group_ar with Users icon and Badge */}
+                  {mass.targetAudience && (
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-copticGold-700 shrink-0" />
+                      <Badge variant="neutral" size="sm">
+                        {mass.targetAudience}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes: {notes_ar} if present */}
+              {mass.notes && (
+                <div className="mt-4 pt-3 border-t border-copticGold-100 text-[11px] text-slateText-muted leading-relaxed">
+                  {mass.notes}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Accessible Table for Print Mode */}
+      <div className="hidden print:block overflow-hidden rounded-2xl border border-copticGold-300 bg-surfaceCard">
         <table className="w-full text-right border-collapse">
           <thead>
             <tr className="bg-copticNavy-700 text-white font-heading text-xs uppercase tracking-wider">
-              <th scope="col" className="py-3.5 px-4 font-bold">اليوم</th>
-              <th scope="col" className="py-3.5 px-4 font-bold">المذبح</th>
-              <th scope="col" className="py-3.5 px-4 font-bold">المواعيد</th>
-              <th scope="col" className="py-3.5 px-4 font-bold">الكاهن المصلي</th>
-              <th scope="col" className="py-3.5 px-4 font-bold">الفئة المستهدفة</th>
-              <th scope="col" className="py-3.5 px-4 font-bold">ملاحظات</th>
+              <th scope="col" className="py-3 px-4 font-bold">اليوم</th>
+              <th scope="col" className="py-3 px-4 font-bold">المذبح</th>
+              <th scope="col" className="py-3 px-4 font-bold">الفترة</th>
+              <th scope="col" className="py-3 px-4 font-bold">المواعيد</th>
+              <th scope="col" className="py-3 px-4 font-bold">الكاهن المصلي</th>
+              <th scope="col" className="py-3 px-4 font-bold">الفئة المستهدفة</th>
+              <th scope="col" className="py-3 px-4 font-bold">ملاحظات</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-copticGold-100 font-body text-xs lg:text-sm">
+          <tbody className="divide-y divide-copticGold-100 font-body text-xs">
             {schedules.map((mass, idx) => (
-              <tr
-                key={mass.id || idx}
-                className="hover:bg-copticGold-50/50 transition-colors"
-              >
-                {/* Day */}
-                <td className="py-3.5 px-4 font-heading font-bold text-copticNavy-800 whitespace-nowrap">
+              <tr key={mass.id || idx}>
+                <td className="py-3 px-4 font-heading font-bold text-copticNavy-800 whitespace-nowrap">
                   {mass.dayName}
                 </td>
-
-                {/* Altar */}
-                <td className="py-3.5 px-4">
-                  <div className="flex items-center gap-1.5 text-copticNavy-700 font-medium">
+                <td className="py-3 px-4 text-copticNavy-700 whitespace-nowrap">
+                  <div className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-copticGold-700 shrink-0" />
                     <span>{mass.altarName}</span>
                   </div>
                 </td>
-
-                {/* Hours */}
-                <td className="py-3.5 px-4 whitespace-nowrap">
-                  <div className="flex items-center gap-1.5 font-heading text-copticGold-900 font-bold">
+                <td className="py-3 px-4 whitespace-nowrap">
+                  {mass.period === "evening" ? "قداس مسائي" : "قداس صباحي"}
+                </td>
+                <td className="py-3 px-4 whitespace-nowrap">
+                  <div className="flex items-center gap-1.5 font-english font-bold text-copticNavy">
                     <Clock className="w-3.5 h-3.5 text-copticGold-700 shrink-0" />
                     <span>{mass.hours}</span>
                   </div>
                 </td>
-
-                {/* Priest */}
-                <td className="py-3.5 px-4 text-slateText-primary whitespace-nowrap">
+                <td className="py-3 px-4 text-slateText-primary whitespace-nowrap">
                   {mass.priestName ? (
                     <div className="flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-slateText-muted shrink-0" />
@@ -84,9 +155,7 @@ export function WeeklyMassTable({ schedules, className }: WeeklyMassTableProps) 
                     <span className="text-slateText-muted">—</span>
                   )}
                 </td>
-
-                {/* Audience */}
-                <td className="py-3.5 px-4">
+                <td className="py-3 px-4">
                   {mass.targetAudience ? (
                     <Badge variant="neutral" size="sm">
                       {mass.targetAudience}
@@ -95,63 +164,13 @@ export function WeeklyMassTable({ schedules, className }: WeeklyMassTableProps) 
                     <span className="text-slateText-muted">—</span>
                   )}
                 </td>
-
-                {/* Notes */}
-                <td className="py-3.5 px-4 text-slateText-muted text-xs">
+                <td className="py-3 px-4 text-slateText-muted text-xs">
                   {mass.notes || "—"}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-
-      {/* Mobile Responsive Cards */}
-      <div className="md:hidden space-y-3">
-        {schedules.map((mass, idx) => (
-          <div
-            key={mass.id || idx}
-            className="p-4 rounded-2xl bg-surfaceCard border border-copticGold-200/90 shadow-xs space-y-2.5"
-          >
-            <div className="flex items-center justify-between border-b border-copticGold-100 pb-2">
-              <span className="font-heading font-bold text-sm text-copticNavy-800">
-                قداس يوم {mass.dayName}
-              </span>
-              <div className="flex items-center gap-1 text-xs font-heading font-bold text-copticGold-800 bg-copticGold-100/60 px-2.5 py-0.5 rounded-full">
-                <Clock className="w-3 h-3 text-copticGold-700" />
-                <span>{mass.hours}</span>
-              </div>
-            </div>
-
-            <div className="text-xs space-y-1.5 font-body">
-              <div className="flex items-center gap-2 text-copticNavy-700">
-                <MapPin className="w-3.5 h-3.5 text-copticGold-700 shrink-0" />
-                <span className="font-medium">{mass.altarName}</span>
-              </div>
-
-              {mass.priestName && (
-                <div className="flex items-center gap-2 text-slateText-secondary">
-                  <User className="w-3.5 h-3.5 text-slateText-muted shrink-0" />
-                  <span>الكاهن: {mass.priestName}</span>
-                </div>
-              )}
-
-              {mass.targetAudience && (
-                <div className="flex items-center gap-2 pt-1">
-                  <Badge variant="neutral" size="sm">
-                    {mass.targetAudience}
-                  </Badge>
-                </div>
-              )}
-
-              {mass.notes && (
-                <p className="text-[11px] text-slateText-muted pt-1 border-t border-copticGold-50">
-                  {mass.notes}
-                </p>
-              )}
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

@@ -67,26 +67,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
 
 > **v1.1**: هذه القائمة مطابقة ترتيباً ومضموناً لبيانات البذر في `AI_DEVELOPER_PROMPT_AND_GUIDELINES.md §4` (المصدر التنفيذي الوحيد للتخصصات).
 
-### 2.5 Clinic Doctors & Schedule Slots (`clinic_doctors` & `doctor_schedule_slots` / أطباء المستوصف)
-- **Concept**: Licensed consulting and specialist physicians volunteering or offering medical care at nominal pastoral ticket prices.
-- **Ubiquitous Term**: `Clinic Doctor` (Arabic: **طبيب العيادة**).
-- **Attributes**:
-  - `academic_title_ar`: Professional title (e.g., أستاذ دكتور, استشاري أول, أخصائي).
-  - `sub_specialty_ar`: Precise clinical focus.
-  - `consultation_fee_egp`: Nominal examination fee (e.g., 30.00 EGP) — renamed from `ticket_price_egp` in v1.1 to honor the §3 lexical invariant (no transactional framing).
-  - `doctor_schedule_slots`: Specific day, start time, end time, and maximum daily patient quota (`max_patients`).
-
-### 2.6 Doctor Absence & Parish Pulse (`doctor_absences` / نبض العيادات والاعتذارات الطارئة)
-- **Concept**: Real-time broadcast and notification of unexpected doctor cancellations or emergencies to save patients arduous travel and waiting.
-- **Ubiquitous Term**: `Doctor Absence` / `Apology` (Arabic: **اعتذار طبيب طارئ** / **نبض العيادات**).
-- **Attributes**:
-  - `absence_date`: Date of cancellation.
-  - `reason_ar`: Reason presented to patients (default: اعتذار لظرف طارئ).
-  - `substitute_doctor_id`: Optional covering physician.
-  - `recorded_by_servant`: Name of the clinic administrator on duty.
-- **Domain Rule**: Active absences within the current 48-hour window must be prominently badged across `/clinics`, `/clinics/status`, and home page widgets.
-
-### 2.7 Church Meetings & Sunday School (`church_meetings` / التربية الكنسية والاجتماعات النوعية)
+### 2.5 Church Meetings & Sunday School (`church_meetings` / التربية الكنسية والاجتماعات النوعية)
 - **Concept**: Categorical pastoral fellowships organized by age, educational stage, and social demographic.
 - **Ubiquitous Term**: `Church Meeting` (Arabic: **اجتماع التربية الكنسية** / **الاجتماع النوعي**).
 - **The 11 Canonical Sectors**:
@@ -103,7 +84,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
   11. `widows-orphans`: اجتماع الشهيد مارمينا والبابا كيرلس (Elderly, Widows & Seniors)
 - **Key Attributes**: Motto verse (`motto_verse_ar`), Bible reference (`bible_reference`), meeting hall (`location_hall_ar`), supervising priest (`supervising_priest_id`).
 
-### 2.8 Schools & Academies (`schools_academies` / المدارس والمعاهد الكنسية)
+### 2.6 Schools & Academies (`schools_academies` / المدارس والمعاهد الكنسية)
 - **Concept**: Structured educational academies operating formal curricula across semesters or multi-year diplomas.
 - **Ubiquitous Term**: `Church Academy` / `School` (Arabic: **المعهد الكنسي** / **مدرسة التعليم الكنسي**).
 - **Institutes**:
@@ -113,7 +94,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
   - `karouz-academy`: معهد كاروز لإعداد وتأهيل الخدام (Servant pedagogy, church history, pastoral psychology).
   - `cithara-choir`: مدرسة قيثارة التسابيح وكورال الكنيسة (Orthodox choir training and hymnology).
 
-### 2.9 Activities & Youth Formations (`activities` / الأنشطة الرعوية)
+### 2.7 Activities & Youth Formations (`activities` / الأنشطة الرعوية)
 - **Concept**: Extracurricular developmental groups fostering talent, recreation, and community connection.
 - **Ubiquitous Term**: `Parish Activity` (Arabic: **النشاط الرعوي**).
 - **Formations**:
@@ -125,7 +106,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
   - `computer-center`: مركز التكنولوجيا والكمبيوتر (Coding, IT, digital literacy).
   - `summer-club`: النادي الصيفي السنوي (Vacation youth camps).
 
-### 2.10 Public Services & Facilities (`public_services` / المرافق والخدمات المجتمعية)
+### 2.8 Public Services & Facilities (`public_services` / المرافق والخدمات المجتمعية)
 - **Concept**: Practical humanitarian, educational, and community enterprises serving Alexandria neighborhood residents.
 - **Ubiquitous Term**: `Public Service` (Arabic: **الخدمة المجتمعية العامة**).
 - **Facilities**:
@@ -138,7 +119,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
   - `church-giftshop`: مكتبة البيع والهدايا والأيقونات والصلبان.
   - `tailoring-workshop`: مشغل ومعرض التفصيل والخياطة الكنسية.
 
-### 2.11 Condolence Hall Bookings (`condolence_bookings` / حجز قاعة العزاء والمناسبات)
+### 2.9 Condolence Hall Bookings (`condolence_bookings` / حجز قاعة العزاء والمناسبات)
 - **Concept**: Public reservation workflow for the parish condolence hall (قاعة العزاء الرئيسية المجهزة) during bereavement.
 - **Ubiquitous Term**: `Condolence Booking` (Arabic: **حجز قاعة العزاء**).
 - **Attributes**:
@@ -150,7 +131,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
   - `status`: `pending` (default upon submission), `approved`, `rejected`, `cancelled`.
 - **Domain Rule**: Public submissions are permitted without authentication (`status = 'pending'`), while approval requires a presiding priest or administrative servant.
 
-### 2.12 Live Stream (`/live` / البث المباشر)
+### 2.10 Live Stream (`/live` / البث المباشر)
 - **Concept**: Live liturgical and devotional broadcast channels carrying real-time feeds of services, praises, and midnight psalmodies.
 - **Ubiquitous Term**: `Live Stream` (Arabic: **البث المباشر**).
 - **Features**:
@@ -158,7 +139,7 @@ This document defines the authoritative ubiquitous language and domain glossary 
   - Liturgy countdown timer to the next upcoming scheduled celebration.
   - Liturgical archive organized by celebration feast.
 
-### 2.13 Canonical Orthodox Bible (`/bible` / الكتاب المقدس المعتمد)
+### 2.11 Canonical Orthodox Bible (`/bible` / الكتاب المقدس المعتمد)
 - **Concept**: Full canonical scriptural text adhering strictly to the Coptic Orthodox canon, including the Deuterocanonical Books (الأسفار القانونية الثانية).
 - **Ubiquitous Term**: `Canonical Bible` (Arabic: **الكتاب المقدس - الترجمة العربية المعتمدة**).
 - **Standards**:
