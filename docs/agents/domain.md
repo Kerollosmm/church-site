@@ -39,7 +39,7 @@ Before planning or modifying any feature, agents must read:
 
 When naming components, types, database fields, routes, issue titles, or test cases:
 
-- **Always consult `CONTEXT.md`**: Use defined canonical terms (e.g., `altars`, `clergy`, `mass_schedules`, `clinic_doctors`, `doctor_absences`, `condolence_bookings`).
+- **Always consult `CONTEXT.md`**: Use defined canonical terms (e.g., `altars`, `clergy`, `mass_schedules`, `condolence_bookings`).
 - **Never drift to colloquial synonyms**: Avoid generic terms like `events` when referring specifically to `mass_schedules`, or `users` when referring to `parishioners` or `clergy`.
 - **Bilingual alignment**: Ensure Arabic UI terminology matches the liturgical and ecclesiastical standards of the Coptic Orthodox Church (Alexandria diocese).
 

@@ -9,7 +9,7 @@
 3. أي مقترح يمزج ERP الداخلي بالبوابة يُفرز `wontfix`.
 
 ## نطاق الإصدار الأول
-- 44 مساراً (مصفوفة INFORMATION_ARCHITECTURE §3).
+- 43 مساراً (مصفوفة INFORMATION_ARCHITECTURE §3).
 - 15 جدول محتوى + 8 جداول تشغيلية (BACKEND §3).
 - لوحة تحكم خدام `/admin` مبنية على أدوار `profiles`.
 

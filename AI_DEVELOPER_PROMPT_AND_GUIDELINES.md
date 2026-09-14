@@ -17,10 +17,9 @@ Your mission is to build the complete, production-ready, accessible, and high-pe
 ### Core Architectural Invariants:
 1. Reference Model: Modeled upon the UX paradigm of 'https://stathanasius-elseyouf.com/', separating heavy internal parish administration from a fast, open, public-facing parish portal.
 2. Zero-Auth Public Experience: Visitors, parishioners, and senior citizens must access mass schedules, clinic directories, meetings, and schools without login walls. Direct WhatsApp and phone deep links for immediate connection.
-3. Live Parish Pulse: Real-time clinic doctor absence toggles, countdowns to next masses, and interactive condolence hall booking.
-4. Coptic Spiritual Aesthetics: Reverent palette featuring Royal Coptic Navy (#1E2A78), Divine Gold (#C5A880), Warm Marble Alabaster (#FAF8F5), and Dark Slate (#1E293B), with authentic Coptic cross ornaments and typography.
-5. Strict RTL & Mobile-First: Arabic is primary, responsive down to 320px screens, with font-resizing controls for elderly parishioners.
-6. Full 35+ Page Routes: Core Parish, 14 Clinic Specialties, 11 Distinct Age-Group Meetings, 5 Ecclesial Academies, 7 Parochial Activities, 8 Public Services & Facilities, Condolence Booking (+ Public Reference Tracking), Live Streaming, Canonical Coptic Bible Reader, and Official Bank Donations.
+3. Coptic Spiritual Aesthetics: Reverent palette featuring Royal Coptic Navy (#1E2A78), Divine Gold (#C5A880), Warm Marble Alabaster (#FAF8F5), and Dark Slate (#1E293B), with authentic Coptic cross ornaments and typography.
+4. Strict RTL & Mobile-First: Arabic is primary, responsive down to 320px screens, with font-resizing controls for elderly parishioners.
+5. Full 35+ Page Routes: Core Parish, 14 Clinic Specialties, 11 Distinct Age-Group Meetings, 5 Ecclesial Academies, 7 Parochial Activities, 8 Public Services & Facilities, Condolence Booking (+ Public Reference Tracking), Live Streaming, Canonical Coptic Bible Reader, and Official Bank Donations.
 
 Execute the implementation adhering strictly to the file structure, design tokens, SQL schema, and seed data provided below.
 ```
@@ -69,9 +68,9 @@ export const churchPalette = {
     muted: "#64748B",     // التواريخ والشروحات الجانبية
   },
   status: {
-    presentGreen: "#15803D", // الطبيب متواجد بانتظام
-    absentRed: "#DC2626",    // الطبيب معتذر اليوم
-    pendingYellow: "#D97706",// حجز قيد المراجعة
+    presentGreen: "#15803D",
+    absentRed: "#DC2626",
+    pendingYellow: "#D97706", // حجز قيد المراجعة
   }
 };
 ```
@@ -115,7 +114,6 @@ church-site/
 │   │   ├── clinics/
 │   │   │   ├── page.tsx
 │   │   │   ├── specialties/page.tsx
-│   │   │   ├── doctors/page.tsx
 │   │   │   └── status/page.tsx
 │   │   ├── meetings/
 │   │   │   ├── [slug]/page.tsx
@@ -160,13 +158,10 @@ church-site/
 │   │   ├── home/
 │   │   │   ├── HeroBanner.tsx
 │   │   │   ├── NextMassCountdown.tsx
-│   │   │   ├── DoctorAlertTicker.tsx
 │   │   │   ├── QuickServiceGrid.tsx
 │   │   │   ├── BibleVerseDaily.tsx
 │   │   │   └── LatestNewsCarousel.tsx
 │   │   ├── clinics/
-│   │   │   ├── DoctorCard.tsx
-│   │   │   ├── SpecialtyFilter.tsx
 │   │   │   └── RealtimeAbsenceStrip.tsx
 │   │   ├── masses/
 │   │   │   ├── WeeklyMassTable.tsx
@@ -295,20 +290,7 @@ INSERT INTO clinic_specialties (name_ar, name_en, slug, description_ar, room_num
 ('المعمل والتحاليل الطبية', 'Medical Laboratory', 'laboratory', 'فحوصات الدم الشاملة، وظائف الكبد والكلى، دلالات الأورام، وباقات الكشف الدوري.', 'الدور الأول', 'FlaskConical', 13),
 ('الصيدلية الخيرية المفتوحة', 'Charitable Pharmacy', 'pharmacy', 'صرف الأدوية المزمنة للمحتاجين بأسعار رمزية وتوفير الأدوية الحيوية.', 'المدخل الخارجي', 'Pill', 14);
 
--- 4. أطباء العيادات التخصصية
-INSERT INTO clinic_doctors (specialty_id, full_name_ar, full_name_en, academic_title_ar, sub_specialty_ar, schedule_details_ar, consultation_fee_egp, display_order) 
-SELECT id, 'أ.د. بيتر عادل إسكندر', 'Prof. Peter Adel', 'أستاذ واستشاري أول', 'أمراض السكر ومناظير الجهاز الهضمي والكبد', 'الأحد والثلاثاء من 6:00 م حتى 9:00 م', 35.00, 1 
-FROM clinic_specialties WHERE slug = 'internal-medicine';
-
-INSERT INTO clinic_doctors (specialty_id, full_name_ar, full_name_en, academic_title_ar, sub_specialty_ar, schedule_details_ar, consultation_fee_egp, display_order) 
-SELECT id, 'د. ماريان سامي شحاتة', 'Dr. Marianne Sami', 'استشاري طب الأطفال', 'حساسية الصدر والتغذية العلاجية للأطفال', 'يومياً عدا الجمعة من 11:00 ص حتى 2:00 ظ', 30.00, 2 
-FROM clinic_specialties WHERE slug = 'pediatrics';
-
-INSERT INTO clinic_doctors (specialty_id, full_name_ar, full_name_en, academic_title_ar, sub_specialty_ar, schedule_details_ar, consultation_fee_egp, display_order) 
-SELECT id, 'د. رامي نبيل عزيز', 'Dr. Ramy Nabil', 'أخصائي جراحة العظام', 'إصابات المفاصل ومناظير الركبة والكتف', 'الإثنين والأربعاء والجمعة من 6:00 م حتى 9:00 م', 30.00, 3 
-FROM clinic_specialties WHERE slug = 'orthopedics';
-
--- 5. جدول القداسات الأسبوعية
+-- 4. جدول القداسات الأسبوعية
 INSERT INTO mass_schedules (altar_id, day_of_week, title_ar, start_time, end_time, target_group_ar, notes_ar)
 SELECT id, 'Sunday', 'قداس الأحد الصباحي الأول', '06:00:00', '08:30:00', 'عام لجميع الشعب', 'مصحوب بكلمة روحية قصيرة وعرض ألحان الشمامسة'
 FROM altars WHERE name_ar = 'المذبح الأوسط الرئيسي';
@@ -325,7 +307,7 @@ INSERT INTO mass_schedules (altar_id, day_of_week, title_ar, start_time, end_tim
 SELECT id, 'Friday', 'قداس الجمعة الرئيسي الشامل', '07:00:00', '09:30:00', 'شعب الكنيسة وأسر التربية الكنسية', 'يليه مباشرة اجتماعات مدارس الأحد لكافة المراحل'
 FROM altars WHERE name_ar = 'المذبح القبلي';
 
--- 6. اجتماعات التربية الكنسية الـ 11
+-- 5. اجتماعات التربية الكنسية الـ 11
 INSERT INTO church_meetings (name_ar, slug, target_age_ar, motto_verse_ar, bible_reference, day_of_week, start_time, end_time, location_hall_ar, servant_in_charge_ar, description_ar, display_order) VALUES
 ('اجتماع الملائكة (حضانة)', 'malaeika', 'مرحلة الحضانة (KG1 و KG2)', 'دَعُوا الأَوْلاَدَ يَأْتُونَ إِلَيَّ وَلاَ تَمْنَعُوهُمْ لأَنَّ لِمِثْلِ هؤُلاَءِ مَلَكُوتَ اللهِ', 'مرقس 10: 14', 'Friday', '08:30:00', '10:30:00', 'قاعات مبنى الخدمات - الدور الثاني', 'تاسوني مارينا ميخائيل', 'خدمة مبهجة تعتمد على الأناشيد القبطية المبسطة، مسرح العرائس، والتلوين وتنمية حب الكنيسة في نفوس الأطفال.', 1),
 ('اجتماع ابتدائي صغار (1-3)', 'ebtedaey-1-3', 'الصفوف الأول والثاني والثالث الابتدائي', 'تَعَالَوْا أَيُّهَا الْبَنُونَ اسْتَمِعُوا إِلَيَّ فَأُعَلِّمَكُمْ مَخَافَةَ الرَّبِّ', 'مزمور 34: 11', 'Friday', '10:30:00', '12:30:00', 'القاعة الكبرى للقديس مكسيموس', 'الشماس مينا فوزي', 'برنامج متكامل يضم دروس الكتاب المقدس، تاريخ الكنيسة وسير القديسين، الألحان، والأنشطة الترفيهية.', 2),
@@ -339,7 +321,7 @@ INSERT INTO church_meetings (name_ar, slug, target_age_ar, motto_verse_ar, bible
 ('اجتماع أم الخلاص للسيدات', 'om-elkhalas', 'الأمهات والسيدات وربات البيوت', 'امْرَأَةٌ فَاضِلَةٌ مَنْ يَجِدُهَا؟ لأَنَّ ثَمَنَهَا يَفُوقُ اللآلِئَ', 'أمثال 31: 10', 'Monday', '10:00:00', '12:00:00', 'صحن الكنيسة الرئيسي', 'تاسوني سامية عزيز', 'صلاة رفع بخور عشية ودراسة كتاب وندوات صحية وتدبير منزلي وإشراف روحي.', 10),
 ('اجتماع الشهيد مارمينا والبابا كيرلس', 'widows-orphans', 'كبار السن والأرامل وذوي الهمم', 'آبٌ للأيتام وقاضٍ للأرملة، الله في مسكنه المقدس', 'مزمور 67: 6', 'Wednesday', '10:00:00', '12:00:00', 'القاعة الأرضية المهيأة للكراسي المتحركة', 'PLACEHOLDER - يُحدَّد أمين الخدمة من إدارة الرعاية', 'خدمة الافتقاد ومساندة الأرامل وكبار السن وذوي الهمم بزيارات أسبوعية ورعاية روحية وإفادات كنسية.', 11);
 
--- 7. المدارس والأكاديميات الكنسية
+-- 6. المدارس والأكاديميات الكنسية
 INSERT INTO schools_academies (name_ar, slug, category_type, curriculum_summary_ar, academic_stages_count, registration_open, responsible_servant_ar, study_schedule_ar) VALUES
 ('مدرسة القديس إستفانوس للشمامسة', 'deacon-school', 'deacon_school', 'تعليم طقس وألحان الكنيسة القبطية الأرثوذكسية، مردات القداسات، واللغة القبطية وقواعدها.', 4, TRUE, 'المعلم جورج أنور', 'الجمعة من 1:00 ظ حتى 3:30 م بجميع فصول الكنيسة'),
 ('معهد الكتاب المقدس للكبار', 'adult-bible', 'bible_institute', 'دراسة أكاديمية معمقة للعهدين القديم والجديد، علم المخطوطات، وتفسير الآباء الأولين.', 4, FALSE, 'د. مراد وهبة', 'الأحد والثلاثاء من 7:00 م حتى 9:30 م بقاعة القديس ديديموس'),
@@ -347,7 +329,7 @@ INSERT INTO schools_academies (name_ar, slug, category_type, curriculum_summary_
 ('مدرسة قيثارة التسابيح والكورال', 'cithara-choir', 'choir', 'تدريب الأصوات، الصولفيج الكنسي، مرافقة الدف والمثلث، وتسجيل الترانيم التراثية.', 3, TRUE, 'أ. رفيق وليم', 'الخميس من 7:00 م حتى 9:00 م'),
 ('مدرسة الكتاب المقدس للأطفال', 'children-bible', 'children_bible', 'تبسيط أسفار الكتاب المقدس وقصص الآباء والأنبياء عبر الوسائط التفاعلية والرسوم المتحركة والمسابقات الذهنية الأسبوعية.', 2, FALSE, 'PLACEHOLDER - يُحدَّد من إدارة التربية الكنسية', 'الجمعة بعد قداس الصباح — قاعة الأطفال');
 
--- 8. الحسابات البنكية المعتمدة للتبرعات
+-- 7. الحسابات البنكية المعتمدة للتبرعات
 INSERT INTO donation_accounts (bank_name_ar, bank_name_en, account_title_ar, account_number, iban_number, swift_code, purpose_category_ar, display_order) VALUES
 (
     'البنك الأهلي المصري (فرع العصافرة)',
