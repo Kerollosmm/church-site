@@ -14,6 +14,7 @@ import {
   MapPin,
   ArrowLeft,
 } from "lucide-react";
+import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
 
 export function QuickServiceGrid() {
   const services = [
@@ -26,7 +27,7 @@ export function QuickServiceGrid() {
     },
     {
       title: "المستوصف الخيري",
-      desc: "14 عيادة تخصصية بأحدث الأجهزة وكشف رمزي",
+      desc: `${SEED_CLINIC_SPECIALTIES.length} عيادة تخصصية بأحدث الأجهزة وكشف رمزي`,
       icon: Stethoscope,
       href: "/clinics",
       tag: "خدمة طبية",

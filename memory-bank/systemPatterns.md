@@ -26,3 +26,7 @@
 - تحويل الأرقام إلى صيغة دولية يتم حصراً عبر `toWhatsAppUrl` في `src/lib/utils/parish-contact.ts` (يحوّل «0» البادئة إلى كود مصر «20»).
 - اشتقاق الفترة (صباحي/مسائي) وتسمياتها مصدره الوحيد `getMassPeriodFromTime` و`getMassPeriodLabel` — لا يجوز تكرار منطق التحويل أو التسمية.
 - الثوابت غير المُبذَّرة (رسم الكشف 30-35 ج.م) تُعرَّف مرة واحدة في `src/lib/constants.ts`.
+
+## 8. التنقل والعدّادات المشتقة (Navigation & Derived Counts)
+- التنقل مصدره الوحيد `src/components/layout/Header.tsx` (مصفوفة `navLinks` + درج جوّال مدمج). لا تُضاف مكوّنات تنقل بديلة غير موصولة — حُذف `MegaMenu.tsx` و`MobileDrawer.tsx` لهذا السبب تحديداً.
+- عدد التخصصات الطبية يُشتق دائماً من `SEED_CLINIC_SPECIALTIES.length`، ورسم الكشف من `CLINIC_CONSULTATION_FEE_MIN_EGP`/`MAX_EGP` في `src/lib/constants.ts` — يُمنع تكرار الأرقام (14 / 30-35) كنصوص صلبة في النصوص أو العناوين أو التذييل.

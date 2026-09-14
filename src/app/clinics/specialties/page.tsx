@@ -3,11 +3,12 @@ import { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Layers, Building2 } from "lucide-react";
 import { getClinicSpecialties } from "@/lib/queries";
+import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
 import { CLINIC_CONSULTATION_FEE_SHORT_LABEL } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: "دليل التخصصات الطبية والعيادات الـ 14",
-  description: "كتالوج عيادات مستوصف كنيسة القديسين بالعصافرة: 14 تخصصاً طبياً مع أرقام الغرف والتجهيزات والأجهزة الطبية.",
+  title: `دليل التخصصات الطبية والعيادات الـ ${SEED_CLINIC_SPECIALTIES.length}`,
+  description: `كتالوج عيادات مستوصف كنيسة القديسين بالعصافرة: ${SEED_CLINIC_SPECIALTIES.length} تخصصاً طبياً مع أرقام الغرف والتجهيزات والأجهزة الطبية.`,
 };
 
 export const revalidate = 86400;
@@ -18,7 +19,7 @@ export default async function ClinicSpecialtiesPage() {
   return (
     <div className="min-h-screen bg-alabasterBg pb-16">
       <PageHero
-        title="دليل العيادات والتجهيزات الطبية (14 تخصصاً)"
+        title={`دليل العيادات والتجهيزات الطبية (${SEED_CLINIC_SPECIALTIES.length} تخصصاً)`}
         englishTitle="Clinic Specialties & Diagnostic Equipment"
         description="تفاصيل العيادات الطبية، أرقام الغرف في المبنى الخدمي، والأجهزة التشخيصية المتاحة لخدمة المرضى."
         breadcrumbs={[

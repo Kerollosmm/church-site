@@ -12,10 +12,15 @@ import {
   Layers,
 } from "lucide-react";
 import { getClinicSpecialties } from "@/lib/queries";
+import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
+import {
+  CLINIC_CONSULTATION_FEE_MIN_EGP,
+  CLINIC_CONSULTATION_FEE_MAX_EGP,
+} from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "المستوصف الطبي الخيري التخصصي",
-  description: "المستوصف الطبي الخيري بكنيسة القديسين بالعصافرة: 14 عيادة تخصصية بأحدث التجهيزات وبكشف رمزي 30-35 جنيهاً لخدمة جميع المواطنين.",
+  description: `المستوصف الطبي الخيري بكنيسة القديسين بالعصافرة: ${SEED_CLINIC_SPECIALTIES.length} عيادة تخصصية بأحدث التجهيزات وبكشف رمزي ${CLINIC_CONSULTATION_FEE_MIN_EGP}-${CLINIC_CONSULTATION_FEE_MAX_EGP} جنيهاً لخدمة جميع المواطنين.`,
 };
 
 export const revalidate = 86400;
@@ -28,7 +33,7 @@ export default async function ClinicsOverviewPage() {
       <PageHero
         title="المستوصف الطبي الخيري التخصصي"
         englishTitle="Parish Charitable Medical Clinics"
-        description="صرح طبي إنساني متكامل يقدم رعاية صحية تخصصية متميزة لكافة المواطنين برسم كشف رمزي (30 - 35 جنيهاً مصرياً)."
+        description={`صرح طبي إنساني متكامل يقدم رعاية صحية تخصصية متميزة لكافة المواطنين برسم كشف رمزي (${CLINIC_CONSULTATION_FEE_MIN_EGP} - ${CLINIC_CONSULTATION_FEE_MAX_EGP} جنيهاً مصرياً).`}
         breadcrumbs={[{ label: "المستوصف الطبي" }]}
         icon={<Stethoscope className="w-8 h-8 text-copticGold-300" />}
       />
@@ -42,7 +47,7 @@ export default async function ClinicsOverviewPage() {
               <span>تسعيرة رمزية غير هادفة للربح</span>
             </div>
             <h2 className="font-heading font-bold text-2xl text-white">
-              قيمة الكشف: 30 إلى 35 جنيهاً مصرياً فقط
+              قيمة الكشف: {CLINIC_CONSULTATION_FEE_MIN_EGP} إلى {CLINIC_CONSULTATION_FEE_MAX_EGP} جنيهاً مصرياً فقط
             </h2>
             <p className="text-xs sm:text-sm text-emerald-100 max-w-2xl leading-relaxed">
               خدمة طبية إنسانية مفتوحة لجميع أهالي الإسكندرية دون أي تمييز، تشمل الكشف ومتابعة الضغط والسكر ورسم القلب وفحوصات الطوارئ بأحدث الأجهزة الطبية.
@@ -55,7 +60,7 @@ export default async function ClinicsOverviewPage() {
               className="inline-flex items-center justify-center gap-1.5 bg-white text-emerald-900 hover:bg-emerald-50 font-bold text-xs px-5 py-3 rounded-xl transition shadow-xs"
             >
               <Layers className="w-4 h-4" />
-              <span>دليل العيادات الـ 14</span>
+              <span>دليل العيادات الـ {SEED_CLINIC_SPECIALTIES.length}</span>
             </Link>
           </div>
         </div>
@@ -65,7 +70,7 @@ export default async function ClinicsOverviewPage() {
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-copticGold-200">
             <div>
               <h3 className="font-heading font-bold text-xl text-copticNavy">
-                العيادات التخصصية الـ 14
+                العيادات التخصصية الـ {SEED_CLINIC_SPECIALTIES.length}
               </h3>
               <p className="text-xs text-slateText-secondary">
                 مجهزة بغرف فحص وأجهزة تشخيصية متطورة
@@ -88,7 +93,7 @@ export default async function ClinicsOverviewPage() {
               >
                 <div className="flex items-center justify-between text-xs font-bold text-copticGold-800 mb-1">
                   <span>{spec.room_number ? `غرفة ${spec.room_number}` : "المبنى الخدمي"}</span>
-                  <span className="font-english text-[10px] text-slateText-muted">30-35 ج</span>
+                  <span className="font-english text-[10px] text-slateText-muted">{CLINIC_CONSULTATION_FEE_MIN_EGP}-{CLINIC_CONSULTATION_FEE_MAX_EGP} ج</span>
                 </div>
                 <h4 className="font-heading font-bold text-sm text-copticNavy mb-1">
                   {spec.name_ar}

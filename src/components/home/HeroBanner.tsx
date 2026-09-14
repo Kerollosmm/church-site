@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Calendar, Stethoscope, Video, HeartHandshake, PhoneCall, ChevronLeft, Sparkles } from "lucide-react";
+import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
 
 export function HeroBanner() {
   return (
@@ -43,7 +44,7 @@ export function HeroBanner() {
             >
               <Stethoscope className="w-6 h-6 text-copticGold-400 group-hover:scale-110 transition-transform mb-1.5" />
               <span className="text-xs sm:text-sm font-bold text-white">المستوصف الطبي</span>
-              <span className="text-[10px] text-copticGold-200">14 عيادة تخصصية</span>
+              <span className="text-[10px] text-copticGold-200">{SEED_CLINIC_SPECIALTIES.length} عيادة تخصصية</span>
             </Link>
 
             <Link

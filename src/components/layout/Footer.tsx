@@ -10,6 +10,7 @@ import {
   ExternalLink,
   ShieldCheck,
 } from "lucide-react";
+import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
 
 export function Footer() {
   return (
@@ -87,12 +88,12 @@ export function Footer() {
             <ul className="space-y-2 text-xs">
               <li>
                 <Link href="/clinics" className="hover:text-copticGold-300 transition-colors">
-                  المستوصف التخصصي الخيري (14 عيادة)
+                  المستوصف التخصصي الخيري ({SEED_CLINIC_SPECIALTIES.length} عيادة)
                 </Link>
               </li>
               <li>
                 <Link href="/clinics/specialties" className="hover:text-copticGold-300 transition-colors">
-                  دليل العيادات والتجهيزات (14 تخصصاً)
+                  دليل العيادات والتجهيزات ({SEED_CLINIC_SPECIALTIES.length} تخصصاً)
                 </Link>
               </li>
               <li>
