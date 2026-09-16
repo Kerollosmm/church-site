@@ -1,5 +1,19 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Supabase Production Database — Project mlprvcgbwwihnjyvyawm)
+- [x] ربط المشروع البعيد `mlprvcgbwwihnjyvyawm` عبر Supabase CLI.
+- [x] تطبيق كافة الهجرات الـ 11 (`supabase db push`) بنجاح كامل.
+- [x] التحقق الميداني المباشر من مطابقة إحصائيات قاعدة البيانات:
+  - 29 جدولاً في المخطط العام `public`.
+  - 56 سياسة أمنية (RLS Policies).
+  - 29 جدولاً مفعّلاً عليها RLS (100% تغطية أمنية).
+  - 15 نوعاً مخصصاً (ENUMs).
+  - كافة القيود والفهارس الفريدة (`condolence_bookings_booking_reference_code_key`, `subscribers_email_key`, `uq_event_exception_occurrence`, `uq_taxonomy_term_dimension_slug`, `uq_condolence_active_date`).
+- [x] توليد ملف `.env.local` يحتوي على مفاتيح المشروع (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
+- [x] إنشاء ملف `.env.example` كقالب استرشادي آمن وتتبع في git.
+- [x] إضافة `supabase/.temp/` إلى `.gitignore`.
+- [x] استعلام اختباري ناجح للمشروع البعيد عبر `@supabase/supabase-js` يعيد `200 OK`.
+
 ## يعمل الآن (GitHub Remote Repository)
 - [x] تم إنشاء المستودع الخاص `Kerollosmm/church-site` على GitHub وربطه بـ `origin`
 - [x] تم استبعاد `goal-container/` في `.gitignore` وتثبيت الحفظ

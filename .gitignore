@@ -40,3 +40,6 @@ yarn-error.log*
 
 # container
 goal-container/
+
+# supabase cli temporary state
+supabase/.temp/
