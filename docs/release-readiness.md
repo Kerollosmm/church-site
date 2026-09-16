@@ -62,6 +62,12 @@ hides a broken seed fallback.
 | `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` *(optional)* | link to the parish channel | `src/lib/env.ts` → `/live` | `/live` shows «لم تُضبط قناة البث الرسمية على هذا الموقع بعد» |
 | `NEXT_PUBLIC_SITE_URL` | canonical URL / sitemap | **not consumed by any code yet** | no effect today — see §5 |
 | `YOUTUBE_API_KEY` *(optional, Phase 2)* | automatic broadcast-status polling | **not consumed by any code yet** | no effect today |
+| `CHURCH_DATA_DIR` *(optional, server-only)* | data directory of the file-backed events store | `src/lib/store/json-store.ts` (`getStoreDataDir()`) | defaults to `<repo>/.data` (gitignored); set it to move the store, e.g. onto a mounted volume |
+
+Additionally, the events repository switches driver on **`NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`**
+being present together (`hasSupabaseAdminEnv()` in `src/lib/env.ts` → `src/lib/store/index.ts`). With
+either one missing, the portal runs on the file-backed JSON driver — which is the supported no-env
+mode, not a degraded one.
 
 Secrets: `SUPABASE_SERVICE_ROLE_KEY` and `TURNSTILE_SECRET_KEY` are server-side only and must never
 be prefixed with `NEXT_PUBLIC_`. The only client-side variables are the two `NEXT_PUBLIC_` Turnstile
@@ -71,7 +77,7 @@ and Supabase values plus the optional channel URL.
 
 ## 3. Database
 
-Apply the seven migrations in lexicographic (= apply) order, then run the manual bootstrap. Full
+Apply the nine migrations in lexicographic (= apply) order, then run the manual bootstrap. Full
 rationale and the apply table live in `supabase/README.md`.
 
 ```bash

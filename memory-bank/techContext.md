@@ -12,7 +12,8 @@
 ## متغيرات البيئة (BACKEND §9.1)
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (خادم فقط), `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` (اختياري — عند غيابه تعرض `/live` حالة «لم تُضبط القناة بعد»)، `YOUTUBE_API_KEY` (اختياري).
 
-- **المستهلك فعلاً في الكود** (اتحاد `ServerEnvVar` في `src/lib/env.ts`): الستة `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`/`TURNSTILE_SECRET_KEY`/`NEXT_PUBLIC_TURNSTILE_SITE_KEY`/`NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` فقط.
+- **المستهلك فعلاً في الكود** (اتحاد `ServerEnvVar` في `src/lib/env.ts`): الستة `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`/`TURNSTILE_SECRET_KEY`/`NEXT_PUBLIC_TURNSTILE_SITE_KEY`/`NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` فقط، **إضافة إلى `CHURCH_DATA_DIR`** الذي يُقرأ مباشرة في `src/lib/store/json-store.ts` (خارج اتحاد `ServerEnvVar` لأنه متغير تشغيلي لا سر، وغيابه يعني `<repo>/.data`).
+- **`hasSupabaseAdminEnv()`** (`NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`) هو شرط اختيار محرك `supabase` في `src/lib/store/index.ts` — وهو **مختلف عن** `hasSupabaseEnv()` (URL + مفتاح anon) الذي يحكم مسار القراءة العامة. بغياب أي منهما يبقى المحرك الملفي هو المستخدم.
 - **معلَن في §9.1 وغير مستهلك في الكود بعد** (أُثبت بـ `git grep` = 0 مطابقة في المرحلة الرابعة): `NEXT_PUBLIC_SITE_URL` و`YOUTUBE_API_KEY` — الأول لأن `metadataBase`/`sitemap.ts`/`robots.ts` غير موجودة أصلاً، فبند §9.3 رقم 7 غير مستوفى حتى الآن.
 - `TURNSTILE_SECRET_KEY` غيابه **في الإنتاج** يرفض كل كتابة عامة (فشل مغلق في `verifyTurnstile`)، وفي التطوير فقط يُتجاوز مع تحذير مسجَّل.
 
@@ -20,8 +21,9 @@
 `docs/release-readiness.md` هي المرجع التنفيذي الواحد: البوابات الخمس بالأوامر ونتائجها، حارس «البناء بلا بيئة» منقولاً حرفياً من `ci.yml`، جدول §9.1 أعلاه مع سلوك كل متغير عند غيابه، خطوات القاعدة واستعلامات التحقق بعد التطبيق (21 جدولاً/40 سياسة/21 RLS/9 enums + `condolence_bookings_booking_reference_code_key` و`uq_condolence_active_date`)، قائمة الفحوص البشرية الإلزامية، والفجوات المقبولة عند الإطلاق (الشاشات الإدارية غير المنفَّذة، نص الكتاب المقدس، sitemap/robots، اختبار CSP في متصفح، تشغيل CI على GitHub).
 
 ## مخطط قاعدة البيانات المُصدَّر (supabase/migrations)
-- سبع ملفات SQL مرقّمة زمنياً في `supabase/migrations/` تحمل المخطط كاملاً (الامتدادات والأنواع، `profiles` والدوال المساعدة، 21 جدولاً، الدوال `SECURITY DEFINER`، الفهارس، تفعيل RLS و40 سياسة) مشتقّة حرفياً من BACKEND §2–§5 ومطابقة لأسماء الأعمدة والقيود في `src/types/database.types.ts`، مع `supabase/README.md` (ترتيب التطبيق + خطوة ترقية أول مدير يدوياً).
-- فرقان موثّقان عن نص المواصفة: (1) كل عمود له `DEFAULT` في §3 صار `NOT NULL` ليطابق `database.types.ts`، و(2) `normalize_arabic()` تُنشأ قبل `bible_verses` (لأن العمود المولَّد يحتاجها)؛ وأُضيفت حُرّاس إعادة تطبيق (`IF NOT EXISTS`/`DO $$ … EXCEPTION`).
+- **تسعة ملفات** SQL مرقّمة زمنياً في `supabase/migrations/`: السبعة الأولى تحمل مخطط الأساس (الامتدادات والأنواع، `profiles` والدوال المساعدة، 21 جدولاً، الدوال `SECURITY DEFINER`، الفهارس، تفعيل RLS و40 سياسة) مشتقّة حرفياً من BACKEND §2–§5 ومطابقة لأسماء الأعمدة والقيود في `src/types/database.types.ts`؛ والملفان 8 و9 يحملان **طبقة الفعاليات** (5 أنواع + 7 جداول + فهارس + RLS) المطابقة عموداً بعمود لـ `database.types.ts` — مع `supabase/README.md` (ترتيب التطبيق + خطوة ترقية أول مدير يدوياً).
+- فرقان موثّقان عن نص المواصفة: (1) كل عمود له `DEFAULT` في §3 صار `NOT NULL` ليطابق `database.types.ts`، و(2) `normalize_arabic()` تُنشأ قبل `bible_verses` (لأن العمود المولَّد يحتاجها)؛ وأُضيفت حُرّاس إعادة تطبيق (`IF NOT EXISTS`/`DO $$ … EXCEPTION`). والملفان 8 و9 خارج BACKEND أصلاً (ميزة جديدة) ومسجَّلان كذلك في `supabase/README.md`.
+- أسماء قيود تعتمد عليها طبقة الفعاليات: `uq_taxonomy_term_dimension_slug` (تفرد `(dimension, slug)`) و`uq_event_exception_occurrence` (تفرد `(series_id, occurrence_date)` — وعليه تعمل `upsertException` بـ `onConflict: "series_id,occurrence_date"`).
 - **لم يُطبَّق أي ملف منها على قاعدة بيانات حيّة بعد** — التطبيق والتحقق من أسماء القيود الفعلية بند نشر معلّق.
 
 ## قيود الإصدارات المثبَّتة (مهم عند ترقية أي حزمة Supabase)
@@ -31,7 +33,8 @@
 - `@supabase/ssr` يُستورد من `@supabase/ssr/dist/main/*` داخل تعريفاته؛ لذلك `skipLibCheck` مطلوب لبناء نظيف.
 
 ## متطلبات وقت التشغيل
-- Node 20+ مع ICU كامل (تم التحقق على Node v22.22.0): يستخدم الكود `Intl.DateTimeFormat` بمنطقة `Africa/Cairo` وتقويم `gregory` وأرقام `latn` لعرض التواريخ، وهو ما يتطلب بيانات المناطق الزمنية الكاملة في بيئة البناء والتشغيل.
+- Node 20+ مع ICU كامل (تم التحقق على Node v22.22.0): يستخدم الكود `Intl.DateTimeFormat` بمنطقة `Africa/Cairo` وتقويم `gregory` وأرقام `latn` لعرض التواريخ، وهو ما يتطلب بيانات المناطق الزمنية الكاملة في بيئة البناء والتشغيل. **صار هذا المتطلب أوسع**: `src/lib/utils/zone-time.ts` يبني مُنسِّقاً لكل منطقة IANA تستعملها سلسلة فعاليات، فبيئة بلا بيانات مناطق ستكسر توسيع السلاسل.
+- Node's `crypto.randomUUID()` (بلا اعتماديات) هو مصدر معرّفات صفوف الفعاليات/المصطلحات/الوسائط، و`node:fs/promises` هو مخزن المحرك الملفي — كلاهما على الخادم فقط (`src/lib/store/*` وحدات خادمية).
 - pnpm 10 (تم التحقق على 10.33.0) مع `pnpm-lock.yaml`؛ وسير عمل CI يثبّت Node 22 وpnpm 10.
 
 ## أدوات الجودة والأمن (v1.1 — المرحلة الثالثة)

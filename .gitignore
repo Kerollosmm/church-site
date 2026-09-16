@@ -31,3 +31,6 @@ yarn-error.log*
 # local agent state (never committed)
 .claude/settings.local.json
 .scratch/
+
+# file-backed repository store (json driver runtime data — never committed)
+/.data/

@@ -45,6 +45,26 @@ export type ApplicationStatusEnum =
   | "rejected"
   | "waitlisted";
 
+// --- enums of the events / taxonomy / media / audit layer
+// (supabase/migrations/20260916090700_events_taxonomy_media_audit.sql)
+export type EventStatusEnum = "draft" | "published" | "cancelled" | "archived";
+
+export type RecurrenceFreqEnum = "weekly" | "monthly";
+
+export type EventExceptionKindEnum = "cancelled" | "moved";
+
+export type TaxonomyDimensionEnum = "event_type" | "ministry" | "audience" | "language" | "venue" | "tag";
+
+export type AuditActionEnum =
+  | "create"
+  | "update"
+  | "publish"
+  | "unpublish"
+  | "cancel"
+  | "reschedule"
+  | "duplicate"
+  | "delete";
+
 export interface Database {
   public: {
     Tables: {
@@ -1063,6 +1083,472 @@ export interface Database {
           },
         ];
       };
+      // ---------------------------------------------------------------------
+      // نظام الفعاليات والتصنيفات والوسائط وسجل التدقيق
+      // (supabase/migrations/20260916090700_events_taxonomy_media_audit.sql)
+      // ---------------------------------------------------------------------
+      taxonomy_terms: {
+        Row: {
+          id: string;
+          dimension: TaxonomyDimensionEnum;
+          slug: string;
+          name_ar: string;
+          name_en: string | null;
+          icon: string | null;
+          color: string | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          dimension: TaxonomyDimensionEnum;
+          slug: string;
+          name_ar: string;
+          name_en?: string | null;
+          icon?: string | null;
+          color?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          dimension?: TaxonomyDimensionEnum;
+          slug?: string;
+          name_ar?: string;
+          name_en?: string | null;
+          icon?: string | null;
+          color?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_terms_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "taxonomy_terms_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      event_series: {
+        Row: {
+          id: string;
+          title_ar: string;
+          title_en: string | null;
+          summary_ar: string | null;
+          summary_en: string | null;
+          freq: RecurrenceFreqEnum;
+          recurrence_interval: number;
+          by_weekday: number[];
+          by_month_day: number | null;
+          start_date: string;
+          end_date: string | null;
+          start_time: string;
+          duration_minutes: number;
+          timezone: string;
+          default_venue_id: string | null;
+          default_term_ids: string[];
+          status: EventStatusEnum;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          title_ar: string;
+          title_en?: string | null;
+          summary_ar?: string | null;
+          summary_en?: string | null;
+          freq: RecurrenceFreqEnum;
+          recurrence_interval?: number;
+          by_weekday?: number[];
+          by_month_day?: number | null;
+          start_date: string;
+          end_date?: string | null;
+          start_time: string;
+          duration_minutes?: number;
+          timezone?: string;
+          default_venue_id?: string | null;
+          default_term_ids?: string[];
+          status?: EventStatusEnum;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          title_ar?: string;
+          title_en?: string | null;
+          summary_ar?: string | null;
+          summary_en?: string | null;
+          freq?: RecurrenceFreqEnum;
+          recurrence_interval?: number;
+          by_weekday?: number[];
+          by_month_day?: number | null;
+          start_date?: string;
+          end_date?: string | null;
+          start_time?: string;
+          duration_minutes?: number;
+          timezone?: string;
+          default_venue_id?: string | null;
+          default_term_ids?: string[];
+          status?: EventStatusEnum;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_series_default_venue_id_fkey";
+            columns: ["default_venue_id"];
+            isOneToOne: false;
+            referencedRelation: "taxonomy_terms";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_series_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_series_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      events: {
+        Row: {
+          id: string;
+          slug: string;
+          title_ar: string;
+          title_en: string | null;
+          summary_ar: string | null;
+          summary_en: string | null;
+          description_ar: string | null;
+          description_en: string | null;
+          starts_at: string;
+          ends_at: string | null;
+          timezone: string;
+          all_day: boolean;
+          venue_id: string | null;
+          status: EventStatusEnum;
+          series_id: string | null;
+          occurrence_date: string | null;
+          is_exception_of: string | null;
+          image_url: string | null;
+          documents: Json;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          title_ar: string;
+          title_en?: string | null;
+          summary_ar?: string | null;
+          summary_en?: string | null;
+          description_ar?: string | null;
+          description_en?: string | null;
+          starts_at: string;
+          ends_at?: string | null;
+          timezone?: string;
+          all_day?: boolean;
+          venue_id?: string | null;
+          status?: EventStatusEnum;
+          series_id?: string | null;
+          occurrence_date?: string | null;
+          is_exception_of?: string | null;
+          image_url?: string | null;
+          documents?: Json;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          title_ar?: string;
+          title_en?: string | null;
+          summary_ar?: string | null;
+          summary_en?: string | null;
+          description_ar?: string | null;
+          description_en?: string | null;
+          starts_at?: string;
+          ends_at?: string | null;
+          timezone?: string;
+          all_day?: boolean;
+          venue_id?: string | null;
+          status?: EventStatusEnum;
+          series_id?: string | null;
+          occurrence_date?: string | null;
+          is_exception_of?: string | null;
+          image_url?: string | null;
+          documents?: Json;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "events_venue_id_fkey";
+            columns: ["venue_id"];
+            isOneToOne: false;
+            referencedRelation: "taxonomy_terms";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_series_id_fkey";
+            columns: ["series_id"];
+            isOneToOne: false;
+            referencedRelation: "event_series";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_is_exception_of_fkey";
+            columns: ["is_exception_of"];
+            isOneToOne: false;
+            referencedRelation: "event_series";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "events_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      event_exceptions: {
+        Row: {
+          id: string;
+          series_id: string;
+          occurrence_date: string;
+          kind: EventExceptionKindEnum;
+          moved_to_date: string | null;
+          reason_ar: string | null;
+          reason_en: string | null;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          series_id: string;
+          occurrence_date: string;
+          kind: EventExceptionKindEnum;
+          moved_to_date?: string | null;
+          reason_ar?: string | null;
+          reason_en?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          series_id?: string;
+          occurrence_date?: string;
+          kind?: EventExceptionKindEnum;
+          moved_to_date?: string | null;
+          reason_ar?: string | null;
+          reason_en?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_exceptions_series_id_fkey";
+            columns: ["series_id"];
+            isOneToOne: false;
+            referencedRelation: "event_series";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_exceptions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_exceptions_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      event_terms: {
+        Row: {
+          event_id: string;
+          term_id: string;
+          created_at: string;
+        };
+        Insert: {
+          event_id: string;
+          term_id: string;
+          created_at?: string;
+        };
+        Update: {
+          event_id?: string;
+          term_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_terms_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_terms_term_id_fkey";
+            columns: ["term_id"];
+            isOneToOne: false;
+            referencedRelation: "taxonomy_terms";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      media: {
+        Row: {
+          id: string;
+          filename: string;
+          mime_type: string;
+          size_bytes: number;
+          url: string;
+          alt_ar: string | null;
+          alt_en: string | null;
+          uploaded_by: string | null;
+          created_at: string;
+          is_public: boolean;
+        };
+        Insert: {
+          id?: string;
+          filename: string;
+          mime_type: string;
+          size_bytes?: number;
+          url: string;
+          alt_ar?: string | null;
+          alt_en?: string | null;
+          uploaded_by?: string | null;
+          created_at?: string;
+          is_public?: boolean;
+        };
+        Update: {
+          id?: string;
+          filename?: string;
+          mime_type?: string;
+          size_bytes?: number;
+          url?: string;
+          alt_ar?: string | null;
+          alt_en?: string | null;
+          uploaded_by?: string | null;
+          created_at?: string;
+          is_public?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "media_uploaded_by_fkey";
+            columns: ["uploaded_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      audit_log: {
+        Row: {
+          id: string;
+          at: string;
+          actor_id: string | null;
+          actor_name: string;
+          action: AuditActionEnum;
+          entity_type: string;
+          entity_id: string;
+          before: Json | null;
+          after: Json | null;
+          summary: string;
+        };
+        Insert: {
+          id?: string;
+          at?: string;
+          actor_id?: string | null;
+          actor_name: string;
+          action: AuditActionEnum;
+          entity_type: string;
+          entity_id: string;
+          before?: Json | null;
+          after?: Json | null;
+          summary: string;
+        };
+        Update: {
+          id?: string;
+          at?: string;
+          actor_id?: string | null;
+          actor_name?: string;
+          action?: AuditActionEnum;
+          entity_type?: string;
+          entity_id?: string;
+          before?: Json | null;
+          after?: Json | null;
+          summary?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1119,6 +1605,11 @@ export interface Database {
       alert_severity_enum: AlertSeverityEnum;
       stream_status_enum: StreamStatusEnum;
       application_status_enum: ApplicationStatusEnum;
+      event_status_enum: EventStatusEnum;
+      recurrence_freq_enum: RecurrenceFreqEnum;
+      event_exception_kind_enum: EventExceptionKindEnum;
+      taxonomy_dimension_enum: TaxonomyDimensionEnum;
+      audit_action_enum: AuditActionEnum;
     };
     CompositeTypes: {
       [_ in never]: never;

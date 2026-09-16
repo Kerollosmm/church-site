@@ -69,6 +69,16 @@ export function hasSupabaseEnv(): boolean {
 }
 
 /**
+ * True when the URL + service-role pair is configured — the condition that selects the Supabase
+ * store driver (`src/lib/store/index.ts`). Distinct from `hasSupabaseEnv()` on purpose: the anon key
+ * is what the public read path needs, whereas a provisioned deployment is what the write-capable
+ * repository needs. With either half missing, the portal keeps running on the file-backed driver.
+ */
+export function hasSupabaseAdminEnv(): boolean {
+  return readEnv("NEXT_PUBLIC_SUPABASE_URL") !== null && readEnv("SUPABASE_SERVICE_ROLE_KEY") !== null;
+}
+
+/**
  * Turnstile secret key, or null when the deployment has no Turnstile configured.
  * Callers must FAIL CLOSED on null in production (see `src/lib/security/turnstile.ts`).
  */
