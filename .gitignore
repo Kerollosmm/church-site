@@ -1,4 +1,4 @@
-﻿# dependencies
+# dependencies
 /node_modules
 /.pnpm-store
 
@@ -37,3 +37,6 @@ yarn-error.log*
 
 # local data backups taken by the procedure in docs/backup-restore.md (data, never code)
 /.backups/
+
+# container
+goal-container/
