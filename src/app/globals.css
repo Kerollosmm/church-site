@@ -78,3 +78,28 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-thumb:hover {
   background: #8B6F45;
 }
+
+/* REQUIRED: `html { direction: rtl }` above is an author rule and beats the user agent's own
+   `html[dir="ltr"]` rule, so without this the locale switcher's `dir` attribute would have no
+   effect on the document. This restores left-to-right layout for the English UI. */
+html[dir="ltr"] {
+  direction: ltr;
+}
+
+/* Honour the visitor's OS-level "reduce motion" preference for the WHOLE document: the header's
+   `animate-pulse` dot (and every other animation/transition, plus smooth scrolling) stops. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: -1ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}

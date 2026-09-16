@@ -11,6 +11,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
+import { PARISH_ADDRESS_AR } from "@/lib/constants";
+
+// The footer's labels are deliberately Arabic literals, not `t()` calls: it renders inside the static
+// root layout, which cannot read the locale cookie, so it has no locale to resolve messages against.
 
 export function Footer() {
   return (
@@ -50,6 +54,11 @@ export function Footer() {
               <li>
                 <Link href="/masses" className="hover:text-copticGold-300 transition-colors">
                   جداول القداسات الإلهية والعشيات
+                </Link>
+              </li>
+              <li>
+                <Link href="/events" className="hover:text-copticGold-300 transition-colors">
+                  الفعاليات والمناسبات القادمة
                 </Link>
               </li>
               <li>
@@ -107,6 +116,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/ministries" className="hover:text-copticGold-300 transition-colors">
+                  القطاعات والخدمات الرعوية
+                </Link>
+              </li>
+              <li>
                 <Link href="/education" className="hover:text-copticGold-300 transition-colors">
                   المدارس الكنسية ومعهد الشمامسة
                 </Link>
@@ -131,7 +145,7 @@ export function Footer() {
             </h4>
             <div className="flex items-start gap-2.5 text-xs">
               <MapPin className="w-4 h-4 text-copticGold-400 shrink-0 mt-0.5" />
-              <span>شارع 45 بحري — العصافرة، حي ثان المنتزه، الإسكندرية</span>
+              <span>{PARISH_ADDRESS_AR}</span>
             </div>
             <div className="flex items-center gap-2.5 text-xs">
               <Phone className="w-4 h-4 text-copticGold-400 shrink-0" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -19,6 +19,10 @@ import {
   Users,
 } from "lucide-react";
 import { FontSizeSwitcher } from "@/components/ui/FontSizeSwitcher";
+import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
+import { applyDocumentLocale, readLocaleCookie } from "@/lib/i18n/dom";
+import { t } from "@/lib/i18n/messages";
 import { getCopticDateString } from "@/lib/utils/coptic-date";
 
 export function Header() {
@@ -26,6 +30,18 @@ export function Header() {
   const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
   const pathname = usePathname();
   const copticDate = getCopticDateString();
+
+  // The ROOT LAYOUT is deliberately static (the portal is static-first and it must not read cookies),
+  // so the visitor's locale cannot be resolved on the server here. It is resolved on the client
+  // instead — once, on mount — and applied to the document element so `lang`/`dir` agree with the
+  // cookie the localized pages read server-side.
+  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
+
+  useEffect(() => {
+    const resolved = readLocaleCookie();
+    setLocale(resolved);
+    applyDocumentLocale(resolved);
+  }, []);
 
   const navLinks = [
     { href: "/", label: "الرئيسية" },
@@ -38,8 +54,10 @@ export function Header() {
       ],
     },
     { href: "/masses", label: "مواعيد القداسات" },
+    { href: "/events", label: t(locale, "nav.events") },
     { href: "/clinics", label: "المستوصف الطبي" },
     { href: "/meetings", label: "التربية الكنسية" },
+    { href: "/ministries", label: t(locale, "nav.ministries") },
     { href: "/education", label: "المدارس والمعاهد" },
     { href: "/activities", label: "الأنشطة الرعوية" },
     { href: "/services", label: "خدمات الكنيسة" },
@@ -67,6 +85,8 @@ export function Header() {
               <span>إيبارشية شرق الإسكندرية — قطاع المنتزه</span>
             </div>
             <div className="flex items-center gap-2">
+              {/* Mounted here (top bar, every viewport) rather than in the desktop-only nav row. */}
+              <LocaleSwitcher locale={locale} />
               <FontSizeSwitcher className="scale-90" />
               <Link
                 href="/donations"

@@ -17,7 +17,8 @@ export type ServerEnvVar =
   | "SUPABASE_SERVICE_ROLE_KEY"
   | "TURNSTILE_SECRET_KEY"
   | "NEXT_PUBLIC_TURNSTILE_SITE_KEY"
-  | "NEXT_PUBLIC_YOUTUBE_CHANNEL_URL";
+  | "NEXT_PUBLIC_YOUTUBE_CHANNEL_URL"
+  | "NEXT_PUBLIC_SITE_URL";
 
 export class MissingEnvVarError extends Error {
   readonly variable: string;
@@ -104,4 +105,19 @@ export function getTurnstileSiteKey(): string | null {
  */
 export function getYoutubeChannelUrl(): string | null {
   return readEnv("NEXT_PUBLIC_YOUTUBE_CHANNEL_URL");
+}
+
+/** Canonical public origin, without a trailing slash. Falls back to localhost so the sitemap/robots routes still build with no environment. */
+export const DEFAULT_SITE_URL = "http://localhost:3000";
+
+/**
+ * The site's canonical origin, e.g. `https://stmaximus.example` — the base of every absolute URL the
+ * portal publishes (sitemap entries, `robots.txt`, JSON-LD `url`/`@id`).
+ *
+ * Read lazily like every other variable here: with no environment at all the portal still builds and
+ * serves, so the fallback is a working local origin rather than a thrown error. A trailing slash is
+ * stripped so callers can always concatenate a path beginning with "/".
+ */
+export function getSiteUrl(): string {
+  return readEnv("NEXT_PUBLIC_SITE_URL")?.replace(/\/+$/, "") ?? DEFAULT_SITE_URL;
 }

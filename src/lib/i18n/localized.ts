@@ -60,7 +60,8 @@ export function localized(
   return emptyFallback ?? (marker || "");
 }
 
-/**
- * The same decision for rows shaped like the database (`title_ar` / `title_en` columns), so a
- * caller never has to build the `LocalizedText` object by hand.
- */
+/** True when `locale` has real text in `value` (i.e. the visible fallback marker would NOT be shown). */
+export function hasLocalizedText(value: LocalizedText | null | undefined, locale: Locale): boolean {
+  const requested = locale === DEFAULT_LOCALE ? value?.ar : value?.en;
+  return !isBlank(requested);
+}

@@ -20,11 +20,12 @@ export const EVENT_SURFACE_TAGS = [
 ] as const;
 
 /**
- * Public paths that render events. The home page is currently the only live one; the dedicated
- * `/events` routes of the next step are added HERE, which is what keeps a mutation from forgetting
- * a surface.
+ * Public paths that render events. The home page, the events list/calendar, the event detail route
+ * and the ministries index are all live; `/events/[slug]` is listed as the dynamic-route PATTERN,
+ * which is what `revalidatePath(path, "page")` expands over every generated slug. A new public
+ * surface must be added HERE, which is what keeps a mutation from forgetting one.
  */
-export const EVENT_SURFACE_PATHS = ["/"] as const;
+export const EVENT_SURFACE_PATHS = ["/", "/events", "/events/[slug]", "/ministries"] as const;
 
 /** Invalidates the events tags (and any extra paths); returns what was invalidated. */
 export function revalidateEventSurfaces(paths: readonly string[] = EVENT_SURFACE_PATHS): string[] {
@@ -32,7 +33,9 @@ export function revalidateEventSurfaces(paths: readonly string[] = EVENT_SURFACE
     revalidateTag(tag);
   }
   for (const path of paths) {
-    revalidatePath(path);
+    // The `"page"` type is what invalidates a whole dynamic route pattern such as `/events/[slug]`;
+    // it is equally valid (and equivalent) for the plain paths alongside it.
+    revalidatePath(path, "page");
   }
   return [...EVENT_SURFACE_TAGS, ...paths];
 }
