@@ -1,7 +1,10 @@
 name: CI
 
-# Hard gates: type-check + production build. Both MUST stay green — the portal is required to build
-# with NO environment variables set (seed data covers the no-database case).
+# Hard gates: type-check + unit tests + production build. All three MUST stay green — the portal is
+# required to build with NO environment variables set (seed data covers the no-database case), and the
+# test suite proves the pure core still behaves (recurrence, capabilities, filters, subscribers, the
+# file-backed store, iCal and the Coptic calendar). The suite needs no environment either: store tests
+# point CHURCH_DATA_DIR at a temporary directory of their own.
 # Informational (non-blocking): dependency audit and ESLint.
 
 on:
@@ -17,7 +20,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Type-check, build, audit & lint
+    name: Type-check, test, build, audit & lint
     runs-on: ubuntu-latest
 
     steps:
@@ -59,6 +62,9 @@ jobs:
 
       - name: Type-check
         run: pnpm exec tsc --noEmit
+
+      - name: Unit tests
+        run: pnpm test
 
       - name: Build
         run: pnpm run build
