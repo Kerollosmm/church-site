@@ -22,7 +22,7 @@ export default async function ClergyPage() {
         englishTitle="Parish Clergy & Pastoral Care"
         description="كهنة الكنيسة المباركون، رعاتنا الروحيون ومواعيد المقابلات وجلسات سر الاعتراف المقدس."
         breadcrumbs={[
-          { label: "عن الكنيسة", href: "/about/history" },
+          { label: "عن الكنيسة", href: "/about" },
           { label: "مجمع الكهنة" },
         ]}
         icon={<Users className="w-8 h-8 text-copticGold-300" />}

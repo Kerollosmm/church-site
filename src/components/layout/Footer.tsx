@@ -43,6 +43,12 @@ export function Footer() {
               <ShieldCheck className="w-4 h-4 text-copticGold-400 shrink-0" />
               <span>موقع عام متاح للجميع بدون أي تسجيل دخول مسبق</span>
             </div>
+            <Link
+              href="/about"
+              className="inline-flex items-center text-xs font-bold text-copticGold-300 hover:text-white transition-colors"
+            >
+              نبذة عن الكنيسة ورسالتها وخدمتها
+            </Link>
           </div>
 
           {/* Liturgical & Spiritual */}
@@ -82,8 +88,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/sermons" className="hover:text-copticGold-300 transition-colors">
+                  العظات والتسجيلات الروحية
+                </Link>
+              </li>
+              <li>
                 <Link href="/bible" className="hover:text-copticGold-300 transition-colors">
                   الكتاب المقدس والأسفار القانونية
+                </Link>
+              </li>
+              <li>
+                <Link href="/gallery" className="hover:text-copticGold-300 transition-colors">
+                  معرض صور الكنيسة والمناسبات
                 </Link>
               </li>
             </ul>
@@ -169,11 +185,13 @@ export function Footer() {
 
         <div className="border-t border-copticNavy-800 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <p>© {new Date().getFullYear()} كنيسة القديسين مكسيموس ودوماديوس والأنبا موسى الأسود بالعصافرة. جميع الحقوق محفوظة بركة صلواتهم تشملنا جميعاً.</p>
-          <div className="flex items-center gap-4">
-            <Link href="/about/history" className="hover:text-copticGold-400">عن الكنيسة</Link>
-            <span>•</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <Link href="/about" className="hover:text-copticGold-400">عن الكنيسة</Link>
+            <span aria-hidden="true">•</span>
+            <Link href="/privacy" className="hover:text-copticGold-400">سياسة الخصوصية</Link>
+            <span aria-hidden="true">•</span>
             <Link href="/donations" className="hover:text-copticGold-400">حسابات التبرع</Link>
-            <span>•</span>
+            <span aria-hidden="true">•</span>
             <Link href="/admin" className="hover:text-copticGold-400">بوابة الإدارة</Link>
           </div>
         </div>

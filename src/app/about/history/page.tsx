@@ -44,7 +44,7 @@ export default function HistoryPage() {
         englishTitle="Parish History & Patron Saints"
         description="تاريخ كنيستنا العريق في العصافرة، وسير الشفعاء الأطهار القديسين مكسيموس ودوماديوس والشهيد القوي الأنبا موسى الأسود."
         breadcrumbs={[
-          { label: "عن الكنيسة", href: "/about/history" },
+          { label: "عن الكنيسة", href: "/about" },
           { label: "تاريخ الكنيسة" },
         ]}
         icon={<ScrollText className="w-8 h-8 text-copticGold-300" />}

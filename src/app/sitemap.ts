@@ -30,6 +30,7 @@ interface StaticRoute {
  */
 const STATIC_ROUTES: readonly StaticRoute[] = [
   { path: "/", changeFrequency: "daily", priority: 1 },
+  { path: "/about", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about/history", changeFrequency: "monthly", priority: 0.6 },
   { path: "/about/altars", changeFrequency: "monthly", priority: 0.6 },
   { path: "/about/clergy", changeFrequency: "monthly", priority: 0.6 },
@@ -43,11 +44,15 @@ const STATIC_ROUTES: readonly StaticRoute[] = [
   { path: "/condolence", changeFrequency: "monthly", priority: 0.6 },
   { path: "/condolence/track", changeFrequency: "monthly", priority: 0.5 },
   { path: "/live", changeFrequency: "daily", priority: 0.7 },
+  { path: "/sermons", changeFrequency: "weekly", priority: 0.6 },
+  { path: "/gallery", changeFrequency: "weekly", priority: 0.6 },
   { path: "/bible", changeFrequency: "monthly", priority: 0.6 },
   { path: "/donations", changeFrequency: "monthly", priority: 0.6 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },
   { path: "/events", changeFrequency: "daily", priority: 0.8 },
   { path: "/ministries", changeFrequency: "monthly", priority: 0.6 },
+  // A policy page changes only when what the site stores changes: crawled rarely, listed honestly.
+  { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

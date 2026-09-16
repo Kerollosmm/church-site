@@ -529,3 +529,51 @@ export async function getPublishedEventBySlug(
 
   return buildEventItem(event, indexTerms(terms));
 }
+
+// ============================================================================
+// 7. The public media library (the gallery surface)
+// ============================================================================
+
+/**
+ * One archived file as a PUBLIC surface may show it.
+ *
+ * The driver's `MediaRecord` also carries `uploadedBy`, `sizeBytes` and the `isPublic` flag; none of
+ * those leaves the server. A gallery card needs a caption, a name and a link — nothing else — so the
+ * public view is deliberately narrower than the record. Dropping `uploadedBy` here is what keeps a
+ * staff account id out of a visitor's markup even if a page rendered every field it received.
+ */
+export interface PublicMediaView {
+  id: string;
+  filename: string;
+  url: string;
+  mimeType: string;
+  altAr: string | null;
+  altEn: string | null;
+}
+
+/**
+ * The parish's PUBLIC media: every row staff marked `isPublic`.
+ *
+ * WHY IT LIVES IN THIS MODULE: `feed.ts` is the events module that reads the repository for public
+ * surfaces (see the header), so a second public reader belongs beside the feed rather than opening a
+ * second door to the store.
+ *
+ * `publicOnly: true` is not a display preference: the repository filters it in the QUERY, so a file
+ * marked internal cannot reach a visitor even if a page forgot to filter.
+ *
+ * WHAT IT IS NOT: these are METADATA rows. The project stores no file bytes and hosts no image files
+ * (see `src/lib/store/seed.ts`, which seeds no media on purpose), so a caller must never assume that
+ * `url` resolves to a servable file — the gallery renders a link, not a picture.
+ */
+export async function getPublicGalleryMedia(): Promise<PublicMediaView[]> {
+  const media = await getEventRepository().listMedia({ publicOnly: true });
+
+  return media.map((item) => ({
+    id: item.id,
+    filename: item.filename,
+    url: item.url,
+    mimeType: item.mimeType,
+    altAr: item.altAr,
+    altEn: item.altEn,
+  }));
+}

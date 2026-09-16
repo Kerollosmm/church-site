@@ -48,6 +48,7 @@ export function Header() {
     {
       label: "عن الكنيسة",
       children: [
+        { href: "/about", label: t(locale, "nav.about") },
         { href: "/about/history", label: "تاريخ الكنيسة والشفعاء" },
         { href: "/about/altars", label: "المذابح الثلاثة والمزارات" },
         { href: "/about/clergy", label: "مجمع الآباء الكهنة" },
@@ -66,6 +67,18 @@ export function Header() {
     { href: "/bible", label: "الكتاب المقدس" },
     { href: "/donations", label: "التبرعات" },
     { href: "/contact", label: "اتصل بنا" },
+  ];
+
+  /**
+   * The parish's media and policy pages, shown in the MOBILE DRAWER (and linked from the footer for
+   * every viewport) rather than added to the desktop row: the horizontal nav already carries fifteen
+   * items, and two more would push the row past the `xl` breakpoint it is laid out for. Reachability
+   * is what matters — every one of these routes is also linked from the footer's own columns.
+   */
+  const secondaryNavLinks = [
+    { href: "/gallery", label: t(locale, "nav.gallery") },
+    { href: "/sermons", label: t(locale, "nav.sermons") },
+    { href: "/privacy", label: t(locale, "nav.privacy") },
   ];
 
   return (
@@ -247,6 +260,24 @@ export function Header() {
               </Link>
             );
           })}
+
+          {/* Media and policy pages — see the note on `secondaryNavLinks` above. */}
+          <div className="border-t border-copticGold-100 pt-2">
+            {secondaryNavLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === item.href
+                    ? "bg-copticNavy text-white font-bold"
+                    : "text-slateText-primary hover:bg-copticGold-50"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </header>

@@ -21,7 +21,7 @@ export default async function AltarsPage() {
         englishTitle="The Three Consecrated Altars & Relics"
         description="المذابح المقدسة المدشنة بزيت الميرون الغالي، وتفاصيل استخداماتها الطقسية في القداسات الإلهية والأعياد السيدية."
         breadcrumbs={[
-          { label: "عن الكنيسة", href: "/about/history" },
+          { label: "عن الكنيسة", href: "/about" },
           { label: "المذابح الثلاثة" },
         ]}
         icon={<Church className="w-8 h-8 text-copticGold-300" />}
