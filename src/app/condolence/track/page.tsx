@@ -2,6 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
+import { BOOKING_REFERENCE_PREFIX } from "@/lib/domain/booking-reference";
 import { Search, ChevronLeft, PhoneCall } from "lucide-react";
 import { ReservationTrackingCard } from "./ReservationTrackingCard";
 
@@ -37,7 +38,8 @@ export default async function CondolenceTrackPage({ searchParams }: Props) {
               الاستعلام برمز الحجز المرجعي
             </h3>
             <p className="text-xs text-slateText-secondary mt-1">
-              الرمز المرجعي يتكون من حروف وأرقام ويبدأ بـ COND (تم عرضه عند إتمام طلب الحجز).
+              الرمز المرجعي يتكون من حروف وأرقام ويبدأ بـ {BOOKING_REFERENCE_PREFIX} (تم عرضه عند
+              إتمام طلب الحجز).
             </p>
           </div>
 

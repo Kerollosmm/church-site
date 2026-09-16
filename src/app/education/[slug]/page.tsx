@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { GraduationCap, BookOpen, Clock, UserCheck, ChevronLeft } from "lucide-react";
 import { getSchoolBySlug, SEED_SCHOOLS } from "@/lib/queries";
+import { isProgramSlug } from "@/lib/validations/church-schemas";
 import { EducationEnrollmentForm } from "./EducationEnrollmentForm";
 
 export const revalidate = 86400;
@@ -31,7 +32,10 @@ export default async function SchoolDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const school = await getSchoolBySlug(slug);
 
-  if (!school) {
+  // Only programmes that accept online enrolment have a detail page: an unknown or
+  // non-enrolable slug (e.g. a row added straight to the database) 404s instead of
+  // silently enrolling the applicant in a different programme.
+  if (!school || !isProgramSlug(school.slug)) {
     notFound();
   }
 

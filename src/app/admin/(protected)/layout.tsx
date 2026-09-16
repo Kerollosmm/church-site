@@ -6,15 +6,36 @@ import {
   HeartHandshake,
   Stethoscope,
   Globe,
-  ShieldAlert,
   Church,
+  LogOut,
+  ShieldCheck,
 } from "lucide-react";
+import { requireStaff } from "@/lib/auth/require-staff";
+import { signOut } from "@/actions/auth-actions";
+import { ROLE_LABELS_AR } from "@/lib/auth/roles";
 
-export default function AdminLayout({
+/**
+ * Administrative shell.
+ *
+ * The authorization check runs here, at the top of the protected route group, in addition to
+ * `src/middleware.ts` — server-side checks must never rely on middleware alone. The sign-in
+ * page lives outside this group (`src/app/admin/login`) so it cannot inherit the guard.
+ *
+ * The segment is explicitly DYNAMIC: the guard reads the session on every request, and without
+ * this the no-env build would prerender the fail-closed `redirect("/admin/login")` as a static
+ * 307 for the whole area — a signed-in member of staff would then be bounced back to the sign-in
+ * page forever, because the redirect would be served from the build output instead of being
+ * re-evaluated per request.
+ */
+export const dynamic = "force-dynamic";
+
+export default async function AdminProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const staff = await requireStaff();
+
   const adminNav = [
     { href: "/admin", label: "لوحة التحكم", icon: LayoutDashboard },
     { href: "/admin/masses", label: "إدارة القداسات", icon: Calendar },
@@ -55,6 +76,29 @@ export default function AdminLayout({
         </div>
 
         <div className="pt-6 border-t border-copticNavy-800 mt-6 space-y-3">
+          <div className="bg-copticNavy-900/70 rounded-xl p-3 space-y-1">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-copticGold-300">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{ROLE_LABELS_AR[staff.role]}</span>
+            </div>
+            <p className="text-[11px] text-slate-200 truncate">{staff.fullNameAr}</p>
+            {staff.email && (
+              <p className="text-[10px] text-slate-400 font-english truncate" dir="ltr">
+                {staff.email}
+              </p>
+            )}
+          </div>
+
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="w-full flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white bg-copticNavy-900 hover:bg-copticNavy-800 px-3 py-2 rounded-xl transition"
+            >
+              <LogOut className="w-4 h-4 text-copticGold-400" />
+              <span>تسجيل الخروج</span>
+            </button>
+          </form>
+
           <Link
             href="/"
             className="flex items-center gap-2 text-xs text-copticGold-300 hover:text-white transition"

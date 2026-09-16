@@ -1061,6 +1061,7 @@ graph LR
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | مفتاح موقع Cloudflare Turnstile |
 | `TURNSTILE_SECRET_KEY` | مفتاح سري للتحقق الخادمي |
 | `NEXT_PUBLIC_SITE_URL` | النطاق الرسمي (Canonical + Sitemap) |
+| `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` *(اختياري)* | رابط قناة البث الرسمية المعتمدة. عند غيابه تعرض `/live` حالة «لم تُضبط القناة بعد» بلا رابط مُخترع ولا بث وهمي. |
 | `YOUTUBE_API_KEY` *(اختياري Phase 2)* | فحص حالة البث آلياً |
 
 ### 9.2 الحماية من الإساءة

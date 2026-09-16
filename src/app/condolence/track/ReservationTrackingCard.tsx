@@ -2,27 +2,23 @@
 
 import React, { useState } from "react";
 import { trackBooking } from "@/actions/condolence-actions";
+import {
+  BOOKING_REFERENCE_PLACEHOLDER,
+  normalizeBookingReference,
+} from "@/lib/domain/booking-reference";
 import { Search, Loader2, CheckCircle2, Clock, XCircle, AlertCircle, Building2, Calendar } from "lucide-react";
 
 interface Props {
   initialCode?: string;
 }
 
+/** Result shape is derived from the Server Action so the two can never drift apart. */
+type TrackBookingResult = Awaited<ReturnType<typeof trackBooking>>;
+
 export function ReservationTrackingCard({ initialCode = "" }: Props) {
   const [code, setCode] = useState(initialCode);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{
-    success: boolean;
-    booking?: {
-      booking_reference_code: string;
-      event_date: string;
-      slot_time: string;
-      hall_name: string;
-      status: "pending" | "approved" | "rejected";
-      rejection_reason?: string | null;
-    };
-    message?: string;
-  } | null>(null);
+  const [result, setResult] = useState<TrackBookingResult | null>(null);
 
   const handleTrack = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -32,7 +28,7 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
     setResult(null);
 
     try {
-      const res = await trackBooking(code.trim());
+      const res = await trackBooking(normalizeBookingReference(code));
       setResult(res);
     } catch {
       setResult({
@@ -51,9 +47,9 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
           <Search className="w-4 h-4 text-copticGold-700 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="أدخل رمز الحجز المرجعي (مثال: COND-XXXXXX)"
+            placeholder={`أدخل رمز الحجز المرجعي (مثال: ${BOOKING_REFERENCE_PLACEHOLDER})`}
             value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            onChange={(e) => setCode(normalizeBookingReference(e.target.value))}
             className="w-full bg-copticGold-50/50 border border-copticGold-300 rounded-xl pr-10 pl-4 py-2.5 text-xs sm:text-sm font-english text-copticNavy font-bold focus:outline-hidden focus:ring-2 focus:ring-copticNavy"
           />
         </div>
@@ -111,6 +107,12 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
                       <span className="inline-flex items-center gap-1.5 bg-red-100 text-red-900 border border-red-300 text-xs font-bold px-3 py-1 rounded-full">
                         <XCircle className="w-4 h-4 text-red-600" />
                         <span>تعذر قبول الحجز</span>
+                      </span>
+                    )}
+                    {result.booking.status === "cancelled" && (
+                      <span className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold px-3 py-1 rounded-full">
+                        <XCircle className="w-4 h-4 text-slate-500" />
+                        <span>تم إلغاء الحجز</span>
                       </span>
                     )}
                   </div>

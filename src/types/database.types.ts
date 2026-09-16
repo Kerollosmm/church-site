@@ -73,6 +73,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       altars: {
         Row: {
@@ -117,6 +118,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       clergy: {
         Row: {
@@ -179,6 +181,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       mass_schedules: {
         Row: {
@@ -228,6 +231,22 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "mass_schedules_altar_id_fkey";
+            columns: ["altar_id"];
+            isOneToOne: false;
+            referencedRelation: "altars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mass_schedules_celebrant_priest_id_fkey";
+            columns: ["celebrant_priest_id"];
+            isOneToOne: false;
+            referencedRelation: "clergy";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       clinic_specialties: {
         Row: {
@@ -271,6 +290,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       church_meetings: {
         Row: {
@@ -345,6 +365,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "church_meetings_supervising_priest_id_fkey";
+            columns: ["supervising_priest_id"];
+            isOneToOne: false;
+            referencedRelation: "clergy";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       schools_academies: {
         Row: {
@@ -399,6 +428,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       activities: {
         Row: {
@@ -448,6 +478,7 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       public_services: {
         Row: {
@@ -496,6 +527,7 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       condolence_bookings: {
         Row: {
@@ -552,6 +584,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "condolence_bookings_approved_by_priest_id_fkey";
+            columns: ["approved_by_priest_id"];
+            isOneToOne: false;
+            referencedRelation: "clergy";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       contact_messages: {
         Row: {
@@ -590,6 +631,15 @@ export interface Database {
           admin_response_notes?: string | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "contact_messages_assigned_priest_id_fkey";
+            columns: ["assigned_priest_id"];
+            isOneToOne: false;
+            referencedRelation: "clergy";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       news_articles: {
         Row: {
@@ -635,6 +685,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       donation_accounts: {
         Row: {
@@ -676,6 +727,7 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       mass_exceptions: {
         Row: {
@@ -720,6 +772,29 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "mass_exceptions_altar_id_fkey";
+            columns: ["altar_id"];
+            isOneToOne: false;
+            referencedRelation: "altars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mass_exceptions_original_schedule_id_fkey";
+            columns: ["original_schedule_id"];
+            isOneToOne: false;
+            referencedRelation: "mass_schedules";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mass_exceptions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       site_alerts: {
         Row: {
@@ -755,6 +830,15 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "site_alerts_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       stream_events: {
         Row: {
@@ -790,6 +874,7 @@ export interface Database {
           is_archived?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       program_applications: {
         Row: {
@@ -837,6 +922,7 @@ export interface Database {
           admin_notes?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       job_applications: {
         Row: {
@@ -875,6 +961,7 @@ export interface Database {
           status?: ApplicationStatusEnum;
           created_at?: string;
         };
+        Relationships: [];
       };
       clinic_alert_subscriptions: {
         Row: {
@@ -898,6 +985,15 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "clinic_alert_subscriptions_specialty_id_fkey";
+            columns: ["specialty_id"];
+            isOneToOne: false;
+            referencedRelation: "clinic_specialties";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       bible_books: {
         Row: {
@@ -930,6 +1026,7 @@ export interface Database {
           chapters_count?: number;
           slug?: string;
         };
+        Relationships: [];
       };
       bible_verses: {
         Row: {
@@ -956,6 +1053,15 @@ export interface Database {
           text_ar?: string;
           text_normalized?: string | null;
         };
+        Relationships: [
+          {
+            foreignKeyName: "bible_verses_book_id_fkey";
+            columns: ["book_id"];
+            isOneToOne: false;
+            referencedRelation: "bible_books";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {

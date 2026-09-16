@@ -1,20 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Search,
-  Building2,
-  CheckCircle2,
-  Layers,
-  Stethoscope,
-} from "lucide-react";
-import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
+import { Search, Building2, CheckCircle2, Layers, Stethoscope, Info } from "lucide-react";
 import { CLINIC_CONSULTATION_FEE_LABEL } from "@/lib/constants";
+import type { Tables } from "@/types/database.types";
 
-export default function AdminClinicsPage() {
+export interface AdminClinicsGridProps {
+  /** Specialties from `getClinicSpecialties()` (database when configured, seed otherwise). */
+  specialties: Tables<"clinic_specialties">[];
+}
+
+export function AdminClinicsGrid({ specialties }: AdminClinicsGridProps) {
   const [search, setSearch] = useState("");
 
-  const filtered = SEED_CLINIC_SPECIALTIES.filter((spec) => {
+  const filtered = specialties.filter((spec) => {
     if (!search.trim()) return true;
     const term = search.trim().toLowerCase();
     return (
@@ -33,7 +32,7 @@ export default function AdminClinicsPage() {
             <span>إدارة عيادات وتخصصات المستوصف الطبي الخيري</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            دليل العيادات التخصصية الـ {SEED_CLINIC_SPECIALTIES.length} المجهزة بمبنى الخدمات، أرقام الغرف وحالة الخدمة.
+            دليل العيادات التخصصية الـ {specialties.length} المجهزة بمبنى الخدمات، أرقام الغرف وحالة الخدمة.
           </p>
         </div>
 
@@ -51,15 +50,30 @@ export default function AdminClinicsPage() {
         </div>
       </div>
 
+      {/* Editing is deliberately absent: this screen is READ-ONLY for now. */}
+      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900">
+        <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
+        <p className="leading-relaxed">
+          هذه الشاشة للعرض فقط: تُقرأ التخصصات الفعلية من قاعدة البيانات (أو من بيانات البذر عند عدم
+          تهيئتها)، ولم تُنفَّذ بعد إجراءات إضافة أو تعديل بيانات العيادات.
+        </p>
+      </div>
+
       <div className="flex items-center justify-between text-xs text-slate-500 px-1">
         <span>
           عرض <strong className="text-copticNavy">{filtered.length}</strong> من أصل{" "}
-          <strong>{SEED_CLINIC_SPECIALTIES.length}</strong> عيادة تخصصية
+          <strong>{specialties.length}</strong> عيادة تخصصية
         </span>
       </div>
 
       {/* Specialties Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.length === 0 && (
+          <p className="col-span-full bg-white rounded-3xl p-8 border border-slate-200 text-center text-xs text-slate-500">
+            لا توجد عيادات مطابقة للبحث الحالي.
+          </p>
+        )}
+
         {filtered.map((spec) => (
           <div
             key={spec.id}

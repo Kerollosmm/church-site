@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { CondolenceBookingSchema, CondolenceBookingInput } from "@/lib/validations/church-schemas";
 import { submitCondolenceBooking } from "@/actions/condolence-actions";
+import { TurnstileWidget } from "@/components/security/TurnstileWidget";
 import { CheckCircle2, AlertCircle, Send, Loader2, Search } from "lucide-react";
 
 export function CondolenceBookingForm() {
@@ -14,11 +15,14 @@ export function CondolenceBookingForm() {
     bookingCode?: string;
     message?: string;
   } | null>(null);
+  // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CondolenceBookingInput>({
     resolver: zodResolver(CondolenceBookingSchema),
@@ -31,7 +35,7 @@ export function CondolenceBookingForm() {
       slotTime: "مسائي من 6:00 م إلى 10:00 م",
       hallName: "قاعة العزاء الرئيسية المجهزة",
       specialRequests: "",
-      turnstileToken: "mock-bypass-token",
+      turnstileToken: "",
     },
   });
 
@@ -53,6 +57,8 @@ export function CondolenceBookingForm() {
         success: false,
         message: "تعذر إرسال طلب الحجز، يرجى التواصل مع سكرتارية الكنيسة",
       });
+    } finally {
+      setTurnstileResetSignal((signal) => signal + 1);
     }
   };
 
@@ -99,8 +105,6 @@ export function CondolenceBookingForm() {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <input type="hidden" {...register("turnstileToken")} value="mock-bypass-token" />
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-copticNavy mb-1">
@@ -212,6 +216,11 @@ export function CondolenceBookingForm() {
             className="w-full bg-copticGold-50/50 border border-copticGold-300 rounded-xl p-3 text-xs text-copticNavy focus:outline-hidden focus:ring-2 focus:ring-copticNavy"
           />
         </div>
+
+        <TurnstileWidget
+          onVerify={(token) => setValue("turnstileToken", token)}
+          resetSignal={turnstileResetSignal}
+        />
 
         <button
           type="submit"

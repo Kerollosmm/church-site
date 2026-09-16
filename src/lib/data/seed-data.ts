@@ -115,10 +115,17 @@ export const SEED_CLERGY: Tables<"clergy">[] = [
   },
 ];
 
-export const SEED_MASS_SCHEDULES: (Tables<"mass_schedules"> & {
-  altar?: Pick<Tables<"altars">, "id" | "name_ar" | "name_en">;
-  celebrant?: Pick<Tables<"clergy">, "id" | "clerical_name_ar" | "rank_title_ar"> | null;
-})[] = [
+/**
+ * A weekly liturgy joined with the altar it is served on and the priest celebrating it.
+ * This is the shape BOTH sides of `getWeeklyMasses()` return — the seeded rows below and the
+ * database rows from the same embedded select — so consumers never branch on their origin.
+ */
+export type WeeklyMassRow = Tables<"mass_schedules"> & {
+  altar: Pick<Tables<"altars">, "id" | "name_ar" | "name_en"> | null;
+  celebrant: Pick<Tables<"clergy">, "id" | "clerical_name_ar" | "rank_title_ar"> | null;
+};
+
+export const SEED_MASS_SCHEDULES: WeeklyMassRow[] = [
   {
     id: "m0000000-0000-0000-0000-000000000001",
     altar_id: "a0000000-0000-0000-0000-000000000001",
@@ -698,7 +705,24 @@ export const SEED_CHURCH_MEETINGS: Tables<"church_meetings">[] = [
   },
 ];
 
-export const SEED_SCHOOLS: Tables<"schools_academies">[] = [
+/**
+ * Canonical allow-list of programmes that accept ONLINE enrolment: the `slug` values of
+ * `SEED_SCHOOLS` below. `ProgramApplicationSchema` derives its enum from this tuple, and the
+ * seed rows are typed with it, so a programme can never be added to the register without also
+ * becoming enrolable (and vice versa). `summer-club` and `educational-center` are an activity
+ * and a public service respectively — they are not enrolment programmes.
+ */
+export const SEED_PROGRAM_SLUGS = [
+  "deacon-school",
+  "adult-bible",
+  "karouz-academy",
+  "cithara-choir",
+  "children-bible",
+] as const;
+
+export type SeedProgramSlug = (typeof SEED_PROGRAM_SLUGS)[number];
+
+export const SEED_SCHOOLS: (Tables<"schools_academies"> & { slug: SeedProgramSlug })[] = [
   {
     id: "sch00000-0000-0000-0000-000000000001",
     name_ar: "مدرسة القديس إستفانوس للشمامسة",
@@ -1122,12 +1146,16 @@ export const SEED_NEWS_ARTICLES: Tables<"news_articles">[] = [
   },
 ];
 
+// NOTE: `stream_url` is intentionally EMPTY in the seeded baseline — no parish channel or embed
+// URL has been approved for publication. The secretariat sets the real embed URL when a broadcast
+// is scheduled, and `/live` renders an explicit "not configured yet" state while it is empty
+// instead of a broken or placeholder player. Never seed a stand-in video id here.
 export const SEED_STREAM_EVENTS: Tables<"stream_events">[] = [
   {
     id: "str00000-0000-0000-0000-000000000001",
     title_ar: "بث مباشر: صلوات القداس الإلهي لأحد الصباح",
     platform: "youtube",
-    stream_url: "https://www.youtube.com/embed/live_stream?channel=SAMPLE_CHURCH_CHANNEL",
+    stream_url: "",
     starts_at: "2026-09-20T06:00:00Z",
     ends_at: "2026-09-20T08:30:00Z",
     status: "scheduled",
@@ -1138,7 +1166,7 @@ export const SEED_STREAM_EVENTS: Tables<"stream_events">[] = [
     id: "str00000-0000-0000-0000-000000000002",
     title_ar: "تسجيل قداس عيد القديسين مكسيموس ودوماديوس",
     platform: "youtube",
-    stream_url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    stream_url: "",
     starts_at: "2026-01-25T07:00:00Z",
     ends_at: "2026-01-25T10:30:00Z",
     status: "completed",
@@ -1174,53 +1202,108 @@ export const SEED_SITE_ALERTS: Tables<"site_alerts">[] = [
   },
 ];
 
+/**
+ * Deterministic id for a canonical book: `b0000000-0000-0000-0000-<canonical_order>`.
+ * Deriving it from the canonical order instead of hand-writing UUIDs is what makes the book list
+ * and the `book_id` references in `SEED_BIBLE_VERSES` incapable of disagreeing.
+ */
+const bibleBookId = (canonicalOrder: number): string =>
+  `b0000000-0000-0000-0000-${String(canonicalOrder).padStart(12, "0")}`;
+
+/**
+ * The complete Orthodox canon: 46 books of the Old Testament (including the seven
+ * deuterocanonical books) followed by the 27 books of the New Testament — 73 in total.
+ *
+ * THIS IS THE SINGLE SOURCE OF TRUTH for the canon. `getBibleBooks()` reads `bible_books` and
+ * falls back to this list, the `/bible` reader renders this list, and every count shown to the
+ * user (73 / 46 / 27) is derived from it, so the numbers cannot drift apart.
+ *
+ * Not included here: the scripture text itself (Van Dyck + the deuterocanonical books), which is
+ * a separate publishing step — see `SEED_BIBLE_VERSES` for the verses seeded so far.
+ */
 export const SEED_BIBLE_BOOKS: Tables<"bible_books">[] = [
-  {
-    id: "b0000000-0000-0000-0000-000000000001",
-    canonical_order: 1,
-    name_ar: "التكوين",
-    name_en: "Genesis",
-    testament: "old",
-    is_deuterocanonical: false,
-    chapters_count: 50,
-    slug: "genesis",
-  },
-  {
-    id: "b0000000-0000-0000-0000-000000000019",
-    canonical_order: 19,
-    name_ar: "المزامير",
-    name_en: "Psalms",
-    testament: "old",
-    is_deuterocanonical: false,
-    chapters_count: 151,
-    slug: "psalms",
-  },
-  {
-    id: "b0000000-0000-0000-0000-000000000040",
-    canonical_order: 40,
-    name_ar: "إنجيل متى",
-    name_en: "Matthew",
-    testament: "new",
-    is_deuterocanonical: false,
-    chapters_count: 28,
-    slug: "matthew",
-  },
-  {
-    id: "b0000000-0000-0000-0000-000000000043",
-    canonical_order: 43,
-    name_ar: "إنجيل يوحنا",
-    name_en: "John",
-    testament: "new",
-    is_deuterocanonical: false,
-    chapters_count: 21,
-    slug: "john",
-  },
+  // ---- Old Testament (46) ----
+  { id: bibleBookId(1), canonical_order: 1, name_ar: "التكوين", name_en: "Genesis", testament: "old", is_deuterocanonical: false, chapters_count: 50, slug: "genesis" },
+  { id: bibleBookId(2), canonical_order: 2, name_ar: "الخروج", name_en: "Exodus", testament: "old", is_deuterocanonical: false, chapters_count: 40, slug: "exodus" },
+  { id: bibleBookId(3), canonical_order: 3, name_ar: "اللاويين", name_en: "Leviticus", testament: "old", is_deuterocanonical: false, chapters_count: 27, slug: "leviticus" },
+  { id: bibleBookId(4), canonical_order: 4, name_ar: "العدد", name_en: "Numbers", testament: "old", is_deuterocanonical: false, chapters_count: 36, slug: "numbers" },
+  { id: bibleBookId(5), canonical_order: 5, name_ar: "التثنية", name_en: "Deuteronomy", testament: "old", is_deuterocanonical: false, chapters_count: 34, slug: "deuteronomy" },
+  { id: bibleBookId(6), canonical_order: 6, name_ar: "يشوع", name_en: "Joshua", testament: "old", is_deuterocanonical: false, chapters_count: 24, slug: "joshua" },
+  { id: bibleBookId(7), canonical_order: 7, name_ar: "القضاة", name_en: "Judges", testament: "old", is_deuterocanonical: false, chapters_count: 21, slug: "judges" },
+  { id: bibleBookId(8), canonical_order: 8, name_ar: "راعوث", name_en: "Ruth", testament: "old", is_deuterocanonical: false, chapters_count: 4, slug: "ruth" },
+  { id: bibleBookId(9), canonical_order: 9, name_ar: "صموئيل الأول", name_en: "1 Samuel", testament: "old", is_deuterocanonical: false, chapters_count: 31, slug: "1samuel" },
+  { id: bibleBookId(10), canonical_order: 10, name_ar: "صموئيل الثاني", name_en: "2 Samuel", testament: "old", is_deuterocanonical: false, chapters_count: 24, slug: "2samuel" },
+  { id: bibleBookId(11), canonical_order: 11, name_ar: "الملوك الأول", name_en: "1 Kings", testament: "old", is_deuterocanonical: false, chapters_count: 22, slug: "1kings" },
+  { id: bibleBookId(12), canonical_order: 12, name_ar: "الملوك الثاني", name_en: "2 Kings", testament: "old", is_deuterocanonical: false, chapters_count: 25, slug: "2kings" },
+  { id: bibleBookId(13), canonical_order: 13, name_ar: "أخبار الأيام الأول", name_en: "1 Chronicles", testament: "old", is_deuterocanonical: false, chapters_count: 29, slug: "1chronicles" },
+  { id: bibleBookId(14), canonical_order: 14, name_ar: "أخبار الأيام الثاني", name_en: "2 Chronicles", testament: "old", is_deuterocanonical: false, chapters_count: 36, slug: "2chronicles" },
+  { id: bibleBookId(15), canonical_order: 15, name_ar: "عزرا", name_en: "Ezra", testament: "old", is_deuterocanonical: false, chapters_count: 10, slug: "ezra" },
+  { id: bibleBookId(16), canonical_order: 16, name_ar: "نحميا", name_en: "Nehemiah", testament: "old", is_deuterocanonical: false, chapters_count: 13, slug: "nehemiah" },
+  { id: bibleBookId(17), canonical_order: 17, name_ar: "طوبيا", name_en: "Tobit", testament: "old", is_deuterocanonical: true, chapters_count: 14, slug: "tobit" },
+  { id: bibleBookId(18), canonical_order: 18, name_ar: "يهوديت", name_en: "Judith", testament: "old", is_deuterocanonical: true, chapters_count: 16, slug: "judith" },
+  { id: bibleBookId(19), canonical_order: 19, name_ar: "أستير وتتمتها", name_en: "Esther (with additions)", testament: "old", is_deuterocanonical: false, chapters_count: 16, slug: "esther" },
+  { id: bibleBookId(20), canonical_order: 20, name_ar: "أيوب", name_en: "Job", testament: "old", is_deuterocanonical: false, chapters_count: 42, slug: "job" },
+  { id: bibleBookId(21), canonical_order: 21, name_ar: "المزامير (151 مزموراً)", name_en: "Psalms", testament: "old", is_deuterocanonical: false, chapters_count: 151, slug: "psalms" },
+  { id: bibleBookId(22), canonical_order: 22, name_ar: "الأمثال", name_en: "Proverbs", testament: "old", is_deuterocanonical: false, chapters_count: 31, slug: "proverbs" },
+  { id: bibleBookId(23), canonical_order: 23, name_ar: "الجامعة", name_en: "Ecclesiastes", testament: "old", is_deuterocanonical: false, chapters_count: 12, slug: "ecclesiastes" },
+  { id: bibleBookId(24), canonical_order: 24, name_ar: "نشيد الأنشاد", name_en: "Song of Songs", testament: "old", is_deuterocanonical: false, chapters_count: 8, slug: "song-of-songs" },
+  { id: bibleBookId(25), canonical_order: 25, name_ar: "حكمة سليمان", name_en: "Wisdom of Solomon", testament: "old", is_deuterocanonical: true, chapters_count: 19, slug: "wisdom" },
+  { id: bibleBookId(26), canonical_order: 26, name_ar: "يشوع بن سيراخ", name_en: "Sirach", testament: "old", is_deuterocanonical: true, chapters_count: 51, slug: "sirach" },
+  { id: bibleBookId(27), canonical_order: 27, name_ar: "إشعياء", name_en: "Isaiah", testament: "old", is_deuterocanonical: false, chapters_count: 66, slug: "isaiah" },
+  { id: bibleBookId(28), canonical_order: 28, name_ar: "إرميا", name_en: "Jeremiah", testament: "old", is_deuterocanonical: false, chapters_count: 52, slug: "jeremiah" },
+  { id: bibleBookId(29), canonical_order: 29, name_ar: "مراثي إرميا", name_en: "Lamentations", testament: "old", is_deuterocanonical: false, chapters_count: 5, slug: "lamentations" },
+  { id: bibleBookId(30), canonical_order: 30, name_ar: "باروخ ورسالة إرميا", name_en: "Baruch", testament: "old", is_deuterocanonical: true, chapters_count: 6, slug: "baruch" },
+  { id: bibleBookId(31), canonical_order: 31, name_ar: "حزقيال", name_en: "Ezekiel", testament: "old", is_deuterocanonical: false, chapters_count: 48, slug: "ezekiel" },
+  { id: bibleBookId(32), canonical_order: 32, name_ar: "دانيال وتتمته", name_en: "Daniel (with additions)", testament: "old", is_deuterocanonical: false, chapters_count: 14, slug: "daniel" },
+  { id: bibleBookId(33), canonical_order: 33, name_ar: "هوشع", name_en: "Hosea", testament: "old", is_deuterocanonical: false, chapters_count: 14, slug: "hosea" },
+  { id: bibleBookId(34), canonical_order: 34, name_ar: "يوئيل", name_en: "Joel", testament: "old", is_deuterocanonical: false, chapters_count: 3, slug: "joel" },
+  { id: bibleBookId(35), canonical_order: 35, name_ar: "عاموس", name_en: "Amos", testament: "old", is_deuterocanonical: false, chapters_count: 9, slug: "amos" },
+  { id: bibleBookId(36), canonical_order: 36, name_ar: "عوبديا", name_en: "Obadiah", testament: "old", is_deuterocanonical: false, chapters_count: 1, slug: "obadiah" },
+  { id: bibleBookId(37), canonical_order: 37, name_ar: "يونان", name_en: "Jonah", testament: "old", is_deuterocanonical: false, chapters_count: 4, slug: "jonah" },
+  { id: bibleBookId(38), canonical_order: 38, name_ar: "ميخا", name_en: "Micah", testament: "old", is_deuterocanonical: false, chapters_count: 7, slug: "micah" },
+  { id: bibleBookId(39), canonical_order: 39, name_ar: "ناحوم", name_en: "Nahum", testament: "old", is_deuterocanonical: false, chapters_count: 3, slug: "nahum" },
+  { id: bibleBookId(40), canonical_order: 40, name_ar: "حبقوق", name_en: "Habakkuk", testament: "old", is_deuterocanonical: false, chapters_count: 3, slug: "habakkuk" },
+  { id: bibleBookId(41), canonical_order: 41, name_ar: "صفنيا", name_en: "Zephaniah", testament: "old", is_deuterocanonical: false, chapters_count: 3, slug: "zephaniah" },
+  { id: bibleBookId(42), canonical_order: 42, name_ar: "حجي", name_en: "Haggai", testament: "old", is_deuterocanonical: false, chapters_count: 2, slug: "haggai" },
+  { id: bibleBookId(43), canonical_order: 43, name_ar: "زكريا", name_en: "Zechariah", testament: "old", is_deuterocanonical: false, chapters_count: 14, slug: "zechariah" },
+  { id: bibleBookId(44), canonical_order: 44, name_ar: "ملاخي", name_en: "Malachi", testament: "old", is_deuterocanonical: false, chapters_count: 4, slug: "malachi" },
+  { id: bibleBookId(45), canonical_order: 45, name_ar: "المكابيين الأول", name_en: "1 Maccabees", testament: "old", is_deuterocanonical: true, chapters_count: 16, slug: "1maccabees" },
+  { id: bibleBookId(46), canonical_order: 46, name_ar: "المكابيين الثاني", name_en: "2 Maccabees", testament: "old", is_deuterocanonical: true, chapters_count: 15, slug: "2maccabees" },
+
+  // ---- New Testament (27) ----
+  { id: bibleBookId(47), canonical_order: 47, name_ar: "إنجيل متى", name_en: "Matthew", testament: "new", is_deuterocanonical: false, chapters_count: 28, slug: "matthew" },
+  { id: bibleBookId(48), canonical_order: 48, name_ar: "إنجيل مرقس", name_en: "Mark", testament: "new", is_deuterocanonical: false, chapters_count: 16, slug: "mark" },
+  { id: bibleBookId(49), canonical_order: 49, name_ar: "إنجيل لوقا", name_en: "Luke", testament: "new", is_deuterocanonical: false, chapters_count: 24, slug: "luke" },
+  { id: bibleBookId(50), canonical_order: 50, name_ar: "إنجيل يوحنا", name_en: "John", testament: "new", is_deuterocanonical: false, chapters_count: 21, slug: "john" },
+  { id: bibleBookId(51), canonical_order: 51, name_ar: "سفر أعمال الرسل", name_en: "Acts", testament: "new", is_deuterocanonical: false, chapters_count: 28, slug: "acts" },
+  { id: bibleBookId(52), canonical_order: 52, name_ar: "رومية", name_en: "Romans", testament: "new", is_deuterocanonical: false, chapters_count: 16, slug: "romans" },
+  { id: bibleBookId(53), canonical_order: 53, name_ar: "كورنثوس الأولى", name_en: "1 Corinthians", testament: "new", is_deuterocanonical: false, chapters_count: 16, slug: "1corinthians" },
+  { id: bibleBookId(54), canonical_order: 54, name_ar: "كورنثوس الثانية", name_en: "2 Corinthians", testament: "new", is_deuterocanonical: false, chapters_count: 13, slug: "2corinthians" },
+  { id: bibleBookId(55), canonical_order: 55, name_ar: "غلاطية", name_en: "Galatians", testament: "new", is_deuterocanonical: false, chapters_count: 6, slug: "galatians" },
+  { id: bibleBookId(56), canonical_order: 56, name_ar: "أفسس", name_en: "Ephesians", testament: "new", is_deuterocanonical: false, chapters_count: 6, slug: "ephesians" },
+  { id: bibleBookId(57), canonical_order: 57, name_ar: "فيلبي", name_en: "Philippians", testament: "new", is_deuterocanonical: false, chapters_count: 4, slug: "philippians" },
+  { id: bibleBookId(58), canonical_order: 58, name_ar: "كولوسي", name_en: "Colossians", testament: "new", is_deuterocanonical: false, chapters_count: 4, slug: "colossians" },
+  { id: bibleBookId(59), canonical_order: 59, name_ar: "تسالونيكي الأولى", name_en: "1 Thessalonians", testament: "new", is_deuterocanonical: false, chapters_count: 5, slug: "1thessalonians" },
+  { id: bibleBookId(60), canonical_order: 60, name_ar: "تسالونيكي الثانية", name_en: "2 Thessalonians", testament: "new", is_deuterocanonical: false, chapters_count: 3, slug: "2thessalonians" },
+  { id: bibleBookId(61), canonical_order: 61, name_ar: "تيموثاوس الأولى", name_en: "1 Timothy", testament: "new", is_deuterocanonical: false, chapters_count: 6, slug: "1timothy" },
+  { id: bibleBookId(62), canonical_order: 62, name_ar: "تيموثاوس الثانية", name_en: "2 Timothy", testament: "new", is_deuterocanonical: false, chapters_count: 4, slug: "2timothy" },
+  { id: bibleBookId(63), canonical_order: 63, name_ar: "تيطس", name_en: "Titus", testament: "new", is_deuterocanonical: false, chapters_count: 3, slug: "titus" },
+  { id: bibleBookId(64), canonical_order: 64, name_ar: "فليمون", name_en: "Philemon", testament: "new", is_deuterocanonical: false, chapters_count: 1, slug: "philemon" },
+  { id: bibleBookId(65), canonical_order: 65, name_ar: "العبرانيين", name_en: "Hebrews", testament: "new", is_deuterocanonical: false, chapters_count: 13, slug: "hebrews" },
+  { id: bibleBookId(66), canonical_order: 66, name_ar: "يعقوب", name_en: "James", testament: "new", is_deuterocanonical: false, chapters_count: 5, slug: "james" },
+  { id: bibleBookId(67), canonical_order: 67, name_ar: "بطرس الأولى", name_en: "1 Peter", testament: "new", is_deuterocanonical: false, chapters_count: 5, slug: "1peter" },
+  { id: bibleBookId(68), canonical_order: 68, name_ar: "بطرس الثانية", name_en: "2 Peter", testament: "new", is_deuterocanonical: false, chapters_count: 3, slug: "2peter" },
+  { id: bibleBookId(69), canonical_order: 69, name_ar: "يوحنا الأولى", name_en: "1 John", testament: "new", is_deuterocanonical: false, chapters_count: 5, slug: "1john" },
+  { id: bibleBookId(70), canonical_order: 70, name_ar: "يوحنا الثانية", name_en: "2 John", testament: "new", is_deuterocanonical: false, chapters_count: 1, slug: "2john" },
+  { id: bibleBookId(71), canonical_order: 71, name_ar: "يوحنا الثالثة", name_en: "3 John", testament: "new", is_deuterocanonical: false, chapters_count: 1, slug: "3john" },
+  { id: bibleBookId(72), canonical_order: 72, name_ar: "يهوذا", name_en: "Jude", testament: "new", is_deuterocanonical: false, chapters_count: 1, slug: "jude" },
+  { id: bibleBookId(73), canonical_order: 73, name_ar: "سفر الرؤيا", name_en: "Revelation", testament: "new", is_deuterocanonical: false, chapters_count: 22, slug: "revelation" },
 ];
 
 export const SEED_BIBLE_VERSES: (Tables<"bible_verses"> & { book_slug?: string; book_name?: string })[] = [
   {
     id: "v0000000-0000-0000-0000-000000000001",
-    book_id: "b0000000-0000-0000-0000-000000000043",
+    book_id: bibleBookId(50),
     chapter: 1,
     verse: 1,
     text_ar: "فِي الْبَدْءِ كَانَ الْكَلِمَةُ، وَالْكَلِمَةُ كَانَ عِنْدَ اللهِ، وَكَانَ الْكَلِمَةُ اللهَ.",
@@ -1230,7 +1313,7 @@ export const SEED_BIBLE_VERSES: (Tables<"bible_verses"> & { book_slug?: string; 
   },
   {
     id: "v0000000-0000-0000-0000-000000000002",
-    book_id: "b0000000-0000-0000-0000-000000000043",
+    book_id: bibleBookId(50),
     chapter: 3,
     verse: 16,
     text_ar:
@@ -1242,7 +1325,7 @@ export const SEED_BIBLE_VERSES: (Tables<"bible_verses"> & { book_slug?: string; 
   },
   {
     id: "v0000000-0000-0000-0000-000000000003",
-    book_id: "b0000000-0000-0000-0000-000000000019",
+    book_id: bibleBookId(21),
     chapter: 23,
     verse: 1,
     text_ar: "اَلرَّبُّ رَاعِيَّ فَلاَ يُعْوِزُنِي شَيْءٌ.",

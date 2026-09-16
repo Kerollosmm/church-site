@@ -3,14 +3,30 @@
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { MissingEnvVarError } from "@/lib/env";
 import {
   ProgramApplicationSchema,
   JobApplicationSchema,
 } from "@/lib/validations/church-schemas";
 import { REVALIDATION_TAGS } from "@/lib/tags";
 import { verifyTurnstile } from "@/lib/security/turnstile";
+import {
+  PUBLIC_FORM_LIMIT,
+  PUBLIC_FORM_WINDOW_MS,
+  RATE_LIMIT_MESSAGE_AR,
+  checkRateLimit,
+  getClientIp,
+} from "@/lib/security/rate-limit";
 
 export async function submitProgramApplication(rawInput: unknown) {
+  const headerList = await headers();
+  const ip = getClientIp(headerList);
+
+  // Best-effort per-instance rate limit — see src/lib/security/rate-limit.ts.
+  if (!checkRateLimit(`enrollment:${ip}`, { limit: PUBLIC_FORM_LIMIT, windowMs: PUBLIC_FORM_WINDOW_MS }).allowed) {
+    return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
+  }
+
   const result = ProgramApplicationSchema.safeParse(rawInput);
   if (!result.success) {
     return {
@@ -20,15 +36,13 @@ export async function submitProgramApplication(rawInput: unknown) {
     };
   }
 
-  const headerList = await headers();
-  const ip = headerList.get("x-forwarded-for") ?? undefined;
   if (!(await verifyTurnstile(result.data.turnstileToken, ip))) {
     return { success: false as const, message: "فشل التحقق من الروبوتات، يرجى إعادة المحاولة" };
   }
 
   try {
     const admin = createAdminClient();
-    const { error } = await (admin.from("program_applications") as any).insert({
+    const { error } = await admin.from("program_applications").insert({
       program_slug: result.data.programSlug,
       applicant_name: result.data.applicantName,
       applicant_birth_date: result.data.applicantBirthDate || null,
@@ -43,10 +57,23 @@ export async function submitProgramApplication(rawInput: unknown) {
 
     if (error) {
       console.error("Error inserting program application:", error);
+      // FAIL CLOSED: no acknowledgement without a persisted row, and no cache invalidation.
+      return {
+        success: false as const,
+        message: "تعذر استلام طلب التسجيل حالياً، يرجى المحاولة مرة أخرى أو مراجعة إدارة الخدمة هاتفياً",
+      };
     }
+
     revalidateTag(REVALIDATION_TAGS.education);
   } catch (err) {
     console.error("Error submitting program application:", err);
+    return {
+      success: false as const,
+      message:
+        err instanceof MissingEnvVarError
+          ? "خدمة التسجيل الإلكتروني غير مفعّلة على هذا الموقع حالياً، يرجى مراجعة إدارة الخدمة هاتفياً"
+          : "تعذر استلام طلب التسجيل حالياً، يرجى المحاولة مرة أخرى أو مراجعة إدارة الخدمة هاتفياً",
+    };
   }
 
   return {
@@ -56,6 +83,14 @@ export async function submitProgramApplication(rawInput: unknown) {
 }
 
 export async function submitJobApplication(rawInput: unknown) {
+  const headerList = await headers();
+  const ip = getClientIp(headerList);
+
+  // Best-effort per-instance rate limit — see src/lib/security/rate-limit.ts.
+  if (!checkRateLimit(`job:${ip}`, { limit: PUBLIC_FORM_LIMIT, windowMs: PUBLIC_FORM_WINDOW_MS }).allowed) {
+    return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
+  }
+
   const result = JobApplicationSchema.safeParse(rawInput);
   if (!result.success) {
     return {
@@ -65,15 +100,13 @@ export async function submitJobApplication(rawInput: unknown) {
     };
   }
 
-  const headerList = await headers();
-  const ip = headerList.get("x-forwarded-for") ?? undefined;
   if (!(await verifyTurnstile(result.data.turnstileToken, ip))) {
     return { success: false as const, message: "فشل التحقق من الروبوتات، يرجى إعادة المحاولة" };
   }
 
   try {
     const admin = createAdminClient();
-    const { error } = await (admin.from("job_applications") as any).insert({
+    const { error } = await admin.from("job_applications").insert({
       full_name: result.data.fullName,
       phone: result.data.phone,
       email: result.data.email || null,
@@ -86,9 +119,21 @@ export async function submitJobApplication(rawInput: unknown) {
 
     if (error) {
       console.error("Error inserting job application:", error);
+      // FAIL CLOSED: no acknowledgement without a persisted row.
+      return {
+        success: false as const,
+        message: "تعذر استلام طلب التوظيف حالياً، يرجى المحاولة مرة أخرى أو الاتصال بمكتب التوظيف هاتفياً",
+      };
     }
   } catch (err) {
     console.error("Error submitting job application:", err);
+    return {
+      success: false as const,
+      message:
+        err instanceof MissingEnvVarError
+          ? "خدمة التوظيف الإلكترونية غير مفعّلة على هذا الموقع حالياً، يرجى الاتصال بمكتب التوظيف هاتفياً"
+          : "تعذر استلام طلب التوظيف حالياً، يرجى المحاولة مرة أخرى أو الاتصال بمكتب التوظيف هاتفياً",
+    };
   }
 
   return {

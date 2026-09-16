@@ -5,15 +5,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ContactMessageSchema, ContactMessageInput } from "@/lib/validations/church-schemas";
 import { submitContactMessage } from "@/actions/contact-actions";
+import { TurnstileWidget } from "@/components/security/TurnstileWidget";
 import { Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 export function ContactForm() {
   const [result, setResult] = useState<{ success?: boolean; message?: string } | null>(null);
+  // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ContactMessageInput>({
     resolver: zodResolver(ContactMessageSchema),
@@ -23,7 +27,7 @@ export function ContactForm() {
       senderEmail: "",
       urgency: "normal",
       messageContent: "",
-      turnstileToken: "mock-bypass-token",
+      turnstileToken: "",
     },
   });
 
@@ -42,6 +46,8 @@ export function ContactForm() {
         success: false,
         message: "تعذر إرسال الرسالة حالياً، يرجى الاتصال هاتفياً بسكرتارية الكنيسة",
       });
+    } finally {
+      setTurnstileResetSignal((signal) => signal + 1);
     }
   };
 
@@ -63,8 +69,6 @@ export function ContactForm() {
           <p>{result.message}</p>
         </div>
       )}
-
-      <input type="hidden" {...register("turnstileToken")} value="mock-bypass-token" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -124,7 +128,7 @@ export function ContactForm() {
             className="w-full bg-copticGold-50/50 border border-copticGold-300 rounded-xl px-3 py-2 text-xs text-copticNavy font-bold focus:outline-hidden focus:ring-2 focus:ring-copticNavy"
           >
             <option value="normal">استفسار عادي أو طلب صلاة</option>
-            <option value="urgent">أمر رعوي هام</option>
+            <option value="spiritual_urgent">أمر رعوي هام</option>
             <option value="emergency">حالة طارئة جداً</option>
           </select>
         </div>
@@ -146,6 +150,11 @@ export function ContactForm() {
           </span>
         )}
       </div>
+
+      <TurnstileWidget
+        onVerify={(token) => setValue("turnstileToken", token)}
+        resetSignal={turnstileResetSignal}
+      />
 
       <button
         type="submit"

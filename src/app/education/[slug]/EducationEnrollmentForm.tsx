@@ -3,12 +3,22 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ProgramApplicationSchema, ProgramApplicationInput } from "@/lib/validations/church-schemas";
+import {
+  ProgramApplicationSchema,
+  ProgramApplicationInput,
+  type ProgramSlug,
+} from "@/lib/validations/church-schemas";
 import { submitProgramApplication } from "@/actions/enrollment-actions";
+import { TurnstileWidget } from "@/components/security/TurnstileWidget";
 import { CheckCircle2, AlertCircle, Send, Loader2 } from "lucide-react";
 
 interface Props {
-  programSlug: string;
+  /**
+   * Enrolment programme of the page. The caller resolves it against the seeded programmes and
+   * rejects unknown slugs with `notFound()`, so this component never has to guess or coerce —
+   * submitting an application for a different programme than the one being viewed is impossible.
+   */
+  programSlug: ProgramSlug;
 }
 
 export function EducationEnrollmentForm({ programSlug }: Props) {
@@ -16,25 +26,19 @@ export function EducationEnrollmentForm({ programSlug }: Props) {
     success?: boolean;
     message?: string;
   } | null>(null);
-
-  // Normalize slug to match accepted schema union
-  const validSlug = (
-    ["deacon-school", "karouz-academy", "cithara-choir", "children-bible", "summer-club", "educational-center"].includes(
-      programSlug
-    )
-      ? programSlug
-      : "deacon-school"
-  ) as ProgramApplicationInput["programSlug"];
+  // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProgramApplicationInput>({
     resolver: zodResolver(ProgramApplicationSchema),
     defaultValues: {
-      programSlug: validSlug,
+      programSlug,
       applicantName: "",
       applicantBirthDate: "",
       applicantStage: "",
@@ -43,7 +47,7 @@ export function EducationEnrollmentForm({ programSlug }: Props) {
       confessionFather: "",
       requestedLevel: "",
       notes: "",
-      turnstileToken: "mock-bypass-token",
+      turnstileToken: "",
     },
   });
 
@@ -65,6 +69,8 @@ export function EducationEnrollmentForm({ programSlug }: Props) {
         success: false,
         message: "تعذر الاتصال بالخادم حالياً، يرجى مراجعة إدارة الكنيسة",
       });
+    } finally {
+      setTurnstileResetSignal((signal) => signal + 1);
     }
   };
 
@@ -87,8 +93,7 @@ export function EducationEnrollmentForm({ programSlug }: Props) {
         </div>
       )}
 
-      <input type="hidden" {...register("programSlug")} value={validSlug} />
-      <input type="hidden" {...register("turnstileToken")} value="mock-bypass-token" />
+      <input type="hidden" {...register("programSlug")} value={programSlug} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -185,6 +190,11 @@ export function EducationEnrollmentForm({ programSlug }: Props) {
           className="w-full bg-copticGold-50/50 border border-copticGold-300 rounded-xl p-3 text-xs text-copticNavy focus:outline-hidden focus:ring-2 focus:ring-copticNavy"
         />
       </div>
+
+      <TurnstileWidget
+        onVerify={(token) => setValue("turnstileToken", token)}
+        resetSignal={turnstileResetSignal}
+      />
 
       <button
         type="submit"

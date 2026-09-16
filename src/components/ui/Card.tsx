@@ -1,6 +1,9 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
+// Only the container is still used: CardHeader/CardTitle/CardContent/CardDescription/CardFooter
+// lost their last consumers when the legacy condolence and bible-reader components were removed.
+// Re-add them here (they are in git history) rather than inlining one-off header markup at call sites.
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "elevated" | "gold-border" | "navy-subtle";
 }
@@ -28,65 +31,3 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   }
 );
 Card.displayName = "Card";
-
-export const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("p-6 pb-3 flex flex-col space-y-1.5", className)}
-    {...props}
-  />
-));
-CardHeader.displayName = "CardHeader";
-
-export const CardTitle = React.forwardRef<
-  HTMLHeadingElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn(
-      "font-heading text-lg md:text-xl font-bold text-copticNavy-700 leading-snug tracking-tight",
-      className
-    )}
-    {...props}
-  />
-));
-CardTitle.displayName = "CardTitle";
-
-export const CardDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-xs md:text-sm text-slateText-muted leading-relaxed font-body", className)}
-    {...props}
-  />
-));
-CardDescription.displayName = "CardDescription";
-
-export const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-2 font-body text-slateText-primary", className)} {...props} />
-));
-CardContent.displayName = "CardContent";
-
-export const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "p-6 pt-2 flex items-center border-t border-copticGold-100/60 bg-copticGold-50/30",
-      className
-    )}
-    {...props}
-  />
-));
-CardFooter.displayName = "CardFooter";

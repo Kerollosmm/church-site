@@ -11,44 +11,55 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import {
-  SEED_MASS_SCHEDULES,
-  SEED_CLINIC_SPECIALTIES,
-  SEED_CHURCH_MEETINGS,
+  getChurchMeetings,
+  getClinicSpecialties,
+  getCondolenceBookings,
+  getWeeklyMasses,
 } from "@/lib/queries";
 
 export const metadata = {
   title: "لوحة التحكم الإدارية — كنيسة القديسين بالعصافرة",
 };
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const [masses, specialties, meetings, bookingsRead] = await Promise.all([
+    getWeeklyMasses(),
+    getClinicSpecialties(),
+    getChurchMeetings(),
+    getCondolenceBookings(),
+  ]);
+
+  const pendingBookings = bookingsRead.bookings.filter((b) => b.status === "pending").length;
+
   const stats = [
     {
       title: "القداسات الأسبوعية",
-      value: `${SEED_MASS_SCHEDULES.length} قداسات`,
-      desc: "على المذابح الثلاثة",
+      value: `${masses.length} قداسات`,
+      desc: "على مذابح الكنيسة",
       icon: Calendar,
       href: "/admin/masses",
       color: "bg-blue-50 text-blue-800 border-blue-200",
     },
     {
       title: "طلبات حجز العزاء",
-      value: "نشط",
-      desc: "متابعة وإقرار المواعيد",
+      // Real count of the requests awaiting a decision — never a decorative status word.
+      value: bookingsRead.errorMessageAr ? "—" : `${pendingBookings} قيد المراجعة`,
+      desc: bookingsRead.errorMessageAr ? "تعذّر جلب الطلبات" : "متابعة وإقرار المواعيد",
       icon: HeartHandshake,
       href: "/admin/bookings",
       color: "bg-amber-50 text-amber-800 border-amber-200",
     },
     {
       title: "عيادات المستوصف",
-      value: `${SEED_CLINIC_SPECIALTIES.length} عيادة`,
-      desc: `${SEED_CLINIC_SPECIALTIES.length} تخصصاً طبياً مجهزاً`,
+      value: `${specialties.length} عيادة`,
+      desc: `${specialties.length} تخصصاً طبياً مجهزاً`,
       icon: Stethoscope,
       href: "/admin/clinics",
       color: "bg-emerald-50 text-emerald-800 border-emerald-200",
     },
     {
       title: "قطاعات التربية الكنسية",
-      value: `${SEED_CHURCH_MEETINGS.length} قطاعاً`,
+      value: `${meetings.length} قطاعاً`,
       desc: "من الحضانة حتى الشيوخ",
       icon: Users,
       href: "/meetings",
@@ -98,7 +109,7 @@ export default function AdminDashboardPage() {
                   </span>
                 </div>
                 <h3 className="font-heading font-bold text-sm text-slate-800 mb-1">{s.title}</h3>
-                <div className="text-xl font-bold font-english text-copticNavy">{s.value}</div>
+                <div className="text-xl font-bold font-heading text-copticNavy">{s.value}</div>
                 <p className="text-[11px] text-slate-500 mt-1">{s.desc}</p>
               </div>
 
@@ -159,17 +170,47 @@ export default function AdminDashboardPage() {
               href="/admin/masses"
               className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
             >
-              <span className="font-bold text-slate-800">تحديث جداول ومواعيد القداسات الاستثنائية للأعياد</span>
+              <span className="font-bold text-slate-800">عرض جداول ومواعيد القداسات الحالية</span>
               <ArrowLeft className="w-4 h-4 text-copticNavy" />
             </Link>
             <Link
               href="/admin/clinics"
               className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
             >
-              <span className="font-bold text-slate-800">تعديل بيانات العيادات التخصصية وأرقام الغرف ومواعيد العمل</span>
+              <span className="font-bold text-slate-800">مراجعة بيانات العيادات التخصصية وأرقام الغرف</span>
               <ArrowLeft className="w-4 h-4 text-copticNavy" />
             </Link>
           </div>
+        </div>
+
+        {/* Explicit scope marker: these modules are NOT implemented yet. */}
+        <div className="bg-white rounded-3xl p-6 border border-dashed border-amber-300 shadow-xs space-y-3 lg:col-span-2">
+          <h3 className="font-heading font-bold text-base text-amber-900">
+            وحدات إدارية لم تُنفَّذ بعد
+          </h3>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            الشاشات التالية مخططة ولم تُبنَ بعد، ولا تعرض أي بيانات حالياً:
+          </p>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              صندوق رسائل التواصل والاستفسارات الرعوية
+            </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              مراجعة طلبات التسجيل في المدارس والأنشطة
+            </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              مراجعة طلبات التوظيف
+            </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              محرر شريط التنبيهات المركزي
+            </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              جدولة البث المباشر والأرشيف
+            </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              تحرير جداول القداسات والاستثناءات الموسمية
+            </li>
+          </ul>
         </div>
       </div>
     </div>

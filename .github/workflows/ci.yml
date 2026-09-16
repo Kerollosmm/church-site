@@ -1,0 +1,74 @@
+name: CI
+
+# Hard gates: type-check + production build. Both MUST stay green — the portal is required to build
+# with NO environment variables set (seed data covers the no-database case).
+# Informational (non-blocking): dependency audit and ESLint.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Type-check, build, audit & lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Fail fast if any application environment variable leaked into the runner: the build below
+      # is only meaningful when it runs with none, exactly like the local verification.
+      - name: Assert no application environment variables are set
+        shell: bash
+        run: |
+          unexpected=()
+          for name in $(compgen -e); do
+            case "$name" in
+              NEXT_PUBLIC_*|SUPABASE_*|TURNSTILE_*|YOUTUBE_*) unexpected+=("$name") ;;
+            esac
+          done
+          if [ ${#unexpected[@]} -gt 0 ]; then
+            echo "::error::Unexpected application environment variables are set: ${unexpected[*]}"
+            exit 1
+          fi
+          echo "No application environment variables are set — the no-env build invariant holds."
+
+      # ---- Hard gates -------------------------------------------------------
+
+      - name: Type-check
+        run: pnpm exec tsc --noEmit
+
+      - name: Build
+        run: pnpm run build
+
+      # ---- Informational (does not fail the job) ----------------------------
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod
+        continue-on-error: true
+
+      - name: Lint
+        run: pnpm run lint
+        continue-on-error: true

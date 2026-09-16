@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { DAY_OF_WEEK_INDEX, DAY_OF_WEEK_LABELS_AR } from "@/lib/utils/mass-schedule";
 import { cn } from "@/lib/utils";
 
 export interface DayOption {
@@ -8,15 +9,17 @@ export interface DayOption {
   label: string;
 }
 
+/**
+ * Weekday tabs are labelled and ordered from the same source the schedule views render their rows
+ * from (`DAY_OF_WEEK_LABELS_AR`/`DAY_OF_WEEK_INDEX`), so the filter and the table can never spell
+ * a day differently ("الإثنين" vs "الاثنين"). The map's own key order is Sunday → Saturday.
+ */
 export const DAYS_OF_WEEK: DayOption[] = [
   { dayIndex: "all", label: "جميع الأيام" },
-  { dayIndex: 0, label: "الأحد" },
-  { dayIndex: 1, label: "الاثنين" },
-  { dayIndex: 2, label: "الثلاثاء" },
-  { dayIndex: 3, label: "الأربعاء" },
-  { dayIndex: 4, label: "الخميس" },
-  { dayIndex: 5, label: "الجمعة" },
-  { dayIndex: 6, label: "السبت" },
+  ...(Object.keys(DAY_OF_WEEK_INDEX) as Array<keyof typeof DAY_OF_WEEK_INDEX>).map((day) => ({
+    dayIndex: DAY_OF_WEEK_INDEX[day],
+    label: DAY_OF_WEEK_LABELS_AR[day],
+  })),
 ];
 
 export interface DayTabFilterProps {

@@ -47,7 +47,10 @@ export function gregorianToJdn(year: number, month: number, day: number): number
  * Converts Julian Day Number to Coptic Date
  */
 export function jdnToCoptic(jdn: number): CopticDate {
-  const copticEpoch = 1824665; // JDN of 1 Thout 1 A.M. (29 Aug 284 AD Julian)
+  // JDN of 1 Thout 1 A.M. — 29 August 284 AD (Julian), the epoch used by the Coptic
+  // Orthodox calendar. The previously used value (1824665) was one Coptic year short,
+  // which shifted every computed year by +1 (e.g. 2026-09-11 → 1744 instead of 1743).
+  const copticEpoch = 1825030;
   const d = jdn - copticEpoch;
   const c4 = Math.floor(d / 1461);
   const r4 = d % 1461;
