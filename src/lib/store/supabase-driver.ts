@@ -24,6 +24,7 @@ import {
   normalizeStatusFilter,
   StoreError,
   type AuditListFilter,
+  type AuditNoteInput,
   type EventListFilter,
   type EventRepository,
   type MediaListFilter,
@@ -1176,5 +1177,23 @@ export class SupabaseEventRepository implements EventRepository {
     const { data, error } = await query;
     if (error) throw toStoreError(error, "audit.list");
     return (data ?? []).map(toAuditEntry);
+  }
+
+  /**
+   * Audit-only append (see `AuditNoteInput`). It reuses the same best-effort `appendAudit()` as every
+   * mutation, so a refusal is recorded identically on both drivers — and a failure to record it is
+   * logged loudly instead of failing the refusal the user is waiting for.
+   */
+  async recordAuditNote(note: AuditNoteInput, actor: Actor): Promise<void> {
+    const client = await this.client();
+    await this.appendAudit(client, {
+      actor,
+      action: note.action,
+      entityType: note.entityType,
+      entityId: note.entityId,
+      before: null,
+      after: null,
+      summary: note.summary,
+    });
   }
 }

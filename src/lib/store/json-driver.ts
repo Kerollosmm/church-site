@@ -5,7 +5,7 @@
 // Every write goes through `mutateStoreDocument()`, so a mutation and its audit entry are persisted
 // by ONE atomic rename and can never be observed separately.
 
-import { StoreError, normalizeStatusFilter, type AuditListFilter, type EventListFilter, type EventRepository, type MediaListFilter, type RepositoryStatus, type SeriesListFilter, type TaxonomyTermListFilter } from "@/lib/store/repository";
+import { StoreError, normalizeStatusFilter, type AuditListFilter, type AuditNoteInput, type EventListFilter, type EventRepository, type MediaListFilter, type RepositoryStatus, type SeriesListFilter, type TaxonomyTermListFilter } from "@/lib/store/repository";
 import { getStoreDataDir, mutateStoreDocument, readStoreDocument } from "@/lib/store/json-store";
 import { buildAuditEntry, newId, nowIso, snapshot } from "@/lib/store/audit";
 import type { StoreDocument } from "@/lib/store/document";
@@ -935,6 +935,26 @@ export class JsonEventRepository implements EventRepository {
     });
     const newestFirst = [...matches].reverse().map((entry) => ({ ...entry }));
     return newestFirst.slice(0, filter.limit ?? 100);
+  }
+
+  /**
+   * Audit-only append (see `AuditNoteInput`). It rides the same atomic write as every mutation, so
+   * the note is durable the moment this resolves — and it touches nothing else in the document.
+   */
+  async recordAuditNote(note: AuditNoteInput, actor: Actor): Promise<void> {
+    await mutateStoreDocument("audit.note", (document) => {
+      document.audit.push(
+        buildAuditEntry({
+          actor,
+          action: note.action,
+          entityType: note.entityType,
+          entityId: note.entityId,
+          before: null,
+          after: null,
+          summary: note.summary,
+        })
+      );
+    });
   }
 }
 

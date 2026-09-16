@@ -25,6 +25,7 @@ import {
   CAPABILITY_DENIED_MESSAGE_AR,
   adminRoleFromStaffRole,
   can,
+  describeRefusal,
   type AdminRole,
   type Capability,
 } from "@/lib/domain/capabilities";
@@ -60,6 +61,12 @@ interface AuthorizedActor {
 /**
  * Steps 1 and 2. Throws (redirects) when there is no staff session; returns a refusal when the
  * session exists but lacks the capability.
+ *
+ * A REFUSAL IS RECORDED: the attempt is appended to the audit trail (one `denied` entry naming the
+ * capability and the acting role) before the refusal is returned, so a refusal is as auditable as a
+ * change. Recording is BEST EFFORT on purpose — if the store cannot be written, the refusal still
+ * stands and the failure is logged; an unauthorised caller must never be able to turn the audit
+ * write into an error path.
  */
 async function authorize(capability: Capability): Promise<{ ok: true; auth: AuthorizedActor } | { ok: false; message: string }> {
   const session = await requireStaff();
@@ -71,6 +78,28 @@ async function authorize(capability: Capability): Promise<{ ok: true; auth: Auth
       role,
       userId: session.userId,
     });
+
+    try {
+      const note = describeRefusal(capability, role);
+      await getEventRepository().recordAuditNote(
+        {
+          action: "denied",
+          entityType: note.entityType,
+          // The attempt names no row, so the entry is anchored to the acting staff member.
+          entityId: session.userId,
+          summary: note.summary,
+        },
+        { id: session.userId, name: session.fullNameAr }
+      );
+    } catch (error) {
+      console.error("[events] refusal could not be recorded", {
+        capability,
+        role,
+        userId: session.userId,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+
     return { ok: false, message: CAPABILITY_DENIED_MESSAGE_AR };
   }
 

@@ -63,7 +63,9 @@ export type AuditActionEnum =
   | "cancel"
   | "reschedule"
   | "duplicate"
-  | "delete";
+  | "delete"
+  // A capability refusal: an audit event that records no change (before/after both null).
+  | "denied";
 
 export interface Database {
   public: {

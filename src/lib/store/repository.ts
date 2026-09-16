@@ -110,6 +110,23 @@ export interface AuditListFilter {
   limit?: number;
 }
 
+/**
+ * An AUDIT-ONLY entry: no row before, no row after, no change to any content.
+ *
+ * It exists for one reason — a refused attempt (a signed-in member of staff asking for something
+ * their role does not allow) must leave a trace. Because it carries no snapshots it can never be
+ * used to rewrite the history of a real mutation, and it is deliberately the only write in this
+ * contract that does not take a `before`/`after` pair.
+ */
+export interface AuditNoteInput {
+  action: AuditAction;
+  entityType: AuditEntityType;
+  /** The attempted thing's id, or the acting staff member's id when the attempt names no row. */
+  entityId: string;
+  /** One-line Arabic description (see `describeRefusal()` in `src/lib/domain/capabilities.ts`). */
+  summary: string;
+}
+
 /** What the store is, for diagnostics screens and the `republish()` result. */
 export interface RepositoryStatus {
   driver: RepositoryDriverName;
@@ -188,6 +205,12 @@ export interface EventRepository {
   // --- audit --------------------------------------------------------------
   /** Newest first. */
   listAudit(filter?: AuditListFilter): Promise<AuditLogEntry[]>;
+  /**
+   * Appends ONE audit entry with NO state change (`before`/`after` are always null). Used for
+   * refusals, and BEST EFFORT by contract: a caller must treat a failure as non-fatal, because the
+   * refusal itself is already the answer and must never turn into an error the user has to handle.
+   */
+  recordAuditNote(note: AuditNoteInput, actor: Actor): Promise<void>;
 
   /**
    * Cache-invalidation hook. The repository itself holds no cache, so the drivers return the store's

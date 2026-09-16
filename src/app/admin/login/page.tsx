@@ -1,8 +1,9 @@
-import React from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Church, ShieldCheck, Globe } from "lucide-react";
 import { AdminLoginForm } from "./AdminLoginForm";
+import { SignInNotice } from "./SignInNotice";
 
 /**
  * Staff sign-in page for the `/admin` area.
@@ -11,6 +12,12 @@ import { AdminLoginForm } from "./AdminLoginForm";
  * the authorization guard, and it renders statically: no environment variable is read at build
  * time, so the no-env static build keeps working. The sign-in attempt itself fails closed with a
  * clear Arabic message when the deployment has no Supabase configuration.
+ *
+ * THE "SIGN IN AGAIN" STATE: the middleware and the sign-out action redirect here with `?reason=`
+ * (an expired session, an account outside the portal roles, or a deliberate sign-out). That reason
+ * is read by a SMALL CLIENT COMPONENT inside a `<Suspense>` boundary — `useSearchParams()` must not
+ * be called during the static prerender, and this page has to stay static so it is reachable even
+ * when the environment is missing.
  */
 export const metadata: Metadata = {
   title: "تسجيل دخول سكرتارية الكنيسة",
@@ -35,6 +42,11 @@ export default function AdminLoginPage() {
             </p>
           </div>
         </div>
+
+        {/* The reason a visitor was sent here (if any) — see SignInNotice.tsx. */}
+        <Suspense fallback={null}>
+          <SignInNotice />
+        </Suspense>
 
         <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-copticGold-300 shadow-xs">
           <AdminLoginForm />

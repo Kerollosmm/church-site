@@ -45,6 +45,13 @@ export const SlugSchema = z
   .max(120, "السلَج أطول من الحد المسموح.")
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "السلَج يقبل الحروف الإنجليزية الصغيرة والأرقام والشرطات فقط.");
 
+/**
+ * Largest file size the media registry accepts. Single source: the schema enforces it, and the media
+ * screen's message is DERIVED from it (see `MAX_MEDIA_SIZE_LABEL` in `src/lib/events/admin-form.ts`)
+ * so the number a user is told and the number that is enforced can never disagree.
+ */
+export const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024;
+
 export const UuidSchema = z.string().uuid("المعرّف غير صالح.");
 
 const LocalizedTextSchema = z.string().trim().max(6000, "النص أطول من الحد المسموح.").nullable();
@@ -191,7 +198,12 @@ export const MediaSchema = z.object({
     .min(3)
     .max(127)
     .regex(/^[\w.+-]+\/[\w.+-]+$/, "نوع الملف غير صالح (مثال: image/jpeg)."),
-  sizeBytes: z.number().int().min(0).max(50 * 1024 * 1024, "الحجم الأقصى 50 ميجابايت.").optional(),
+  sizeBytes: z
+    .number()
+    .int()
+    .min(0)
+    .max(MAX_MEDIA_SIZE_BYTES, `الحجم الأقصى ${Math.round(MAX_MEDIA_SIZE_BYTES / (1024 * 1024))} ميجابايت.`)
+    .optional(),
   url: z.string().trim().min(1, "رابط الملف مطلوب.").max(500),
   altAr: z.string().trim().max(255).nullable().optional(),
   altEn: z.string().trim().max(255).nullable().optional(),

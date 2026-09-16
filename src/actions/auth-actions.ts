@@ -69,7 +69,12 @@ export async function signIn(rawInput: unknown): Promise<StaffAuthResult> {
   }
 }
 
-/** Ends the staff session and returns to the sign-in page. */
+/**
+ * Ends the staff session and returns to the sign-in page.
+ *
+ * The redirect carries `?reason=signed-out` so the sign-in page can confirm the sign-out instead of
+ * looking like an unexplained bounce (see `src/app/admin/login/SignInNotice.tsx`).
+ */
 export async function signOut(): Promise<void> {
   try {
     const supabase = await createSupabaseServerClient();
@@ -82,5 +87,5 @@ export async function signOut(): Promise<void> {
     console.error("Staff sign-out failed:", err);
   }
 
-  redirect("/admin/login");
+  redirect("/admin/login?reason=signed-out");
 }

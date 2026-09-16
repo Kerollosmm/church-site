@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import {
   Calendar,
+  CalendarDays,
   HeartHandshake,
   Stethoscope,
   Users,
@@ -9,6 +10,8 @@ import {
   Clock,
   ArrowLeft,
   ShieldCheck,
+  FileClock,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   getChurchMeetings,
@@ -16,6 +19,7 @@ import {
   getCondolenceBookings,
   getWeeklyMasses,
 } from "@/lib/queries";
+import { listAdminEvents, listAdminSeries } from "@/lib/events/admin";
 
 export const metadata = {
   title: "لوحة التحكم الإدارية — كنيسة القديسين بالعصافرة",
@@ -29,6 +33,23 @@ export default async function AdminDashboardPage() {
     getCondolenceBookings(),
   ]);
 
+  // The events store is read through its own admin reader. A store failure must not take the whole
+  // dashboard down, so the card degrades to a "تعذّر الجلب" line instead of throwing.
+  let publishedEvents: number | null = null;
+  let draftEvents: number | null = null;
+  let seriesCount: number | null = null;
+
+  try {
+    const [events, series] = await Promise.all([listAdminEvents(), listAdminSeries()]);
+    publishedEvents = events.filter((row) => row.event.status === "published").length;
+    draftEvents = events.filter((row) => row.event.status === "draft").length;
+    seriesCount = series.length;
+  } catch (error) {
+    console.error("[admin] dashboard events summary failed", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   const pendingBookings = bookingsRead.bookings.filter((b) => b.status === "pending").length;
 
   const stats = [
@@ -39,6 +60,17 @@ export default async function AdminDashboardPage() {
       icon: Calendar,
       href: "/admin/masses",
       color: "bg-blue-50 text-blue-800 border-blue-200",
+    },
+    {
+      title: "الفعاليات والمواعيد",
+      value: publishedEvents === null ? "—" : `${publishedEvents} منشورة`,
+      desc:
+        publishedEvents === null
+          ? "تعذّر جلب بيانات الفعاليات"
+          : `${draftEvents ?? 0} مسودة · ${seriesCount ?? 0} سلسلة متكررة`,
+      icon: CalendarDays,
+      href: "/admin/events",
+      color: "bg-copticGold-50 text-copticGold-900 border-copticGold-200",
     },
     {
       title: "طلبات حجز العزاء",
@@ -79,7 +111,7 @@ export default async function AdminDashboardPage() {
             لوحة الإشراف والمتابعة الإدارية
           </h1>
           <p className="text-xs text-slate-500">
-            إدارة الجداول الطقسية، مراجعة طلبات حجز قاعة العزاء، وتحديث دليل التخصصات الطبية.
+            إدارة الفعاليات والمواعيد، الجداول الطقسية، مراجعة طلبات حجز قاعة العزاء، وتحديث دليل التخصصات الطبية.
           </p>
         </div>
 
@@ -90,7 +122,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {stats.map((s, idx) => {
           const Icon = s.icon;
           return (
@@ -160,6 +192,34 @@ export default async function AdminDashboardPage() {
           </h3>
           <div className="space-y-2 text-xs">
             <Link
+              href="/admin/events"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
+            >
+              <span className="font-bold text-slate-800">إدارة الفعاليات والمواعيد والسلاسل المتكررة</span>
+              <ArrowLeft className="w-4 h-4 text-copticNavy" />
+            </Link>
+            <Link
+              href="/admin/events/new"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
+            >
+              <span className="font-bold text-slate-800">إنشاء فعالية جديدة</span>
+              <ArrowLeft className="w-4 h-4 text-copticNavy" />
+            </Link>
+            <Link
+              href="/admin/audit"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
+            >
+              <span className="font-bold text-slate-800">مراجعة سجل التدقيق (كل تعديل ومن قام به)</span>
+              <ArrowLeft className="w-4 h-4 text-copticNavy" />
+            </Link>
+            <Link
+              href="/admin/media"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
+            >
+              <span className="font-bold text-slate-800">تسجيل بيانات ملفات الوسائط وروابطها</span>
+              <ArrowLeft className="w-4 h-4 text-copticNavy" />
+            </Link>
+            <Link
               href="/admin/bookings"
               className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
             >
@@ -181,6 +241,11 @@ export default async function AdminDashboardPage() {
               <ArrowLeft className="w-4 h-4 text-copticNavy" />
             </Link>
           </div>
+
+          <p className="text-[11px] leading-relaxed text-slate-500 border-t border-slate-100 pt-3">
+            مكتبة الوسائط تُسجّل <strong>بيانات وصفية وروابط فقط</strong> — لا يوجد رفع للملفات ولا تخزين للبايتات على
+            هذا الموقع.
+          </p>
         </div>
 
         {/* Explicit scope marker: these modules are NOT implemented yet. */}
@@ -210,7 +275,17 @@ export default async function AdminDashboardPage() {
             <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
               تحرير جداول القداسات والاستثناءات الموسمية
             </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              محرر مصطلحات التصنيف الستة (تُقرأ حالياً من مخزن البيانات كما هي)
+            </li>
+            <li className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-100">
+              رفع ملفات الوسائط (بايتات) — التسجيل الحالي بيانات وصفية وروابط فقط
+            </li>
           </ul>
+          <p className="text-[11px] leading-relaxed text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5">
+            <strong>منفَّذ الآن:</strong> إدارة الفعاليات (إنشاء/تعديل/نشر/إلغاء/نسخ/حذف)، السلاسل المتكررة مع إلغاء أو
+            نقل موعد واحد، سجل التدقيق، ومكتبة الوسائط (بيانات وصفية).
+          </p>
         </div>
       </div>
     </div>

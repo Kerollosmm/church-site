@@ -15,6 +15,11 @@ const ADMIN_LOGIN_PATH = "/admin/login";
  * FAILS CLOSED: if the Supabase environment is missing, the user is unresolvable, or the role
  * lookup errors, the request is redirected to the sign-in page instead of being granted access.
  *
+ * WHY THE REDIRECT CARRIES `?reason=`: a bounce to the sign-in page is the moment a staff member
+ * most needs to understand what happened. "The session ended" and "this account may not enter" are
+ * different answers with different fixes, so the reason travels in the query string and the sign-in
+ * page renders it (see `SignInNotice.tsx`).
+ *
  * The public portal (INV-01) is never touched by this middleware — the matcher below is
  * restricted to `/admin`, keeping every public route static and zero-auth.
  */
@@ -26,10 +31,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
-  const deny = () => {
+  /**
+   * `session` — no verifiable session (missing environment, expired cookie, auth error).
+   * `role`    — the session is valid but the account is not allowed into `/admin`.
+   */
+  const deny = (reason: "session" | "role") => {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = ADMIN_LOGIN_PATH;
     loginUrl.search = "";
+    loginUrl.searchParams.set("reason", reason);
     return NextResponse.redirect(loginUrl);
   };
 
@@ -39,7 +49,7 @@ export async function middleware(request: NextRequest) {
   if (!supabaseUrl || supabaseUrl.trim().length === 0 || !supabaseAnonKey || supabaseAnonKey.trim().length === 0) {
     // No environment → identity cannot be verified → deny.
     console.error("Admin route denied: Supabase environment is not configured.");
-    return deny();
+    return deny("session");
   }
 
   try {
@@ -65,7 +75,7 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return deny();
+      return deny("session");
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -75,13 +85,13 @@ export async function middleware(request: NextRequest) {
       .maybeSingle();
 
     if (profileError || !profile || !profile.is_active || !isAdminPortalRole(profile.role)) {
-      return deny();
+      return deny("role");
     }
 
     return response;
   } catch (err) {
     console.error("Admin middleware authorization failed:", err);
-    return deny();
+    return deny("session");
   }
 }
 

@@ -14,6 +14,7 @@
 // directly. Keeping the decision table in one place is what makes "who may do what" auditable.
 
 import { isAdminPortalRole } from "@/lib/auth/roles";
+import type { AuditEntityType } from "@/lib/domain/types";
 
 export type AdminRole = "owner" | "editor" | "viewer";
 
@@ -122,3 +123,148 @@ export function adminRoleFromStaffRole(staffRole: string | null | undefined): Ad
 /** Arabic message shown when a signed-in staff member lacks the capability for an action. */
 export const CAPABILITY_DENIED_MESSAGE_AR =
   "صلاحياتك الحالية لا تسمح بهذا الإجراء، يرجى مراجعة مسؤول النظام.";
+
+/** Arabic display names for the three roles, used by the admin shell and by refusal entries. */
+export const ADMIN_ROLE_LABELS_AR: Record<AdminRole, string> = {
+  owner: "مالك (مسؤول النظام)",
+  editor: "محرر (سكرتارية الكنيسة)",
+  viewer: "قارئ (عرض فقط)",
+};
+
+// ============================================================================
+// Capability → audit vocabulary
+// ============================================================================
+
+/** Arabic name of each capability, as it appears in a refusal entry ("رُفض إجراء «حذف فعالية»"). */
+export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
+  "event:read": "قراءة الفعاليات",
+  "series:read": "قراءة السلاسل المتكررة",
+  "taxonomy:read": "قراءة التصنيفات",
+  "media:read": "قراءة بيانات الوسائط",
+  "audit:read": "قراءة سجل التدقيق",
+  "event:create": "إنشاء فعالية",
+  "event:update": "تعديل فعالية",
+  "event:publish": "نشر فعالية",
+  "event:unpublish": "إلغاء نشر فعالية",
+  "event:cancel": "إلغاء فعالية",
+  "event:reschedule": "إعادة جدولة فعالية",
+  "event:duplicate": "نسخ فعالية",
+  "event:delete": "حذف فعالية",
+  "series:create": "إنشاء سلسلة متكررة",
+  "series:update": "تعديل سلسلة متكررة",
+  "series:cancel": "إلغاء سلسلة متكررة",
+  "series:delete": "حذف سلسلة متكررة",
+  "exception:write": "تعديل استثناء موعد",
+  "exception:delete": "حذف استثناء موعد",
+  "taxonomy:write": "تعديل التصنيفات",
+  "taxonomy:delete": "حذف مصطلح تصنيف",
+  "media:create": "تسجيل وسائط",
+  "media:update": "تعديل بيانات وسائط",
+  "media:delete": "حذف بيانات وسائط",
+  "cache:republish": "مسح ذاكرة الموقع المؤقتة",
+  "users:manage": "إدارة المستخدمين",
+};
+
+/**
+ * The audit entity each capability acts on. A refusal entry names the thing the attempt was about,
+ * so the audit screen reads "رفض صلاحية · حذف فعالية" instead of an unattributed denial.
+ */
+export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
+  "event:read": "event",
+  "series:read": "event_series",
+  "taxonomy:read": "taxonomy_term",
+  "media:read": "media",
+  "audit:read": "event",
+  "event:create": "event",
+  "event:update": "event",
+  "event:publish": "event",
+  "event:unpublish": "event",
+  "event:cancel": "event",
+  "event:reschedule": "event",
+  "event:duplicate": "event",
+  "event:delete": "event",
+  "series:create": "event_series",
+  "series:update": "event_series",
+  "series:cancel": "event_series",
+  "series:delete": "event_series",
+  "exception:write": "event_exception",
+  "exception:delete": "event_exception",
+  "taxonomy:write": "taxonomy_term",
+  "taxonomy:delete": "taxonomy_term",
+  "media:create": "media",
+  "media:update": "media",
+  "media:delete": "media",
+  "cache:republish": "event",
+  "users:manage": "event",
+};
+
+/**
+ * How a refused attempt is written into the audit trail: the entity the attempt was about and a
+ * one-line Arabic summary naming the capability AND the acting role (the actor's name is already on
+ * the entry). PURE — the caller supplies the two values to `recordAuditNote()`.
+ */
+export function describeRefusal(
+  capability: Capability,
+  role: AdminRole | null
+): { entityType: AuditEntityType; summary: string } {
+  return {
+    entityType: CAPABILITY_AUDIT_ENTITY[capability],
+    summary: `رُفض إجراء «${CAPABILITY_LABELS_AR[capability]}» — الدور الحالي (${
+      role ? ADMIN_ROLE_LABELS_AR[role] : "غير معروف"
+    }) لا يملك هذه الصلاحية.`,
+  };
+}
+
+// ============================================================================
+// The resolved capability set a screen renders with
+// ============================================================================
+
+/**
+ * The capabilities an admin SCREEN needs as plain booleans, resolved once on the server and passed
+ * down as props. The UI uses it to decide what to offer; the server actions re-check the same
+ * decision through `can()` before touching anything, so hiding a control is convenience, never
+ * security (see systemPatterns §26).
+ */
+export interface AdminCapabilities {
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  publish: boolean;
+  cancel: boolean;
+  reschedule: boolean;
+  duplicate: boolean;
+  delete: boolean;
+  seriesWrite: boolean;
+  exceptionWrite: boolean;
+  taxonomyWrite: boolean;
+  mediaWrite: boolean;
+  mediaDelete: boolean;
+  republish: boolean;
+  auditRead: boolean;
+}
+
+/** Derives the screen-facing capability set from ONE role, through the same `can()` table. */
+export function resolveAdminCapabilities(role: AdminRole | null): AdminCapabilities {
+  return {
+    read: can(role, "event:read"),
+    create: can(role, "event:create"),
+    update: can(role, "event:update"),
+    publish: can(role, "event:publish"),
+    cancel: can(role, "event:cancel"),
+    reschedule: can(role, "event:reschedule"),
+    duplicate: can(role, "event:duplicate"),
+    delete: can(role, "event:delete"),
+    seriesWrite: can(role, "series:create") && can(role, "series:update"),
+    exceptionWrite: can(role, "exception:write"),
+    taxonomyWrite: can(role, "taxonomy:write"),
+    mediaWrite: can(role, "media:create") && can(role, "media:update"),
+    mediaDelete: can(role, "media:delete"),
+    republish: can(role, "cache:republish"),
+    auditRead: can(role, "audit:read"),
+  };
+}
+
+/** True when the role may change nothing at all — the read-only state the admin renders. */
+export function isReadOnlyRole(capabilities: AdminCapabilities): boolean {
+  return !capabilities.create && !capabilities.update && !capabilities.publish;
+}

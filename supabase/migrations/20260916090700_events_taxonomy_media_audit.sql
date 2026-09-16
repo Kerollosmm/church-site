@@ -48,10 +48,15 @@ END $$;
 DO $$
 BEGIN
     CREATE TYPE audit_action_enum AS ENUM (
-        'create', 'update', 'publish', 'unpublish', 'cancel', 'reschedule', 'duplicate', 'delete'
+        'create', 'update', 'publish', 'unpublish', 'cancel', 'reschedule', 'duplicate', 'delete',
+        -- رفض صلاحية: أثر تدقيقي لمحاولة لم تُنفَّذ (قبل/بعد = NULL)، وليس حركة على أي صف.
+        'denied'
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+-- قاعدة طُبِّق عليها الملف قبل إضافة 'denied': تُرقّى هنا (لا أثر عند وجود القيمة).
+ALTER TYPE audit_action_enum ADD VALUE IF NOT EXISTS 'denied';
 
 -- -----------------------------------------------------------------------------
 -- 1. مصطلحات التصنيف (taxonomy_terms)

@@ -21,11 +21,24 @@ export type EventStatus = "draft" | "published" | "cancelled" | "archived";
 
 export const EVENT_STATUSES = ["draft", "published", "cancelled", "archived"] as const satisfies readonly EventStatus[];
 
+/** Arabic display labels for the lifecycle values — the enum itself is never shown to a person. */
+export const EVENT_STATUS_LABELS_AR: Record<EventStatus, string> = {
+  draft: "مسودة",
+  published: "منشورة",
+  cancelled: "ملغاة",
+  archived: "مؤرشفة",
+};
+
 /** Recurrence frequencies supported by the engine. Mirrors `recurrence_freq_enum`. */
 export type RecurrenceFreq = "weekly" | "monthly";
 
 /** Kind of a per-occurrence deviation. Mirrors `event_exception_kind_enum`. */
 export type EventExceptionKind = "cancelled" | "moved";
+
+export const EXCEPTION_KIND_LABELS_AR: Record<EventExceptionKind, string> = {
+  cancelled: "إلغاء موعد واحد",
+  moved: "نقل موعد واحد",
+};
 
 /** Classification dimensions. Mirrors `taxonomy_dimension_enum`. */
 export type TaxonomyDimension = "event_type" | "ministry" | "audience" | "language" | "venue" | "tag";
@@ -39,7 +52,12 @@ export const TAXONOMY_DIMENSIONS = [
   "tag",
 ] as const satisfies readonly TaxonomyDimension[];
 
-/** Every recorded mutation. Mirrors `audit_action_enum`. */
+/**
+ * Every recorded mutation, plus `denied` — the one entry that records NO change: a capability
+ * refusal (a signed-in member of staff attempted something their role does not allow). It is in this
+ * vocabulary because a refusal must be as auditable as a change, and it must not be disguised as a
+ * mutation that never happened. Mirrors `audit_action_enum`.
+ */
 export type AuditAction =
   | "create"
   | "update"
@@ -48,7 +66,8 @@ export type AuditAction =
   | "cancel"
   | "reschedule"
   | "duplicate"
-  | "delete";
+  | "delete"
+  | "denied";
 
 export const AUDIT_ACTION_LABELS_AR: Record<AuditAction, string> = {
   create: "إنشاء",
@@ -59,6 +78,7 @@ export const AUDIT_ACTION_LABELS_AR: Record<AuditAction, string> = {
   reschedule: "إعادة جدولة",
   duplicate: "نسخ",
   delete: "حذف",
+  denied: "رفض صلاحية",
 };
 
 /** Records that can appear in the audit log. */
