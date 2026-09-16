@@ -26,12 +26,13 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, ChevronLeft, FilterX } from "lucide-react";
+import { BellRing, CalendarDays, ChevronLeft, FilterX } from "lucide-react";
 import { EventFilters } from "@/components/events/EventFilters";
 import { EventList } from "@/components/events/EventList";
 import { EventsToolbar } from "@/components/events/EventsToolbar";
 import { MonthCalendar } from "@/components/events/MonthCalendar";
 import { PageHero } from "@/components/layout/PageHero";
+import { isEventSubscriptionsEnabled } from "@/lib/env";
 import type { TaxonomyDimension } from "@/lib/domain/types";
 import {
   countTermsByDimension,
@@ -257,6 +258,34 @@ export default async function EventsPage({
             )}
           </>
         )}
+
+        {/* The way into the notification surface. Rendered only while the feature is switched on
+            (`EVENTS_SUBSCRIPTIONS_ENABLED`), and worded with the same honesty as the page itself:
+            nothing is e-mailed yet (see `src/lib/notify/`). */}
+        {isEventSubscriptionsEnabled() ? (
+          <section
+            aria-labelledby="events-subscribe-heading"
+            data-events-region="subscribe"
+            className="flex flex-col gap-3 rounded-2xl border border-copticGold-200 bg-copticGold-50/50 p-5 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className="space-y-1">
+              <h2
+                id="events-subscribe-heading"
+                className="flex items-center gap-2 font-heading text-sm font-bold text-copticNavy"
+              >
+                <BellRing aria-hidden="true" className="h-4 w-4 text-copticGold-700" />
+                <span>{t(locale, "events.subscribeTitle")}</span>
+              </h2>
+              <p className="max-w-2xl text-xs leading-relaxed text-slateText-secondary">
+                {t(locale, "events.subscribeHint")}
+              </p>
+            </div>
+            <Link href="/subscribe" className={PRIMARY_LINK}>
+              <BellRing aria-hidden="true" className="h-4 w-4" />
+              <span>{t(locale, "events.subscribeLink")}</span>
+            </Link>
+          </section>
+        ) : null}
       </div>
     </div>
   );

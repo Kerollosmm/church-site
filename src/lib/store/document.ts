@@ -13,16 +13,40 @@ import type {
   EventSeriesRecord,
   EventTermLink,
   MediaRecord,
+  SubscriberRecord,
   TaxonomyTermRecord,
 } from "@/lib/domain/types";
 
-/** Bumped when the document shape changes; the driver refuses to guess at an older layout. */
-export const STORE_SCHEMA_VERSION = 1;
+/**
+ * Version 2 added the `subscribers` collection (event notifications).
+ *
+ * A version-1 document is NOT rejected: it is upgraded in memory on read (`parseStoreDocument`) and
+ * written back at version 2 by the next mutation. A collection added later is the one shape change
+ * that loses nothing by being tolerated, and refusing to read a parish's existing store would lose
+ * every event it holds. Anything else — an older version, a newer version, a missing collection —
+ * still fails loudly.
+ */
+export const STORE_SCHEMA_VERSION = 2;
+
+/** The only older layout this build can still read (see the note above). */
+export const STORE_SCHEMA_VERSION_LEGACY = 1;
 
 export const STORE_FILE_NAME = "church-store.json";
 
 /** Directory used when `CHURCH_DATA_DIR` is not set, relative to the process working directory. */
 export const DEFAULT_STORE_DIR_NAME = ".data";
+
+/** Every collection a CURRENT document must carry. */
+export const STORE_COLLECTIONS = [
+  "events",
+  "series",
+  "exceptions",
+  "terms",
+  "eventTerms",
+  "media",
+  "subscribers",
+  "audit",
+] as const;
 
 export interface StoreDocument {
   schemaVersion: number;
@@ -34,31 +58,58 @@ export interface StoreDocument {
   terms: TaxonomyTermRecord[];
   eventTerms: EventTermLink[];
   media: MediaRecord[];
+  /** Event-notification subscriptions (see `SubscriberRecord`). Added in schema version 2. */
+  subscribers: SubscriberRecord[];
   /** Append-only, oldest first. */
   audit: AuditLogEntry[];
 }
 
+export interface ParsedStoreDocument {
+  document: StoreDocument;
+  /** The version it was read at when it is older than the current one, otherwise null. */
+  upgradedFrom: number | null;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 /**
- * Structural check for a document read back from disk. Deliberately strict: a corrupt or unexpected
- * file must FAIL LOUDLY rather than be silently replaced by the seed, which would look like the
- * parish's content had vanished overnight.
+ * Validates a document read back from disk, upgrading an older-but-readable layout in place.
+ *
+ * It is deliberately STRICT: a corrupt or unexpected file must FAIL LOUDLY rather than be silently
+ * replaced by the seed, which would look like the parish's content had vanished overnight.
  */
-export function assertStoreDocument(value: unknown): asserts value is StoreDocument {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+export function parseStoreDocument(value: unknown): ParsedStoreDocument {
+  if (!isRecord(value)) {
     throw new Error("Store document is not an object.");
   }
-  const document = value as Record<string, unknown>;
-  if (document.schemaVersion !== STORE_SCHEMA_VERSION) {
+
+  const version = value.schemaVersion;
+  if (typeof version !== "number" || (version !== STORE_SCHEMA_VERSION && version !== STORE_SCHEMA_VERSION_LEGACY)) {
     throw new Error(
-      `Store document schemaVersion ${String(document.schemaVersion)} is not supported (expected ${STORE_SCHEMA_VERSION}).`
+      `Store document schemaVersion ${String(version)} is not supported (expected ${STORE_SCHEMA_VERSION}, or ${STORE_SCHEMA_VERSION_LEGACY} for an upgrade).`
     );
   }
-  for (const collection of ["events", "series", "exceptions", "terms", "eventTerms", "media", "audit"] as const) {
-    if (!Array.isArray(document[collection])) {
+
+  let upgradedFrom: number | null = null;
+  if (version === STORE_SCHEMA_VERSION_LEGACY) {
+    // Version 1 predates subscribers entirely: an existing subscription could not have been stored,
+    // so an empty collection is the only faithful value — nothing is invented and nothing is lost.
+    if (!Array.isArray(value.subscribers)) value.subscribers = [];
+    value.schemaVersion = STORE_SCHEMA_VERSION;
+    upgradedFrom = version;
+  }
+
+  for (const collection of STORE_COLLECTIONS) {
+    if (!Array.isArray(value[collection])) {
       throw new Error(`Store document is missing the "${collection}" collection.`);
     }
   }
-  if (typeof document.updatedAt !== "string") {
+
+  if (typeof value.updatedAt !== "string") {
     throw new Error("Store document is missing its updatedAt timestamp.");
   }
+
+  return { document: value as unknown as StoreDocument, upgradedFrom };
 }

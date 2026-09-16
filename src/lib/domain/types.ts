@@ -10,6 +10,7 @@
 // these shapes; the JSON driver stores them as they are. A caller can therefore never tell which
 // driver answered.
 
+import type { Locale } from "@/lib/i18n/locales";
 import { PARISH_TIME_ZONE } from "@/lib/utils/cairo-time";
 
 // ============================================================================
@@ -67,7 +68,8 @@ export type AuditAction =
   | "reschedule"
   | "duplicate"
   | "delete"
-  | "denied";
+  | "denied"
+  | "notify";
 
 export const AUDIT_ACTION_LABELS_AR: Record<AuditAction, string> = {
   create: "إنشاء",
@@ -79,6 +81,9 @@ export const AUDIT_ACTION_LABELS_AR: Record<AuditAction, string> = {
   duplicate: "نسخ",
   delete: "حذف",
   denied: "رفض صلاحية",
+  // An INTENTION, not a delivery: the no-op mailer records "this is what would have been sent".
+  // No email leaves the site today (see `src/lib/notify/`), and the label says so.
+  notify: "إشعار بريدي (لم يُرسل)",
 };
 
 /** Records that can appear in the audit log. */
@@ -88,7 +93,8 @@ export type AuditEntityType =
   | "event_exception"
   | "taxonomy_term"
   | "event_terms"
-  | "media";
+  | "media"
+  | "subscriber";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -97,6 +103,7 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   taxonomy_term: "مصطلح تصنيف",
   event_terms: "وسوم فعالية",
   media: "ملف وسائط",
+  subscriber: "مشترك في التنبيهات",
 };
 
 // ============================================================================
@@ -385,7 +392,53 @@ export interface MediaCreateInput {
 export type MediaUpdateInput = Partial<MediaCreateInput>;
 
 // ============================================================================
-// 7. Audit trail
+// 7. Subscribers (event notifications)
+// ============================================================================
+
+/**
+ * One email subscription to event updates.
+ *
+ * THE FLOW TODAY, STATED PLAINLY: the site has **no mail provider**. A visitor subscribes through a
+ * public form, the subscription is stored and listed in the admin area, and nothing is ever emailed —
+ * the notification side is a documented no-op adapter (`src/lib/notify/`) that only records what it
+ * WOULD have sent. `confirmedAt` is therefore stamped at creation, because the in-site confirmation
+ * message on the same page IS the only confirmation the visitor gives; a future double opt-in would
+ * leave it null until the link in that email was opened.
+ */
+export interface SubscriberRecord {
+  id: string;
+  /** Normalised identity of the subscription. See `normalizeSubscriberEmail()`. */
+  email: string;
+  /** The display name the visitor typed, when they typed one. */
+  name: string | null;
+  /** The language the visitor was reading the site in when they subscribed. */
+  locale: Locale;
+  /** Taxonomy term SLUGS the visitor asked to hear about. EMPTY = every topic. */
+  topics: string[];
+  createdAt: string;
+  /** When the subscription was confirmed by the visitor (see the flow note above). */
+  confirmedAt: string | null;
+  /** An admin can retire a subscription without deleting it; public submits revive it. */
+  isActive: boolean;
+}
+
+/** What a public subscription submits. The store normalises the email and de-duplicates. */
+export interface SubscriberCreateInput {
+  email: string;
+  name?: string | null;
+  locale: Locale;
+  topics?: readonly string[];
+}
+
+/** Result of a public subscription attempt: the stored row and whether it is new. */
+export interface SubscriberSubscribeResult {
+  subscriber: SubscriberRecord;
+  /** `false` when an existing (possibly retired) subscription was updated instead of duplicated. */
+  created: boolean;
+}
+
+// ============================================================================
+// 8. Audit trail
 // ============================================================================
 
 /**

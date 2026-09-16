@@ -34,3 +34,6 @@ yarn-error.log*
 
 # file-backed repository store (json driver runtime data — never committed)
 /.data/
+
+# local data backups taken by the procedure in docs/backup-restore.md (data, never code)
+/.backups/

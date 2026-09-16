@@ -5,10 +5,11 @@
 // Every write goes through `mutateStoreDocument()`, so a mutation and its audit entry are persisted
 // by ONE atomic rename and can never be observed separately.
 
-import { StoreError, normalizeStatusFilter, type AuditListFilter, type AuditNoteInput, type EventListFilter, type EventRepository, type MediaListFilter, type RepositoryStatus, type SeriesListFilter, type TaxonomyTermListFilter } from "@/lib/store/repository";
+import { StoreError, normalizeStatusFilter, type AuditListFilter, type AuditNoteInput, type EventListFilter, type EventRepository, type MediaListFilter, type RepositoryStatus, type SeriesListFilter, type SubscriberListFilter, type TaxonomyTermListFilter } from "@/lib/store/repository";
 import { getStoreDataDir, mutateStoreDocument, readStoreDocument } from "@/lib/store/json-store";
 import { buildAuditEntry, newId, nowIso, snapshot } from "@/lib/store/audit";
 import type { StoreDocument } from "@/lib/store/document";
+import { normalizeSubscriberEmail, normalizeSubscriberTopics, SUBSCRIBER_EMAIL_MAX_LENGTH, SUBSCRIBER_NAME_MAX_LENGTH } from "@/lib/domain/subscribers";
 import {
   AUDIT_ENTITY_TYPE_LABELS_AR,
   DEFAULT_EVENT_TIME_ZONE,
@@ -28,6 +29,9 @@ import {
   type MediaCreateInput,
   type MediaRecord,
   type MediaUpdateInput,
+  type SubscriberCreateInput,
+  type SubscriberRecord,
+  type SubscriberSubscribeResult,
   type TaxonomyTermCreateInput,
   type TaxonomyTermRecord,
   type TaxonomyTermUpdateInput,
@@ -920,6 +924,123 @@ export class JsonEventRepository implements EventRepository {
           after: null,
         })
       );
+    });
+  }
+
+  // --- subscribers ---------------------------------------------------------
+
+  async listSubscribers(filter: SubscriberListFilter = {}): Promise<SubscriberRecord[]> {
+    const document = await readStoreDocument();
+    const matches = document.subscribers.filter((subscriber) => filter.includeInactive || subscriber.isActive);
+    // Newest first: the admin list answers "who subscribed recently", not "who is alphabetically first".
+    const ordered = matches.map((subscriber) => ({ ...subscriber, topics: [...subscriber.topics] }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return typeof filter.limit === "number" ? ordered.slice(0, filter.limit) : ordered;
+  }
+
+  /**
+   * Idempotent public subscribe (see the repository contract). The row is keyed by the NORMALISED
+   * e-mail, and one atomic write covers both the change and its audit line, as everywhere else here.
+   */
+  async subscribe(input: SubscriberCreateInput, actor: Actor): Promise<SubscriberSubscribeResult> {
+    const email = normalizeSubscriberEmail(input.email);
+    const topics = normalizeSubscriberTopics(input.topics);
+    const name = typeof input.name === "string" && input.name.trim().length > 0
+      ? input.name.trim().slice(0, SUBSCRIBER_NAME_MAX_LENGTH)
+      : null;
+
+    if (email.length === 0 || email.length > SUBSCRIBER_EMAIL_MAX_LENGTH) {
+      throw new StoreError("invalid", "subscribers.subscribe", "The e-mail address is empty or too long.", {
+        emailLength: email.length,
+      });
+    }
+
+    return mutateStoreDocument("subscribers.subscribe", (document) => {
+      const now = nowIso();
+      const existing = document.subscribers.find((candidate) => candidate.email === email);
+
+      if (existing) {
+        const before = snapshot(existing);
+        const revived = !existing.isActive;
+        existing.name = name ?? existing.name;
+        existing.locale = input.locale;
+        existing.topics = topics;
+        existing.isActive = true;
+        // A revived subscription keeps its original confirmation instant: the visitor confirmed once,
+        // and re-subscribing is not a new confirmation of an address already on file.
+        existing.confirmedAt = existing.confirmedAt ?? now;
+
+        document.audit.push(
+          buildAuditEntry({
+            actor,
+            action: "update",
+            entityType: "subscriber",
+            entityId: existing.id,
+            before,
+            after: snapshot(existing),
+            summary: revived
+              ? `تنشيط ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber} — أعاد صاحب البريد الاشتراك بعد إيقافه.`
+              : `تحديث اهتمامات ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber} من نموذج الموقع العام.`,
+          })
+        );
+
+        return { subscriber: { ...existing, topics: [...existing.topics] }, created: false };
+      }
+
+      const record: SubscriberRecord = {
+        id: newId(),
+        email,
+        name,
+        locale: input.locale,
+        topics,
+        createdAt: now,
+        // The in-site confirmation message is the visitor's confirmation (there is no mail provider
+        // to send a double-opt-in link through — see the note on `SubscriberRecord`).
+        confirmedAt: now,
+        isActive: true,
+      };
+
+      document.subscribers.push(record);
+      document.audit.push(
+        buildAuditEntry({
+          actor,
+          action: "create",
+          entityType: "subscriber",
+          entityId: record.id,
+          before: null,
+          after: snapshot(record),
+          summary: `اشتراك جديد في تنبيهات الفعاليات من نموذج الموقع العام.`,
+        })
+      );
+
+      return { subscriber: { ...record, topics: [...record.topics] }, created: true };
+    });
+  }
+
+  async setSubscriberActive(id: string, isActive: boolean, actor: Actor): Promise<SubscriberRecord> {
+    return mutateStoreDocument("subscribers.setActive", (document) => {
+      const record = document.subscribers.find((subscriber) => subscriber.id === id);
+      if (!record) {
+        throw new StoreError("not_found", "subscribers.setActive", `Subscriber ${id} does not exist.`, { id });
+      }
+
+      const before = snapshot(record);
+      record.isActive = isActive;
+      document.audit.push(
+        buildAuditEntry({
+          actor,
+          action: "update",
+          entityType: "subscriber",
+          entityId: record.id,
+          before,
+          after: snapshot(record),
+          summary: isActive
+            ? `تنشيط ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber}.`
+            : `إيقاف ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber} (لن يصله أي تنبيه؛ البريد محفوظ).`,
+        })
+      );
+
+      return { ...record, topics: [...record.topics] };
     });
   }
 

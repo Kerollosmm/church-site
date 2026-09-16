@@ -15,6 +15,10 @@
 //     together.
 //  3. NO SILENT RESET — a corrupt or unsupported document raises; it is never quietly replaced by
 //     the seed, because that would look like the parish's content had disappeared.
+//  4. OLDER LAYOUTS ARE UPGRADED, NOT REFUSED — a document written before the `subscribers`
+//     collection existed is read as-is, gains the empty collection and is rewritten at the current
+//     version by the next mutation (announced once per process). Only genuinely unsupported versions
+//     fail.
 //
 // KNOWN LIMIT, STATED PLAINLY: the queue is per PROCESS. Two Node processes sharing one data
 // directory (e.g. `next dev` workers) are not coordinated — this is a demo/local driver, and the
@@ -23,7 +27,12 @@
 import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { StoreError } from "@/lib/store/repository";
-import { assertStoreDocument, DEFAULT_STORE_DIR_NAME, STORE_FILE_NAME, type StoreDocument } from "@/lib/store/document";
+import {
+  DEFAULT_STORE_DIR_NAME,
+  STORE_FILE_NAME,
+  parseStoreDocument,
+  type StoreDocument,
+} from "@/lib/store/document";
 import { buildSeedDocument, describeSeed } from "@/lib/store/seed";
 import { nowIso } from "@/lib/store/audit";
 
@@ -46,6 +55,7 @@ export function getStoreFilePath(): string {
 
 let mutationQueue: Promise<unknown> = Promise.resolve();
 let reportedSeed = false;
+let reportedUpgrade = false;
 
 /**
  * Runs `task` after every previously queued task has settled, and keeps the queue alive even when a
@@ -104,8 +114,18 @@ async function readDocumentUnsafe(): Promise<StoreDocument> {
   try {
     const raw = await readFile(target, "utf8");
     const parsed: unknown = JSON.parse(raw);
-    assertStoreDocument(parsed);
-    return parsed;
+    const { document, upgradedFrom } = parseStoreDocument(parsed);
+    if (upgradedFrom !== null && !reportedUpgrade) {
+      // The upgrade is persisted by the NEXT write (every mutation rewrites the whole document). It is
+      // announced once per process because it changes the file on disk without anyone asking.
+      reportedUpgrade = true;
+      console.info("[store] upgraded the file-backed store document", {
+        path: target,
+        from: upgradedFrom,
+        to: document.schemaVersion,
+      });
+    }
+    return document;
   } catch (error) {
     const code = (error as NodeJS.ErrnoException | null)?.code;
 

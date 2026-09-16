@@ -404,6 +404,8 @@ export function buildSeedDocument(): StoreDocument {
     terms: SEED_TAXONOMY_TERMS.map((term) => ({ ...term })),
     eventTerms: buildEventTermLinks(events),
     media: [],
+    // Subscribers are PEOPLE, not content: a seeded row would be an invented address. Empty.
+    subscribers: [],
     audit: [],
   };
 }

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SEED_PROGRAM_SLUGS } from "@/lib/data/seed-data";
+import { SUBSCRIBER_EMAIL_MAX_LENGTH, SUBSCRIBER_NAME_MAX_LENGTH, SUBSCRIBER_TOPICS_MAX } from "@/lib/domain/subscribers";
 
 export const egyptianPhone = z
   .string()
@@ -114,10 +115,34 @@ export const StaffSignInSchema = z.object({
   password: z.string().min(1, "كلمة المرور مطلوبة"),
 });
 
+/**
+ * 7. الاشتراك في تنبيهات الفعاليات (نموذج عام).
+ *
+ * `topics` are taxonomy term SLUGS. The shape is checked here; whether a slug exists in the live
+ * vocabulary is checked by the action against the store (`resolveSubscriberTopics` in
+ * `src/lib/domain/subscribers.ts`), because a stale form must not fail a visitor — the unknown slugs
+ * are simply dropped.
+ */
+export const EventSubscriptionSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(5, "يرجى إدخال بريد إلكتروني صحيح")
+    .max(SUBSCRIBER_EMAIL_MAX_LENGTH, "البريد الإلكتروني أطول من الحد المسموح")
+    .email("يرجى إدخال بريد إلكتروني صحيح"),
+  name: z.string().trim().max(SUBSCRIBER_NAME_MAX_LENGTH, "الاسم أطول من الحد المسموح").optional().or(z.literal("")),
+  topics: z
+    .array(z.string().trim().regex(/^[a-z0-9][a-z0-9-]*$/, "صيغة التصنيف غير صحيحة").max(120))
+    .max(SUBSCRIBER_TOPICS_MAX, `لا يمكن اختيار أكثر من ${SUBSCRIBER_TOPICS_MAX} تصنيفاً`)
+    .optional(),
+  turnstileToken,
+});
+
 export type CondolenceBookingInput = z.infer<typeof CondolenceBookingSchema>;
 export type ContactMessageInput = z.infer<typeof ContactMessageSchema>;
 export type ClinicInquiryInput = z.infer<typeof ClinicInquirySchema>;
 export type ProgramApplicationInput = z.infer<typeof ProgramApplicationSchema>;
 export type JobApplicationInput = z.infer<typeof JobApplicationSchema>;
 export type StaffSignInInput = z.infer<typeof StaffSignInSchema>;
+export type EventSubscriptionInput = z.infer<typeof EventSubscriptionSchema>;
 export type ProgramSlug = ProgramApplicationInput["programSlug"];

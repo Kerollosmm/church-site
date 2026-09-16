@@ -8,7 +8,9 @@
 //
 // CONTRACT RULES (the drivers implement them, callers may rely on them):
 //  1. Every mutation takes an `Actor` and appends exactly one `audit_log` entry carrying the row
-//     BEFORE and AFTER the change. There is no mutation path that skips the audit.
+//     BEFORE and AFTER the change. There is no mutation path that skips the audit. A PUBLIC mutation
+//     (`subscribe()`) passes the visitor as the actor — `{ id: null, name: … }` — because the audit
+//     line of a public write must name who caused it as precisely as its writer knows.
 //  2. Failures are reported as `StoreError` with a closed-set `code`, so the caller can produce an
 //     Arabic message without pattern-matching driver-specific errors (PostgREST codes, ENOENT, …).
 //  3. Reads return domain records only — never a driver row. A caller must not be able to tell the
@@ -32,6 +34,9 @@ import type {
   MediaCreateInput,
   MediaRecord,
   MediaUpdateInput,
+  SubscriberCreateInput,
+  SubscriberRecord,
+  SubscriberSubscribeResult,
   TaxonomyDimension,
   TaxonomyTermCreateInput,
   TaxonomyTermRecord,
@@ -107,6 +112,12 @@ export interface AuditListFilter {
   entityType?: AuditEntityType;
   entityId?: string;
   action?: AuditAction;
+  limit?: number;
+}
+
+export interface SubscriberListFilter {
+  /** Default false: retired (deactivated) subscriptions are hidden unless explicitly requested. */
+  includeInactive?: boolean;
   limit?: number;
 }
 
@@ -201,6 +212,20 @@ export interface EventRepository {
   createMedia(input: MediaCreateInput, actor: Actor): Promise<MediaRecord>;
   updateMedia(id: string, patch: MediaUpdateInput, actor: Actor): Promise<MediaRecord>;
   deleteMedia(id: string, actor: Actor): Promise<void>;
+
+  // --- subscribers (event notifications) -----------------------------------
+  listSubscribers(filter?: SubscriberListFilter): Promise<SubscriberRecord[]>;
+  /**
+   * The PUBLIC subscribe operation, and the only mutation in this contract a visitor can trigger.
+   *
+   * IDEMPOTENT BY CONTRACT: an e-mail that is already subscribed is never duplicated — the existing
+   * row is updated in place (refreshed name/locale/topics, and revived when it had been retired) and
+   * the caller learns which happened from `created`. The e-mail is normalised here, so two visitors
+   * typing the same address in different cases are one subscriber.
+   */
+  subscribe(input: SubscriberCreateInput, actor: Actor): Promise<SubscriberSubscribeResult>;
+  /** Retires or revives a subscription. The row is never deleted, so a decision stays reversible. */
+  setSubscriberActive(id: string, isActive: boolean, actor: Actor): Promise<SubscriberRecord>;
 
   // --- audit --------------------------------------------------------------
   /** Newest first. */

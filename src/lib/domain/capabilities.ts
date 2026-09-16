@@ -26,6 +26,7 @@ export type Capability =
   | "taxonomy:read"
   | "media:read"
   | "audit:read"
+  | "subscribers:read"
   // --- event authoring ---
   | "event:create"
   | "event:update"
@@ -49,6 +50,7 @@ export type Capability =
   | "media:update"
   | "media:delete"
   // --- operations ---
+  | "subscribers:write"
   | "cache:republish"
   | "users:manage";
 
@@ -59,6 +61,7 @@ const READ_ONLY_CAPABILITIES = [
   "taxonomy:read",
   "media:read",
   "audit:read",
+  "subscribers:read",
 ] as const satisfies readonly Capability[];
 
 /**
@@ -82,6 +85,9 @@ const EDITOR_CAPABILITIES = [
   "taxonomy:write",
   "media:create",
   "media:update",
+  // Editing the notification list is an editorial act (retiring a subscription), not a destructive
+  // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
+  "subscribers:write",
   "cache:republish",
 ] as const satisfies readonly Capability[];
 
@@ -142,6 +148,7 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "taxonomy:read": "قراءة التصنيفات",
   "media:read": "قراءة بيانات الوسائط",
   "audit:read": "قراءة سجل التدقيق",
+  "subscribers:read": "قراءة قائمة المشتركين في التنبيهات",
   "event:create": "إنشاء فعالية",
   "event:update": "تعديل فعالية",
   "event:publish": "نشر فعالية",
@@ -161,6 +168,7 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "media:create": "تسجيل وسائط",
   "media:update": "تعديل بيانات وسائط",
   "media:delete": "حذف بيانات وسائط",
+  "subscribers:write": "إيقاف أو تنشيط اشتراك في التنبيهات",
   "cache:republish": "مسح ذاكرة الموقع المؤقتة",
   "users:manage": "إدارة المستخدمين",
 };
@@ -175,6 +183,7 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "taxonomy:read": "taxonomy_term",
   "media:read": "media",
   "audit:read": "event",
+  "subscribers:read": "subscriber",
   "event:create": "event",
   "event:update": "event",
   "event:publish": "event",
@@ -194,6 +203,7 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "media:create": "media",
   "media:update": "media",
   "media:delete": "media",
+  "subscribers:write": "subscriber",
   "cache:republish": "event",
   "users:manage": "event",
 };
@@ -241,6 +251,8 @@ export interface AdminCapabilities {
   mediaDelete: boolean;
   republish: boolean;
   auditRead: boolean;
+  subscribersRead: boolean;
+  subscribersWrite: boolean;
 }
 
 /** Derives the screen-facing capability set from ONE role, through the same `can()` table. */
@@ -261,6 +273,8 @@ export function resolveAdminCapabilities(role: AdminRole | null): AdminCapabilit
     mediaDelete: can(role, "media:delete"),
     republish: can(role, "cache:republish"),
     auditRead: can(role, "audit:read"),
+    subscribersRead: can(role, "subscribers:read"),
+    subscribersWrite: can(role, "subscribers:write"),
   };
 }
 

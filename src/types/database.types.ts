@@ -65,7 +65,12 @@ export type AuditActionEnum =
   | "duplicate"
   | "delete"
   // A capability refusal: an audit event that records no change (before/after both null).
-  | "denied";
+  | "denied"
+  // An INTENTION recorded by the no-op mailer: what would have been sent had a provider existed.
+  | "notify";
+
+// --- locale of a stored record (supabase/migrations/20260916090900_subscribers.sql)
+export type LocaleEnum = "ar" | "en";
 
 export interface Database {
   public: {
@@ -1551,6 +1556,40 @@ export interface Database {
           },
         ];
       };
+      subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          locale: LocaleEnum;
+          topics: string[];
+          created_at: string;
+          confirmed_at: string | null;
+          is_active: boolean;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name?: string | null;
+          locale?: LocaleEnum;
+          topics?: string[];
+          created_at?: string;
+          confirmed_at?: string | null;
+          is_active?: boolean;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          locale?: LocaleEnum;
+          topics?: string[];
+          created_at?: string;
+          confirmed_at?: string | null;
+          is_active?: boolean;
+        };
+        // No foreign keys: a subscription belongs to a member of the public, not to a staff profile.
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1612,6 +1651,7 @@ export interface Database {
       event_exception_kind_enum: EventExceptionKindEnum;
       taxonomy_dimension_enum: TaxonomyDimensionEnum;
       audit_action_enum: AuditActionEnum;
+      locale_enum: LocaleEnum;
     };
     CompositeTypes: {
       [_ in never]: never;

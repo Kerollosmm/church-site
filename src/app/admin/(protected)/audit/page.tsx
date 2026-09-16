@@ -46,6 +46,7 @@ const ENTITY_FILTERS: readonly AuditEntityType[] = [
   "event_terms",
   "taxonomy_term",
   "media",
+  "subscriber",
 ];
 
 const ACTION_FILTERS: readonly AuditAction[] = [
@@ -58,6 +59,8 @@ const ACTION_FILTERS: readonly AuditAction[] = [
   "duplicate",
   "delete",
   "denied",
+  // The no-op mailer's would-send entries: recorded here so "was anything sent?" is answerable.
+  "notify",
 ];
 
 const LIMIT_OPTIONS = [25, 50, 100, 200] as const;

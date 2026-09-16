@@ -220,6 +220,13 @@ export default async function AdminDashboardPage() {
               <ArrowLeft className="w-4 h-4 text-copticNavy" />
             </Link>
             <Link
+              href="/admin/subscribers"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
+            >
+              <span className="font-bold text-slate-800">قائمة المشتركين في تنبيهات الفعاليات (إيقاف/تنشيط)</span>
+              <ArrowLeft className="w-4 h-4 text-copticNavy" />
+            </Link>
+            <Link
               href="/admin/bookings"
               className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
             >
@@ -284,7 +291,9 @@ export default async function AdminDashboardPage() {
           </ul>
           <p className="text-[11px] leading-relaxed text-emerald-900 bg-emerald-50 border border-emerald-200 rounded-xl p-2.5">
             <strong>منفَّذ الآن:</strong> إدارة الفعاليات (إنشاء/تعديل/نشر/إلغاء/نسخ/حذف)، السلاسل المتكررة مع إلغاء أو
-            نقل موعد واحد، سجل التدقيق، ومكتبة الوسائط (بيانات وصفية).
+            نقل موعد واحد، سجل التدقيق، مكتبة الوسائط (بيانات وصفية)، واشتراكات تنبيهات الفعاليات (تُحفظ وتُعرض فقط —
+            <strong> لا يُرسل أي بريد إلكتروني </strong>
+            حتى ربط مزوّد بريد).
           </p>
         </div>
       </div>

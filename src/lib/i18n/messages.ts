@@ -86,6 +86,36 @@ const AR_MESSAGES = {
   "ministries.viewEvents": "عرض فعاليات هذا القطاع",
   "locale.switcherLabel": "تغيير لغة الموقع",
   "a11y.translationMissing": "هذا النص غير مترجم بعد ويعرض بالعربية",
+  "subscribe.title": "تنبيهات الفعاليات",
+  "subscribe.intro":
+    "سجّل بريدك الإلكتروني ليصلك جديد مواعيد القداسات والاجتماعات والأنشطة في الكنيسة. الاشتراك مجاني، ويمكن لسكرتارية الكنيسة إيقافه في أي وقت.",
+  "subscribe.formTitle": "بيانات الاشتراك",
+  "subscribe.emailLabel": "البريد الإلكتروني",
+  "subscribe.emailHint": "سيُستخدم هذا البريد لقائمة التنبيهات فقط، ولا يظهر لأي زائر للموقع.",
+  "subscribe.nameLabel": "الاسم (اختياري)",
+  "subscribe.topicsLegend": "التصنيفات التي تهمّك",
+  "subscribe.topicsHint": "اتركها فارغة لتصلك التنبيهات عن كل الفعاليات.",
+  "subscribe.privacyNote":
+    "لا نطلب أي بيانات أخرى، ولا تُنشر قائمة المشتركين في أي مكان على الموقع. إلغاء الاشتراك متاح بطلب من سكرتارية الكنيسة.",
+  "subscribe.submit": "تسجيل الاشتراك",
+  "subscribe.submitting": "جارٍ التسجيل…",
+  "subscribe.deliveryOff":
+    "ملاحظة مهمة: إرسال البريد الإلكتروني غير مفعّل على هذا الموقع بعد، لذلك لن تصلك رسالة الآن. اشتراكك محفوظ في سجل الكنيسة وسيُستخدم عند تشغيل التنبيهات.",
+  "subscribe.disabledTitle": "خدمة الاشتراك غير مفعّلة حالياً",
+  "subscribe.disabledHint":
+    "أوقفت كنيسة القديسين خدمة التنبيهات بالبريد الإلكتروني على هذا الموقع مؤقتاً. يمكنك متابعة الفعاليات القادمة من صفحة الفعاليات.",
+  "subscribe.backToEvents": "تصفّح الفعاليات القادمة",
+  "subscribe.result.subscribed": "تم تسجيل اشتراكك في تنبيهات الفعاليات بنجاح.",
+  "subscribe.result.updated": "اشتراكك مسجَّل بالفعل — حدّثنا بياناته بدلاً من تكراره.",
+  "subscribe.result.disabled": "خدمة الاشتراك في التنبيهات غير مفعّلة على هذا الموقع حالياً.",
+  "subscribe.result.rateLimited": "تم تجاوز الحد المسموح من المحاولات، يرجى المحاولة بعد دقيقة.",
+  "subscribe.result.invalid": "يرجى التأكد من صحة البريد الإلكتروني المطلوب.",
+  "subscribe.result.verificationFailed": "فشل التحقق الأمني، يرجى إعادة المحاولة.",
+  "subscribe.result.storeError": "تعذّر تسجيل الاشتراك الآن، يرجى المحاولة مرة أخرى بعد قليل.",
+  "events.subscribeTitle": "تنبيهات الفعاليات بالبريد الإلكتروني",
+  "events.subscribeHint":
+    "سجّل بريدك ليصلك جديد المواعيد المعلنة. الخدمة مجانية، وإرسال البريد غير مفعّل على الموقع بعد — يُحفظ الاشتراك في سجل الكنيسة.",
+  "events.subscribeLink": "الاشتراك في التنبيهات",
 } as const;
 
 export type MessageKey = keyof typeof AR_MESSAGES;
@@ -167,6 +197,36 @@ const EN_MESSAGES: Record<MessageKey, string> = {
   "ministries.viewEvents": "View this ministry's events",
   "locale.switcherLabel": "Change site language",
   "a11y.translationMissing": "This text is not translated yet and is shown in Arabic",
+  "subscribe.title": "Events notifications",
+  "subscribe.intro":
+    "Leave your e-mail address to hear about new liturgies, meetings and activities at the parish. Subscribing is free, and the parish office can stop it at any time.",
+  "subscribe.formTitle": "Subscription details",
+  "subscribe.emailLabel": "E-mail address",
+  "subscribe.emailHint": "Used for the notification list only. It is never shown to any visitor of this site.",
+  "subscribe.nameLabel": "Name (optional)",
+  "subscribe.topicsLegend": "Topics you care about",
+  "subscribe.topicsHint": "Leave every box clear to hear about all events.",
+  "subscribe.privacyNote":
+    "We ask for nothing else, and the subscriber list is never published anywhere on this site. The parish office can remove a subscription on request.",
+  "subscribe.submit": "Subscribe",
+  "subscribe.submitting": "Saving…",
+  "subscribe.deliveryOff":
+    "Important: e-mail delivery is not enabled on this site yet, so no message will arrive now. Your subscription is stored in the parish log and will be used once notifications are switched on.",
+  "subscribe.disabledTitle": "Subscriptions are switched off at the moment",
+  "subscribe.disabledHint":
+    "The parish has temporarily disabled e-mail notifications on this site. You can still browse the upcoming events.",
+  "subscribe.backToEvents": "Browse upcoming events",
+  "subscribe.result.subscribed": "Your subscription to event notifications has been saved.",
+  "subscribe.result.updated": "You are already subscribed — your details were updated instead of duplicated.",
+  "subscribe.result.disabled": "Event notifications are switched off on this site at the moment.",
+  "subscribe.result.rateLimited": "Too many attempts — please try again in a minute.",
+  "subscribe.result.invalid": "Please check the e-mail address.",
+  "subscribe.result.verificationFailed": "The security check failed. Please try again.",
+  "subscribe.result.storeError": "The subscription could not be saved right now. Please try again shortly.",
+  "events.subscribeTitle": "E-mail notifications for events",
+  "events.subscribeHint":
+    "Leave your address to hear about newly published dates. The service is free, and e-mail delivery is not enabled on this site yet — the subscription is kept in the parish log.",
+  "events.subscribeLink": "Subscribe to updates",
 };
 
 export const MESSAGES: Record<Locale, Record<MessageKey, string>> = {

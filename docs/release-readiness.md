@@ -63,6 +63,8 @@ hides a broken seed fallback.
 | `NEXT_PUBLIC_SITE_URL` | canonical URL / sitemap | **not consumed by any code yet** | no effect today — see §5 |
 | `YOUTUBE_API_KEY` *(optional, Phase 2)* | automatic broadcast-status polling | **not consumed by any code yet** | no effect today |
 | `CHURCH_DATA_DIR` *(optional, server-only)* | data directory of the file-backed events store | `src/lib/store/json-store.ts` (`getStoreDataDir()`) | defaults to `<repo>/.data` (gitignored); set it to move the store, e.g. onto a mounted volume |
+| `EVENTS_SUBSCRIPTIONS_ENABLED` *(optional, server-only)* | public "subscribe to updates" form + its server action | `src/lib/env.ts` (`isEventSubscriptionsEnabled()`) → `/subscribe`, `/events`, `/admin/subscribers` | treated as ENABLED. Set it to `0`/`false`/`off`/`no` to switch the public feature off (the action refuses, the form is replaced by a notice) |
+| `MAIL_PROVIDER` *(optional, server-only)* | selects the mail implementation | `src/lib/notify/mailer.ts` (`getMailer()`) | `noop` — **no e-mail is ever sent**; the no-op mailer records a `notify` audit entry saying what would have been sent. A name that is not registered logs an error and still sends nothing |
 
 Additionally, the events repository switches driver on **`NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`**
 being present together (`hasSupabaseAdminEnv()` in `src/lib/env.ts` → `src/lib/store/index.ts`). With
@@ -77,7 +79,7 @@ and Supabase values plus the optional channel URL.
 
 ## 3. Database
 
-Apply the nine migrations in lexicographic (= apply) order, then run the manual bootstrap. Full
+Apply the eleven migrations in lexicographic (= apply) order, then run the manual bootstrap. Full
 rationale and the apply table live in `supabase/README.md`.
 
 ```bash
@@ -93,17 +95,21 @@ UPDATE profiles SET role = 'admin' WHERE id = '<uuid-of-first-admin>';
 
 ### Post-apply verification (all counts expected exactly)
 
+Counts below are the totals after **all eleven** files (they were 21/40/21/9 when only the seven base
+files existed; files 8–9 added the events layer, files 10–11 the subscribers table):
+
 ```sql
-SELECT count(*) FROM pg_tables    WHERE schemaname = 'public';                                  -- 21
-SELECT count(*) FROM pg_policies  WHERE schemaname = 'public';                                  -- 40
+SELECT count(*) FROM pg_tables    WHERE schemaname = 'public';                                  -- 29
+SELECT count(*) FROM pg_policies  WHERE schemaname = 'public';                                  -- 56
 SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-       WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity;                     -- 21
+       WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity;                     -- 29
 SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace
-       WHERE n.nspname = 'public' AND t.typtype = 'e';                                          -- 9 enums
+       WHERE n.nspname = 'public' AND t.typtype = 'e';                                          -- 15 enums
 
 -- constraint / index names the application matches on (errors are translated by name)
 SELECT conname FROM pg_constraint WHERE conname = 'condolence_bookings_booking_reference_code_key';
 SELECT indexname FROM pg_indexes   WHERE indexname = 'uq_condolence_active_date';
+SELECT conname FROM pg_constraint WHERE conname IN ('subscribers_email_key', 'uq_taxonomy_term_dimension_slug', 'uq_event_exception_occurrence');
 ```
 
 Then verify the public read/write paths end to end on the live project:
@@ -139,9 +145,18 @@ by any command; they need the parish.
 
 ## 5. Known gaps at go-live (accepted, none block the build)
 
+- **No e-mail is ever sent.** The site has no mail provider: the subscribe form stores the address and
+  the parish office sees it in `/admin/subscribers`, while the notification step is the documented
+  no-op adapter in `src/lib/notify/` (it records a `notify` audit entry: "this is what would have been
+  sent"). The public pages say so in plain words. Wiring a real provider is a marked three-step change
+  in `src/lib/notify/mailer.ts`.
+- **No admin screenshot has ever been taken** (this environment cannot run a browser): the images in
+  `docs/admin-guide.md` are labelled placeholders with a documented filename convention, to be captured
+  from the running admin by a human.
 - **Admin screens not implemented**: contact messages, programme enrolments, job applications,
-  alert bar, stream scheduling, mass-schedule editing. The dashboard lists them explicitly as
-  «وحدات إدارية لم تُنفَّذ بعد»; `/admin/masses` and `/admin/clinics` are read-only.
+  alert bar, stream scheduling, mass-schedule editing, taxonomy-term editing beyond retiring a term.
+  The dashboard lists them explicitly as «وحدات إدارية لم تُنفَّذ بعد»; `/admin/masses` and
+  `/admin/clinics` are read-only.
 - **`NEXT_PUBLIC_SITE_URL` is unused** and `src/app/sitemap.ts` / `src/app/robots.ts` do not exist,
   so §9.3 item 7 (generated sitemap/robots + Search Console) is **not** met yet.
 - **`submitClinicInquiry` has no form**: the action is hardened (rate limit + Turnstile + fail
@@ -151,6 +166,9 @@ by any command; they need the parish.
 - **`pnpm.overrides.postcss` is temporary**: `next@15.5.25` pins `postcss@8.4.31`, which carried the
   four audit findings. Remove the override only after `next` itself pins a patched postcss.
 - **CI has never run on GitHub**: workflow YAML and the environment guard were verified locally only.
+- **The subscribe form's browser path was never exercised by a human** (no browser in this
+  environment): validation, idempotency, the would-send audit entry and the feature guard were
+  verified by script against the store, and the pages by HTTP status — not by clicking Submit.
 
 ---
 

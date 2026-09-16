@@ -508,6 +508,39 @@ export async function deleteMediaAction(mediaId: string): Promise<EventActionRes
 }
 
 // ============================================================================
+// Subscribers (event notifications)
+// ============================================================================
+
+/**
+ * Retires or revives an event-notification subscription. Editor and above.
+ *
+ * THE ROW IS NEVER DELETED: deactivating keeps the address (and its history) so the decision is
+ * reversible and the audit trail stays complete. There is no delete capability for subscribers on
+ * purpose — see the capability table in `src/lib/domain/capabilities.ts`.
+ *
+ * The public subscribe path is a DIFFERENT action with a different contract
+ * (`src/actions/subscription-actions.ts`: rate limit + Turnstile + no session), because a visitor is
+ * not a member of staff and must never pass through this authenticated surface.
+ */
+export async function setSubscriberActiveAction(
+  subscriberId: string,
+  isActive: boolean
+): Promise<EventActionResult<{ id: string; isActive: boolean }>> {
+  const parsedId = parseOrFail(UuidSchema, subscriberId);
+  if (!parsedId.ok) return parsedId;
+
+  return mutate(
+    "subscribers.setActive",
+    "subscribers:write",
+    isActive ? "تم تنشيط الاشتراك." : "تم إيقاف الاشتراك — لن يُرسل إليه أي تنبيه، وسجلّه محفوظ.",
+    async (repository, actor) => {
+      const subscriber = await repository.setSubscriberActive(parsedId.value, isActive, actor);
+      return { id: subscriber.id, isActive: subscriber.isActive };
+    }
+  );
+}
+
+// ============================================================================
 // Operations: republish + status
 // ============================================================================
 

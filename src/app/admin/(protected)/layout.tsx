@@ -12,6 +12,7 @@ import {
   CalendarDays,
   FileClock,
   Image as ImageIcon,
+  BellRing,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { signOut } from "@/actions/auth-actions";
@@ -58,6 +59,7 @@ export default async function AdminProtectedLayout({
     { href: "/admin/bookings", label: "حجوزات العزاء", icon: HeartHandshake },
     { href: "/admin/clinics", label: "دليل التخصصات الطبية", icon: Stethoscope },
     { href: "/admin/media", label: "مكتبة الوسائط", icon: ImageIcon },
+    { href: "/admin/subscribers", label: "المشتركون في التنبيهات", icon: BellRing },
     { href: "/admin/audit", label: "سجل التدقيق", icon: FileClock },
   ];
 

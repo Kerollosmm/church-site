@@ -21,6 +21,12 @@ import { getSupabaseUrl } from "@/lib/env";
 import type { Database, Json, Tables, TablesInsert } from "@/types/database.types";
 import { buildAuditEntry, newId, nowIso, snapshot } from "@/lib/store/audit";
 import {
+  normalizeSubscriberEmail,
+  normalizeSubscriberTopics,
+  SUBSCRIBER_EMAIL_MAX_LENGTH,
+  SUBSCRIBER_NAME_MAX_LENGTH,
+} from "@/lib/domain/subscribers";
+import {
   normalizeStatusFilter,
   StoreError,
   type AuditListFilter,
@@ -30,6 +36,7 @@ import {
   type MediaListFilter,
   type RepositoryStatus,
   type SeriesListFilter,
+  type SubscriberListFilter,
   type TaxonomyTermListFilter,
 } from "@/lib/store/repository";
 import {
@@ -54,6 +61,9 @@ import {
   type MediaCreateInput,
   type MediaRecord,
   type MediaUpdateInput,
+  type SubscriberCreateInput,
+  type SubscriberRecord,
+  type SubscriberSubscribeResult,
   type TaxonomyTermCreateInput,
   type TaxonomyTermRecord,
   type TaxonomyTermUpdateInput,
@@ -65,6 +75,7 @@ type SeriesRow = Tables<"event_series">;
 type ExceptionRow = Tables<"event_exceptions">;
 type TermRow = Tables<"taxonomy_terms">;
 type MediaRow = Tables<"media">;
+type SubscriberRow = Tables<"subscribers">;
 type AuditRow = Tables<"audit_log">;
 
 /** PostgREST error codes → the repository's closed failure vocabulary. */
@@ -255,6 +266,19 @@ function toMediaRecord(row: MediaRow): MediaRecord {
   };
 }
 
+function toSubscriberRecord(row: SubscriberRow): SubscriberRecord {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    locale: row.locale,
+    topics: row.topics ?? [],
+    createdAt: toInstant(row.created_at),
+    confirmedAt: toOptionalInstant(row.confirmed_at),
+    isActive: row.is_active,
+  };
+}
+
 function toAuditEntry(row: AuditRow): AuditLogEntry {
   return {
     id: row.id,
@@ -362,6 +386,19 @@ export class SupabaseEventRepository implements EventRepository {
       });
       return createAdminClient();
     }
+  }
+
+  /**
+   * The client for the ONE public mutation in this contract (`subscribe()`).
+   *
+   * WHY NOT THE SESSION CLIENT: the visitor has no session at all, so `is_staff()` can never be the
+   * gate for them — and the `subscribers` table has no anonymous INSERT policy (subscriber e-mails are
+   * private and must not be readable or writable by the public key directly). The public write is
+   * therefore performed by the server with the service role, after the action has verified the
+   * request (rate limit → zod → Turnstile), exactly like the other public forms in `src/actions/`.
+   */
+  private async publicClient(): Promise<StoreClient> {
+    return createAdminClient();
   }
 
   /**
@@ -1158,6 +1195,165 @@ export class SupabaseEventRepository implements EventRepository {
       before: snapshot(toMediaRecord(existing)),
       after: null,
     });
+  }
+
+  // --- subscribers ---------------------------------------------------------
+
+  async listSubscribers(filter: SubscriberListFilter = {}): Promise<SubscriberRecord[]> {
+    const client = await this.client();
+    let query = client.from("subscribers").select("*").order("created_at", { ascending: false });
+    // Retired subscriptions are hidden by default: the list answers "who wants updates".
+    if (!filter.includeInactive) query = query.eq("is_active", true);
+    if (filter.limit) query = query.limit(filter.limit);
+
+    const { data, error } = await query;
+    if (error) throw toStoreError(error, "subscribers.list");
+    return (data ?? []).map(toSubscriberRecord);
+  }
+
+  /**
+   * Idempotent public subscribe (see the repository contract).
+   *
+   * The e-mail column is UNIQUE, so a lost race between two simultaneous submissions surfaces as a
+   * `23505` conflict on INSERT — which is caught HERE and resolved by updating the row that won, so a
+   * duplicate can never be created and the visitor still gets a success.
+   */
+  async subscribe(input: SubscriberCreateInput, actor: Actor): Promise<SubscriberSubscribeResult> {
+    const client = await this.publicClient();
+    const email = normalizeSubscriberEmail(input.email);
+    const topics = normalizeSubscriberTopics(input.topics);
+    const name = typeof input.name === "string" && input.name.trim().length > 0
+      ? input.name.trim().slice(0, SUBSCRIBER_NAME_MAX_LENGTH)
+      : null;
+
+    if (email.length === 0 || email.length > SUBSCRIBER_EMAIL_MAX_LENGTH) {
+      throw new StoreError("invalid", "subscribers.subscribe", "The e-mail address is empty or too long.", {
+        emailLength: email.length,
+      });
+    }
+
+    const now = nowIso();
+    const existing = await this.readSubscriberByEmail(client, email);
+    if (existing) {
+      return { subscriber: await this.updateSubscriber(client, existing, { name, locale: input.locale, topics }, actor), created: false };
+    }
+
+    const { data, error } = await client
+      .from("subscribers")
+      .insert({
+        id: newId(),
+        email,
+        name,
+        locale: input.locale,
+        topics,
+        created_at: now,
+        // The in-site confirmation message is the visitor's confirmation (see `SubscriberRecord`).
+        confirmed_at: now,
+        is_active: true,
+      })
+      .select("*")
+      .single();
+
+    if (error && error.code === "23505") {
+      // Another submission for the same address landed first: adopt it instead of failing.
+      const winner = await this.readSubscriberByEmail(client, email);
+      if (winner) {
+        return {
+          subscriber: await this.updateSubscriber(client, winner, { name, locale: input.locale, topics }, actor),
+          created: false,
+        };
+      }
+    }
+    if (error) throw toStoreError(error, "subscribers.subscribe");
+
+    await this.appendAudit(client, {
+      actor,
+      action: "create",
+      entityType: "subscriber",
+      entityId: data.id,
+      before: null,
+      after: snapshot(toSubscriberRecord(data)),
+      summary: "اشتراك جديد في تنبيهات الفعاليات من نموذج الموقع العام.",
+    });
+
+    return { subscriber: toSubscriberRecord(data), created: true };
+  }
+
+  async setSubscriberActive(id: string, isActive: boolean, actor: Actor): Promise<SubscriberRecord> {
+    const client = await this.client();
+    const { data: existing, error: readError } = await client
+      .from("subscribers")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (readError) throw toStoreError(readError, "subscribers.setActive");
+    if (!existing) throw new StoreError("not_found", "subscribers.setActive", `Subscriber ${id} does not exist.`, { id });
+
+    const { data, error } = await client
+      .from("subscribers")
+      .update({ is_active: isActive })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw toStoreError(error, "subscribers.setActive", { id });
+
+    await this.appendAudit(client, {
+      actor,
+      action: "update",
+      entityType: "subscriber",
+      entityId: id,
+      before: snapshot(toSubscriberRecord(existing)),
+      after: snapshot(toSubscriberRecord(data)),
+      summary: isActive
+        ? `تنشيط ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber}.`
+        : `إيقاف ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber} (لن يصله أي تنبيه؛ البريد محفوظ).`,
+    });
+
+    return toSubscriberRecord(data);
+  }
+
+  private async readSubscriberByEmail(client: StoreClient, email: string): Promise<SubscriberRow | null> {
+    const { data, error } = await client.from("subscribers").select("*").eq("email", email).maybeSingle();
+    if (error) throw toStoreError(error, "subscribers.getByEmail");
+    return data ?? null;
+  }
+
+  /** Applies a repeated subscription to the row that already holds the address. */
+  private async updateSubscriber(
+    client: StoreClient,
+    existing: SubscriberRow,
+    patch: { name: string | null; locale: SubscriberCreateInput["locale"]; topics: string[] },
+    actor: Actor
+  ): Promise<SubscriberRecord> {
+    const revived = !existing.is_active;
+    const { data, error } = await client
+      .from("subscribers")
+      .update({
+        // An omitted name never erases a stored one: re-subscribing without typing a name is normal.
+        name: patch.name ?? existing.name,
+        locale: patch.locale,
+        topics: patch.topics,
+        is_active: true,
+        confirmed_at: existing.confirmed_at ?? nowIso(),
+      })
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+    if (error) throw toStoreError(error, "subscribers.subscribe", { id: existing.id });
+
+    await this.appendAudit(client, {
+      actor,
+      action: "update",
+      entityType: "subscriber",
+      entityId: existing.id,
+      before: snapshot(toSubscriberRecord(existing)),
+      after: snapshot(toSubscriberRecord(data)),
+      summary: revived
+        ? `تنشيط ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber} — أعاد صاحب البريد الاشتراك بعد إيقافه.`
+        : `تحديث اهتمامات ${AUDIT_ENTITY_TYPE_LABELS_AR.subscriber} من نموذج الموقع العام.`,
+    });
+
+    return toSubscriberRecord(data);
   }
 
   // --- audit ---------------------------------------------------------------

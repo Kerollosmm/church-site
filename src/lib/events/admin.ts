@@ -26,10 +26,12 @@ import type {
   EventStatus,
   EventWithTerms,
   MediaRecord,
+  SubscriberRecord,
   TaxonomyDimension,
   TaxonomyTermRecord,
 } from "@/lib/domain/types";
 import { TAXONOMY_DIMENSIONS } from "@/lib/domain/types";
+import { resolveSubscriberTopics } from "@/lib/domain/subscribers";
 import type { EventFeedTermView } from "@/lib/events/feed";
 import { getZoneDateKey } from "@/lib/events/format";
 import { MS_PER_DAY } from "@/lib/utils/zone-time";
@@ -37,6 +39,7 @@ import {
   getEventRepository,
   type AuditListFilter,
   type RepositoryStatus,
+  type SubscriberListFilter,
 } from "@/lib/store";
 
 /** How far ahead the admin looks for a series' next occurrence (well inside the engine's maximum). */
@@ -108,6 +111,15 @@ export interface AdminSeriesDetail {
   occurrences: AdminOccurrence[];
   exceptions: EventExceptionRecord[];
   ruleProblemAr: string | null;
+}
+
+/** A row of the subscribers screen: the stored subscription plus its RESOLVED topics. */
+export interface AdminSubscriberRow {
+  subscriber: SubscriberRecord;
+  /** The terms the visitor asked about, resolved from the stored slugs. Empty = every topic. */
+  topics: AdminTermView[];
+  /** Stored slugs that are no longer in the vocabulary — reported, never rendered as a chip. */
+  unknownTopics: string[];
 }
 
 // ============================================================================
@@ -367,8 +379,38 @@ export async function listAdminMedia(): Promise<MediaRecord[]> {
   return getEventRepository().listMedia();
 }
 
-/** Audit entries, newest first. */
-export async function listAdminAudit(filter: AuditListFilter = {}): Promise<AuditLogEntry[]> {
+/**
+ * Event-notification subscriptions, newest first, with their topics resolved against the live
+ * vocabulary.
+ *
+ * `includeInactive` is passed through on purpose: this screen is the office's record of who asked to
+ * be contacted, so a retired subscription must remain visible (badged as stopped) instead of vanishing.
+ * The vocabulary read includes retired terms as well, so a term that was renamed or retired still
+ * resolves to the name the office knows it by.
+ */
+export async function listAdminSubscribers(filter: SubscriberListFilter = {}): Promise<AdminSubscriberRow[]> {
+  const repository = getEventRepository();
+  const [subscribers, terms] = await Promise.all([
+    repository.listSubscribers(filter),
+    repository.listTerms({ includeInactive: true }),
+  ]);
+
+  const termById = indexTerms(terms);
+
+  return subscribers.map((subscriber) => {
+    const { matched, unknown } = resolveSubscriberTopics(subscriber.topics, terms);
+    return {
+      subscriber,
+      topics: matched
+        .map((term) => termById.get(term.id))
+        .filter((term): term is AdminTermView => Boolean(term))
+        .sort(compareTermViews),
+      unknownTopics: unknown,
+    };
+  });
+}
+
+/** Audit entries, newest first. */export async function listAdminAudit(filter: AuditListFilter = {}): Promise<AuditLogEntry[]> {
   return getEventRepository().listAudit(filter);
 }
 

@@ -121,3 +121,23 @@ export const DEFAULT_SITE_URL = "http://localhost:3000";
 export function getSiteUrl(): string {
   return readEnv("NEXT_PUBLIC_SITE_URL")?.replace(/\/+$/, "") ?? DEFAULT_SITE_URL;
 }
+
+/**
+ * Operational switch for the PUBLIC event-subscription feature (the "subscribe to updates" form and
+ * the server action behind it). Not a secret and not a `NEXT_PUBLIC_` value: the guard is enforced
+ * on the SERVER (the action refuses, and the page renders a "switched off" state), never by hiding a
+ * button in the browser.
+ *
+ *   unset / empty / any other value → ENABLED (the parish feature is on by default)
+ *   "0" | "false" | "off" | "no"    → DISABLED
+ *
+ * Its name and default are documented in `docs/runbook.md`; `CHURCH_DATA_DIR` is read the same way
+ * (directly, at call time) because it is an operational variable rather than a required credential.
+ */
+export function isEventSubscriptionsEnabled(): boolean {
+  const raw = process.env.EVENTS_SUBSCRIPTIONS_ENABLED;
+  if (typeof raw !== "string") return true;
+  const normalized = raw.trim().toLowerCase();
+  if (normalized.length === 0) return true;
+  return !["0", "false", "off", "no"].includes(normalized);
+}
