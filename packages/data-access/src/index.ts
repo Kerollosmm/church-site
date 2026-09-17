@@ -1,0 +1,32 @@
+// packages/data-access/src/index.ts
+// Single public entrypoint for @church-site/data-access
+
+export * from "./env";
+export * from "./tags";
+export * from "./queries";
+export * from "./supabase/client";
+export * from "./supabase/server";
+export * from "./supabase/admin";
+export * from "./supabase/public";
+export * from "./store/index";
+export * from "./store/document";
+export * from "./store/repository";
+export * from "./store/audit";
+export * from "./store/revalidate";
+export * from "./store/json-driver";
+export * from "./store/json-store";
+export * from "./store/seed";
+export * from "./store/supabase-driver";
+export * from "./notify/index";
+export * from "./events/feed";
+export * from "./events/format";
+export * from "./events/ics";
+export * from "./events/filters";
+export * from "./events/subscribers";
+export * from "./events/admin";
+export * from "./events/admin-form";
+export * from "./events/audit-view";
+export * from "./data/seed-data";
+export * from "./utils/cairo-time";
+export * from "./utils/mass-schedule";
+export * from "./validations/event-schemas";

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@church-site/data-access": "workspace:*",
     "@church-site/domain": "workspace:*",
     "@hookform/resolvers": "^3.10.0",
     "@supabase/ssr": "^0.5.2",

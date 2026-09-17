@@ -22,6 +22,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./apps/web/src", import.meta.url)),
+      "@church-site/domain": fileURLToPath(new URL("./packages/domain/src", import.meta.url)),
+      "@church-site/data-access": fileURLToPath(new URL("./packages/data-access/src", import.meta.url)),
+      "next/cache": fileURLToPath(new URL("./apps/web/node_modules/next/cache.js", import.meta.url)),
+      "next/headers": fileURLToPath(new URL("./apps/web/node_modules/next/headers.js", import.meta.url)),
+      "next": fileURLToPath(new URL("./apps/web/node_modules/next", import.meta.url)),
     },
   },
   test: {

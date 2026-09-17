@@ -1,5 +1,17 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 1 Monorepo Split — Step 4b: Data Access Extraction)
+- [x] **استخراج حزمة الوصول إلى البيانات `@church-site/data-access` (packages/data-access)**:
+  - هيكلة الحزمة بالكامل وتجهيز `package.json` و`tsconfig.json`.
+  - نقل طبقات البيانات: `store/` و`supabase/` و`queries.ts` و`tags.ts` و`env.ts` و`notify/` و`events/` وتوابعها.
+  - إعداد إعادة التصدير المعزولة في `apps/web/src/lib/` لمنع تسريب شفرة الخادم إلى مكونات العميل.
+  - نجاح بوابات التحقق: `pnpm typecheck` (0 errors), `pnpm lint` (0 errors), `pnpm test` (274/274 passed), `pnpm --filter web build` (51/51 routes clean).
+  - الالتزام: `49445da chore(packages): extract data-access`.
+
+## يعمل الآن (Phase 1 Monorepo Split — Step 4a: Domain Package Extraction)
+- [x] **استخراج حزمة النطاق `@church-site/domain` (packages/domain)**:
+  - الالتزام: `2597889 chore(packages): extract domain`.
+
 ## يعمل الآن (Comprehensive UI & Action Testing Deliverable — Vitest + RTL + JSDOM)
 - [x] **جناح اختبارات واجهات المستخدم وإجراءات الخادم (12 ملف اختبار و274 فحصاً ناجحاً بنسبة 100% Green)**:
   - الاعتماد على Vitest + `@testing-library/react` + `jsdom`.

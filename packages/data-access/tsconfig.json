@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "paths": {
+      "@church-site/domain": ["../domain/src"],
+      "next": ["../../apps/web/node_modules/next"],
+      "next/*": ["../../apps/web/node_modules/next/*"]
+    }
+  },
+  "include": ["src/**/*"]
+}

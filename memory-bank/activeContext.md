@@ -1,6 +1,19 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-17)
+- **اكتملت (Phase 1 — Step 4b)**: استخراج حزمة الوصول إلى البيانات **`@church-site/data-access` (packages/data-access)** بنجاح كامل:
+  * نقل وتوحيد طبقة الوصول إلى البيانات: `store/` و`supabase/` و`queries.ts` و`tags.ts` و`env.ts` و`notify/` و`events/` و`data/seed-data.ts` و`utils/` و`validations/event-schemas.ts`.
+  * إنشاء حزمة مساحة العمل `@church-site/data-access` بتبعياتها المحددة ودعم مسارات TypeScript وحزمة `next` بدون تسريب شفرة الخادم إلى مكونات العميل.
+  * تحديث `apps/web/package.json` وإضافة التبعية `"@church-site/data-access": "workspace:*"` وتحديث `apps/web/next.config.ts` و`apps/web/tsconfig.json`.
+  * توفير إعادة تصدير دقيقة وموجهة من مسارات `@church-site/data-access/*` داخل `apps/web/src/lib/` مع الحفاظ على عزل شفرة العميل والخادم.
+  * بوابات التحقق الكاملة (All Gates Green):
+    - فحص الأنواع لمساحة العمل بالكامل: `pnpm typecheck` = 0 أخطاء (packages/domain, packages/data-access, apps/web).
+    - فحص الأسلوب: `pnpm lint` = 0 أخطاء.
+    - اختبارات الوحدات: `pnpm test` (Vitest) = 12 ملفاً، **274/274 فحصاً ناجحاً بنسبة 100%**.
+    - بناء الإنتاج بدون متغيرات بيئة: `pnpm --filter web build` = **51/51 مساراً بنجاح كامل**.
+    - حفظ المخرجات في `.scratch/phase1-gates/01-data-access-{typecheck,lint,test}.txt`.
+  * الالتزام: `49445da chore(packages): extract data-access`.
+- **اكتملت (Phase 1 — Step 4a)**: استخراج حزمة النطاق **`@church-site/domain` (packages/domain)** بنجاح كامل (Commit `2597889`).
 - **اكتملت**: تسليم **حزمة اختبارات واجهات المستخدم وإجراءات الخادم الشاملة (UI & Action Testing Deliverable)**:
   * 12 ملف اختبار، و**274 فحصاً ناجحاً بنسبة 100% (100% green)** باستخدام Vitest + `@testing-library/react` + `jsdom`.
   * **أجنحة اختبارات مكونات واجهة المستخدم (UI Component Test Suites)**:
