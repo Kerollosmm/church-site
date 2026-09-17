@@ -22,6 +22,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./apps/web/src", import.meta.url)),
+      "@admin": fileURLToPath(new URL("./apps/admin/src", import.meta.url)),
       "@church-site/domain": fileURLToPath(new URL("./packages/domain/src", import.meta.url)),
       "@church-site/data-access": fileURLToPath(new URL("./packages/data-access/src", import.meta.url)),
       "@church-site/ui": fileURLToPath(new URL("./packages/ui/src", import.meta.url)),
@@ -32,7 +33,12 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["apps/web/src/**/*.test.ts", "apps/web/src/**/*.test.tsx"],
+    include: [
+      "apps/**/*.test.ts",
+      "apps/**/*.test.tsx",
+      "packages/**/*.test.ts",
+      "packages/**/*.test.tsx",
+    ],
     // A store test writes its document into an OS temp directory and removes it afterwards; keeping
     // the worker pool modest keeps those file operations from competing with each other.
     pool: "threads",

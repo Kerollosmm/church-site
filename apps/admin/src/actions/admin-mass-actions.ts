@@ -5,7 +5,7 @@
 
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
-import { requireStaff } from "@/lib/auth/require-staff";
+import { requireStaff } from "../lib/auth/require-staff";
 import {
   CAPABILITY_DENIED_MESSAGE_AR,
   adminRoleFromStaffRole,

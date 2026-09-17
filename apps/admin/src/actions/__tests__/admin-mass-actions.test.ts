@@ -1,4 +1,4 @@
-// src/actions/__tests__/admin-mass-actions.test.ts
+// apps/admin/src/actions/__tests__/admin-mass-actions.test.ts
 // Unit tests for mass actions and input validation schema.
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
@@ -8,9 +8,9 @@ import {
   updateMassAction,
   toggleMassStatusAction,
   deleteMassAction,
-} from "@/actions/admin-mass-actions";
-import * as requireStaffModule from "@/lib/auth/require-staff";
-import { can, CAPABILITY_DENIED_MESSAGE_AR } from "@/lib/domain/capabilities";
+} from "../admin-mass-actions";
+import * as requireStaffModule from "../../lib/auth/require-staff";
+import { can, CAPABILITY_DENIED_MESSAGE_AR } from "@church-site/domain";
 
 vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
@@ -205,4 +205,3 @@ describe("Mass Capabilities Matrix", () => {
     expect(can("viewer", "mass:toggle")).toBe(false);
   });
 });
-

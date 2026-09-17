@@ -195,8 +195,6 @@ export function Footer() {
             <Link href="/privacy" className="hover:text-copticGold-400">سياسة الخصوصية</Link>
             <span aria-hidden="true">•</span>
             <Link href="/donations" className="hover:text-copticGold-400">حسابات التبرع</Link>
-            <span aria-hidden="true">•</span>
-            <Link href="/admin" className="hover:text-copticGold-400">بوابة الإدارة</Link>
           </div>
         </div>
       </div>
