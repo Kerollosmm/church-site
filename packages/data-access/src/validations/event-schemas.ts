@@ -9,6 +9,7 @@ import { z } from "zod";
 import {
   DEFAULT_EVENT_TIME_ZONE,
   EVENT_STATUSES,
+  MAX_MEDIA_SIZE_BYTES,
   TAXONOMY_DIMENSIONS,
   type RecurrenceRule,
 } from "@church-site/domain";
@@ -46,11 +47,10 @@ export const SlugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "السلَج يقبل الحروف الإنجليزية الصغيرة والأرقام والشرطات فقط.");
 
 /**
- * Largest file size the media registry accepts. Single source: the schema enforces it, and the media
- * screen's message is DERIVED from it (see `MAX_MEDIA_SIZE_LABEL` in `src/lib/events/admin-form.ts`)
- * so the number a user is told and the number that is enforced can never disagree.
+ * Largest file size the media registry accepts. Single source: defined in `@church-site/domain`,
+ * re-exported here so callers and schemas keep a single source of truth without breaking.
  */
-export const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024;
+export { MAX_MEDIA_SIZE_BYTES };
 
 export const UuidSchema = z.string().uuid("المعرّف غير صالح.");
 

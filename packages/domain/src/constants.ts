@@ -26,3 +26,22 @@ export function googleMapsDirectionsUrl(place?: string | null): string {
   const query = trimmed ? `${trimmed}، ${PARISH_ADDRESS_AR}` : PARISH_ADDRESS_AR;
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
+
+export const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024;
+
+export const ALLOWED_MEDIA_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+  "video/mp4",
+  "application/pdf",
+] as const;
+
+export type AllowedMediaMimeType = (typeof ALLOWED_MEDIA_MIME_TYPES)[number];
+
+export function isAllowedMediaMimeType(mime: string): boolean {
+  if (mime.startsWith("image/")) return true;
+  return mime === "video/mp4" || mime === "application/pdf";
+}

@@ -374,6 +374,8 @@ export interface MediaRecord {
   sizeBytes: number;
   /** Repository-relative path or URL. */
   url: string;
+  storagePath: string | null;
+  checksum: string | null;
   altAr: string | null;
   altEn: string | null;
   uploadedBy: string | null;
@@ -386,6 +388,8 @@ export interface MediaCreateInput {
   mimeType: string;
   sizeBytes?: number;
   url: string;
+  storagePath?: string | null;
+  checksum?: string | null;
   altAr?: string | null;
   altEn?: string | null;
   isPublic?: boolean;

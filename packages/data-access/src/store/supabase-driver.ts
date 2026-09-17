@@ -258,6 +258,8 @@ function toMediaRecord(row: MediaRow): MediaRecord {
     mimeType: row.mime_type,
     sizeBytes: Number(row.size_bytes),
     url: row.url,
+    storagePath: null,
+    checksum: null,
     altAr: row.alt_ar,
     altEn: row.alt_en,
     uploadedBy: row.uploaded_by,
