@@ -30,3 +30,4 @@ export * from "./data/seed-data";
 export * from "./utils/cairo-time";
 export * from "./utils/mass-schedule";
 export * from "./validations/event-schemas";
+export * from "./storage/index";
