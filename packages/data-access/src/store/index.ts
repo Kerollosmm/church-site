@@ -20,6 +20,9 @@ export * from "./repository";
 export * from "./content-repository";
 export * from "./content-json-driver";
 export * from "./content-supabase-driver";
+export * from "./parish-video-repository";
+export * from "./parish-video-json-driver";
+export * from "./parish-video-supabase-driver";
 
 /** The driver this environment resolves to, without constructing it. */
 export function selectRepositoryDriver(): RepositoryDriverName {
@@ -31,6 +34,9 @@ let cachedDriver: RepositoryDriverName | null = null;
 
 let cachedContentRepository: import("./content-repository").ContentTypeRepository | null = null;
 let cachedContentDriver: RepositoryDriverName | null = null;
+
+let cachedVideoRepository: import("./parish-video-repository").ParishVideoRepository | null = null;
+let cachedVideoDriver: RepositoryDriverName | null = null;
 
 /**
  * The process-wide repository. Constructed lazily on first use (never at import time) and rebuilt if
@@ -66,5 +72,23 @@ export function getContentTypeRepository(): ContentTypeRepository {
     driver === "supabase" ? new SupabaseContentTypeRepository() : new JsonContentTypeRepository();
   cachedContentDriver = driver;
   return cachedContentRepository;
+}
+
+import { JsonParishVideoRepository } from "./parish-video-json-driver";
+import { SupabaseParishVideoRepository } from "./parish-video-supabase-driver";
+import type { ParishVideoRepository } from "./parish-video-repository";
+
+/**
+ * The process-wide ParishVideoRepository.
+ * Follows identical engine selection: Supabase if admin env configured, otherwise file-store.
+ */
+export function getParishVideoRepository(): ParishVideoRepository {
+  const driver = selectRepositoryDriver();
+  if (cachedVideoRepository && cachedVideoDriver === driver) return cachedVideoRepository;
+
+  cachedVideoRepository =
+    driver === "supabase" ? new SupabaseParishVideoRepository() : new JsonParishVideoRepository();
+  cachedVideoDriver = driver;
+  return cachedVideoRepository;
 }
 

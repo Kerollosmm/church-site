@@ -21,6 +21,7 @@ export const REVALIDATION_TAGS = {
   altars: "altars",
   donationAccounts: "donation-accounts",
   content: "content",
+  parishVideos: "parish-videos",
 } as const;
 
 export type RevalidationTag = (typeof REVALIDATION_TAGS)[keyof typeof REVALIDATION_TAGS];

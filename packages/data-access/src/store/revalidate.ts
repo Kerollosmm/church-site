@@ -88,5 +88,16 @@ export function revalidateContentSurfaces(typeSlug?: string, entrySlug?: string)
   return [REVALIDATION_TAGS.content, ...paths];
 }
 
-
-
+/** Invalidate cache tags and routes for parish videos */
+export function revalidateVideoSurfaces(): string[] {
+  revalidateTag(REVALIDATION_TAGS.parishVideos);
+  const paths: string[] = ["/about", "/"];
+  for (const path of paths) {
+    try {
+      revalidatePath(path, "page");
+    } catch {
+      // Safe fallback outside Next.js request lifecycle
+    }
+  }
+  return [REVALIDATION_TAGS.parishVideos, ...paths];
+}

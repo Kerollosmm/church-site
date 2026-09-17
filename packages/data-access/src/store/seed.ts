@@ -668,6 +668,8 @@ export function buildSeedDocument(): StoreDocument {
     contentTypes: SEED_CONTENT_TYPES.map((type) => ({ ...type })),
     contentFields: SEED_CONTENT_FIELDS.map((field) => ({ ...field })),
     contentEntries: [],
+    // Parish videos start empty until staff add real URLs (no invented video data).
+    parishVideos: [],
     audit: [],
   };
 }

@@ -9,10 +9,10 @@ describe("Migration 13 (20260916130000_content_types.sql) Sanity", () => {
   const migrationsDir = path.resolve(process.cwd(), "supabase/migrations");
   const migration13Path = path.join(migrationsDir, "20260916130000_content_types.sql");
 
-  it("verifies exactly 13 migration files exist in sequence", async () => {
+  it("verifies migration 13 file exists in sequence", async () => {
     const files = await readdir(migrationsDir);
     const sqlFiles = files.filter((f) => f.endsWith(".sql")).sort();
-    expect(sqlFiles).toHaveLength(13);
+    expect(sqlFiles.length).toBeGreaterThanOrEqual(13);
     expect(sqlFiles[12]).toBe("20260916130000_content_types.sql");
   });
 

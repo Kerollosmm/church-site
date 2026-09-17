@@ -36,6 +36,7 @@ const READ_CAPABILITIES: Capability[] = [
   "subscribers:read",
   "mass:read",
   "content:read",
+  "videos:read",
 ];
 
 /** Destructive or account-level actions: owner only. */
@@ -49,6 +50,7 @@ const OWNER_ONLY: Capability[] = [
   "mass:delete",
   "content:delete",
   "content:manage",
+  "videos:delete",
 ];
 
 /**
@@ -78,6 +80,7 @@ const MUST_HAVE: Record<AdminRole, Capability[]> = {
     (`${CONTENT_KEY}:create`) as Capability,
     (`${CONTENT_KEY}:update`) as Capability,
     (`${CONTENT_KEY}:publish`) as Capability,
+    "videos:write",
     "subscribers:write",
     "cache:republish",
   ],

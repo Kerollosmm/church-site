@@ -16,20 +16,22 @@ import type {
   EventSeriesRecord,
   EventTermLink,
   MediaRecord,
+  ParishVideo,
   SubscriberRecord,
   TaxonomyTermRecord,
 } from "@church-site/domain";
 
 /**
- * Version 3 added the `contentTypes`, `contentFields`, `contentEntries` collections (Phase 3 CMS).
+ * Version 4 added the `parishVideos` collection (Phase 4 Parish Videos).
  *
- * Versions 1 and 2 are upgraded in memory on read (`parseStoreDocument`) and written back at
- * version 3 by the next mutation.
+ * Versions 1, 2, and 3 are upgraded in memory on read (`parseStoreDocument`) and written back at
+ * version 4 by the next mutation.
  */
-export const STORE_SCHEMA_VERSION = 3;
+export const STORE_SCHEMA_VERSION = 4;
 
 /** Older layouts this build can still read and upgrade. */
-export const STORE_SCHEMA_VERSION_LEGACY = 2;
+export const STORE_SCHEMA_VERSION_LEGACY = 3;
+export const STORE_SCHEMA_VERSION_V2 = 2;
 export const STORE_SCHEMA_VERSION_V1 = 1;
 
 export const STORE_FILE_NAME = "church-store.json";
@@ -49,6 +51,7 @@ export const STORE_COLLECTIONS = [
   "contentTypes",
   "contentFields",
   "contentEntries",
+  "parishVideos",
   "audit",
 ] as const;
 
@@ -68,6 +71,8 @@ export interface StoreDocument {
   contentTypes: ContentType[];
   contentFields: ContentField[];
   contentEntries: ContentEntry[];
+  /** Parish Videos (see `ParishVideo`). Added in schema version 4. */
+  parishVideos: ParishVideo[];
   /** Append-only, oldest first. */
   audit: AuditLogEntry[];
 }
@@ -98,6 +103,7 @@ export function parseStoreDocument(value: unknown): ParsedStoreDocument {
     typeof version !== "number" ||
     (version !== STORE_SCHEMA_VERSION &&
       version !== STORE_SCHEMA_VERSION_LEGACY &&
+      version !== STORE_SCHEMA_VERSION_V2 &&
       version !== STORE_SCHEMA_VERSION_V1)
   ) {
     throw new Error(
@@ -106,11 +112,16 @@ export function parseStoreDocument(value: unknown): ParsedStoreDocument {
   }
 
   let upgradedFrom: number | null = null;
-  if (version === STORE_SCHEMA_VERSION_V1 || version === STORE_SCHEMA_VERSION_LEGACY) {
+  if (
+    version === STORE_SCHEMA_VERSION_V1 ||
+    version === STORE_SCHEMA_VERSION_V2 ||
+    version === STORE_SCHEMA_VERSION_LEGACY
+  ) {
     if (!Array.isArray(value.subscribers)) value.subscribers = [];
     if (!Array.isArray(value.contentTypes)) value.contentTypes = [];
     if (!Array.isArray(value.contentFields)) value.contentFields = [];
     if (!Array.isArray(value.contentEntries)) value.contentEntries = [];
+    if (!Array.isArray(value.parishVideos)) value.parishVideos = [];
     value.schemaVersion = STORE_SCHEMA_VERSION;
     upgradedFrom = version;
   }

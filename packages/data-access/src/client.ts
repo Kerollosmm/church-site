@@ -15,3 +15,5 @@ export * from "./utils/cairo-time";
 export * from "./utils/mass-schedule";
 export * from "./validations/event-schemas";
 export * from "./validations/dynamic-validator";
+export * from "./videos/trusted-embeds";
+export * from "./videos/normalize-video-url";

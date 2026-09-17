@@ -21,11 +21,14 @@ export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
 export const TRUSTED_EMBED_HOSTS: readonly string[] = [
   "youtube.com",
   "www.youtube.com",
+  "m.youtube.com",
+  "youtu.be",
   "youtube-nocookie.com",
   "www.youtube-nocookie.com",
   "facebook.com",
   "www.facebook.com",
   "web.facebook.com",
+  "m.facebook.com",
 ];
 
 /** `https://` origins derived from {@link TRUSTED_EMBED_HOSTS} — used verbatim in CSP `frame-src`. */
@@ -53,7 +56,12 @@ export function getTrustedEmbedUrl(raw: string | null | undefined): string | nul
   }
 
   if (parsed.protocol !== "https:") return null;
-  if (!TRUSTED_EMBED_HOSTS.includes(parsed.hostname.toLowerCase())) return null;
+  const host = parsed.hostname.toLowerCase();
+  const isTrusted =
+    TRUSTED_EMBED_HOSTS.includes(host) ||
+    host.endsWith(".supabase.co");
+
+  if (!isTrusted) return null;
 
   return parsed.toString();
 }
