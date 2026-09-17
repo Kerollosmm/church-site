@@ -27,6 +27,7 @@ Files are named with a timestamp prefix so that lexicographic order == apply ord
 | 9 | `migrations/20260916090800_events_rls_policies.sql` | RLS on those 7 tables: public read of published/active rows, `is_staff()` for every write, and an append-only `audit_log` (no UPDATE/DELETE policy at all) |
 | 10 | `migrations/20260916090900_subscribers.sql` | notification subscribers: `locale_enum`, `subscribers` (`email` UNIQUE, `topics TEXT[]`, `confirmed_at`, `is_active`) + its indexes, and the new `notify` value of `audit_action_enum` |
 | 11 | `migrations/20260916091000_subscribers_rls_policies.sql` | RLS on `subscribers`: **no public read and no public insert policy at all** — staff `SELECT`/`UPDATE` through `is_staff()`, and no `DELETE` policy (stopping a subscription is `is_active = FALSE`) |
+| 12 | `migrations/20260916120000_media_storage.sql` | media storage: `media` bucket in `storage.buckets`, `storage_path` + `checksum` on `public.media`, RLS on `storage.objects` (public read, staff write for `admin`/`secretary`) |
 
 Applying in any other order fails: types must exist before tables, tables before
 indexes/policies, and `normalize_arabic()` before `bible_verses`.
@@ -37,6 +38,8 @@ mirrored column-for-column in `src/types/database.types.ts` (6 new ENUM entries 
 entries, including `event_series.default_term_ids`, an array whose elements are validated by the
 application because PostgreSQL cannot express an FK over array elements). The repository that reads
 them lives in `src/lib/store/supabase-driver.ts`.
+
+File 12 (`20260916120000_media_storage.sql`) provisions Supabase Storage infrastructure for Phase 2 media uploads (`media` bucket, storage RLS policies, and `storage_path`/`checksum` columns on `public.media`). Note: this is migration 12; future Phase 3 CMS/Content-Types shifts to migration 13.
 
 ## Mandatory manual bootstrap step
 
@@ -84,6 +87,8 @@ anon key. The public subscribe form writes through the server with the service-r
 rate limiting, zod validation and Turnstile verification — the same contract the other public forms
 follow in `src/actions/`), and the parish office manages the list through `is_staff()`. There is no
 `DELETE` policy: stopping a subscription sets `is_active = FALSE`.
+
+`storage.objects` (file 12) enforces public read on `bucket_id = 'media'` and restricts write operations (`INSERT`, `UPDATE`, `DELETE`) strictly to authenticated staff profiles with `role IN ('admin', 'secretary')`. Bare authenticated access is prohibited.
 
 ## Contract names relied on by the application
 
