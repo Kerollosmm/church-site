@@ -35,7 +35,7 @@ const config = [
   {
     settings: {
       next: {
-        rootDir: ["apps/web/"],
+        rootDir: ["apps/web/", "apps/admin/"],
       },
     },
   },

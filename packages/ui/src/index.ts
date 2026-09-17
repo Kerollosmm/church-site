@@ -16,4 +16,3 @@ export * from "./lib/i18n/locales";
 export * from "./lib/i18n/localized";
 export * from "./lib/i18n/messages";
 export * from "./lib/i18n/dom";
-export * from "./lib/i18n/server";
