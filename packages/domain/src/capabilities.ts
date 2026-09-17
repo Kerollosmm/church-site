@@ -70,7 +70,11 @@ export type Capability =
   | "content:update"
   | "content:delete"
   | "content:publish"
-  | "content:manage";
+  | "content:manage"
+  // --- parish videos ---
+  | "videos:read"
+  | "videos:write"
+  | "videos:delete";
 
 /** What a `viewer` may do: read everything the event system exposes to the portal. */
 const READ_ONLY_CAPABILITIES = [
@@ -82,6 +86,7 @@ const READ_ONLY_CAPABILITIES = [
   "subscribers:read",
   "mass:read",
   "content:read",
+  "videos:read",
 ] as const satisfies readonly Capability[];
 
 /**
@@ -111,6 +116,7 @@ const EDITOR_CAPABILITIES = [
   "content:create",
   "content:update",
   "content:publish",
+  "videos:write",
   // Editing the notification list is an editorial act (retiring a subscription), not a destructive
   // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
   "subscribers:write",
@@ -128,6 +134,7 @@ const OWNER_ONLY_CAPABILITIES = [
   "mass:delete",
   "content:delete",
   "content:manage",
+  "videos:delete",
 ] as const satisfies readonly Capability[];
 
 /** The full decision table. Single source for `can()`. */
@@ -211,6 +218,9 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "content:delete": "حذف عنصر محتوى",
   "content:publish": "نشر عنصر محتوى",
   "content:manage": "إدارة أنواع وحقول المحتوى",
+  "videos:read": "قراءة الفيديوهات",
+  "videos:write": "إضافة وتعديل الفيديوهات",
+  "videos:delete": "حذف فيديو",
 };
 
 /**
@@ -257,6 +267,9 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "content:delete": "content_entry",
   "content:publish": "content_entry",
   "content:manage": "content_type",
+  "videos:read": "video",
+  "videos:write": "video",
+  "videos:delete": "video",
 };
 
 /**
@@ -309,6 +322,9 @@ export interface AdminCapabilities {
   contentPublish: boolean;
   contentDelete: boolean;
   contentManage: boolean;
+  videosRead: boolean;
+  videosWrite: boolean;
+  videosDelete: boolean;
 }
 
 /** Derives the screen-facing capability set from ONE role, through the same `can()` table. */
@@ -336,6 +352,9 @@ export function resolveAdminCapabilities(role: AdminRole | null): AdminCapabilit
     contentPublish: can(role, "content:publish"),
     contentDelete: can(role, "content:delete"),
     contentManage: can(role, "content:manage"),
+    videosRead: can(role, "videos:read"),
+    videosWrite: can(role, "videos:write"),
+    videosDelete: can(role, "videos:delete"),
   };
 }
 

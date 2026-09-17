@@ -85,6 +85,9 @@ export type FieldTypeEnum =
 
 export type ContentStatusEnum = "draft" | "published" | "archived";
 
+// --- parish videos (supabase/migrations/20260916140000_parish_videos.sql)
+export type VideoProviderEnum = "youtube" | "facebook" | "direct";
+
 export interface Database {
   public: {
     Tables: {
@@ -1747,6 +1750,78 @@ export interface Database {
           },
         ];
       };
+      parish_videos: {
+        Row: {
+          id: string;
+          title_ar: string;
+          title_en: string | null;
+          description_ar: string | null;
+          description_en: string | null;
+          provider: VideoProviderEnum;
+          source_url: string;
+          embed_url: string;
+          thumbnail_url: string | null;
+          sort_order: number;
+          is_public: boolean;
+          is_active: boolean;
+          created_by: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title_ar: string;
+          title_en?: string | null;
+          description_ar?: string | null;
+          description_en?: string | null;
+          provider: VideoProviderEnum;
+          source_url: string;
+          embed_url: string;
+          thumbnail_url?: string | null;
+          sort_order?: number;
+          is_public?: boolean;
+          is_active?: boolean;
+          created_by?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title_ar?: string;
+          title_en?: string | null;
+          description_ar?: string | null;
+          description_en?: string | null;
+          provider?: VideoProviderEnum;
+          source_url?: string;
+          embed_url?: string;
+          thumbnail_url?: string | null;
+          sort_order?: number;
+          is_public?: boolean;
+          is_active?: boolean;
+          created_by?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "parish_videos_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "parish_videos_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1811,6 +1886,7 @@ export interface Database {
       locale_enum: LocaleEnum;
       field_type_enum: FieldTypeEnum;
       content_status_enum: ContentStatusEnum;
+      video_provider_enum: VideoProviderEnum;
     };
     CompositeTypes: {
       [_ in never]: never;

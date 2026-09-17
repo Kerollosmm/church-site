@@ -98,7 +98,8 @@ export type AuditEntityType =
   | "mass"
   | "content_type"
   | "content_field"
-  | "content_entry";
+  | "content_entry"
+  | "video";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -112,6 +113,7 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   content_type: "نوع محتوى",
   content_field: "حقل محتوى",
   content_entry: "عنصر محتوى",
+  video: "فيديو",
 };
 
 // ============================================================================
@@ -609,5 +611,67 @@ export interface UpdateContentEntryInput {
   status?: ContentStatus;
   data?: Record<string, any>;
   publishedAt?: string | null;
+}
+
+// ============================================================================
+// 10. Parish Videos (External URL Embeds)
+// ============================================================================
+
+export type VideoProvider = "youtube" | "facebook" | "direct";
+
+export const VIDEO_PROVIDERS = ["youtube", "facebook", "direct"] as const satisfies readonly VideoProvider[];
+
+export const VIDEO_PROVIDER_LABELS_AR: Record<VideoProvider, string> = {
+  youtube: "يوتيوب",
+  facebook: "فيسبوك",
+  direct: "مباشر",
+};
+
+export interface ParishVideo {
+  id: string;
+  titleAr: string;
+  titleEn: string | null;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
+  provider: VideoProvider;
+  sourceUrl: string;
+  embedUrl: string;
+  thumbnailUrl: string | null;
+  sortOrder: number;
+  isPublic: boolean;
+  isActive: boolean;
+  createdBy: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateParishVideoInput {
+  titleAr: string;
+  titleEn?: string | null;
+  descriptionAr?: string | null;
+  descriptionEn?: string | null;
+  provider: VideoProvider;
+  sourceUrl: string;
+  embedUrl: string;
+  thumbnailUrl?: string | null;
+  sortOrder?: number;
+  isPublic?: boolean;
+  isActive?: boolean;
+}
+
+export type UpdateParishVideoInput = Partial<CreateParishVideoInput>;
+
+/** Public-safe projection: strips staff tracking fields and only contains public fields */
+export interface PublicParishVideo {
+  id: string;
+  titleAr: string;
+  titleEn: string | null;
+  descriptionAr: string | null;
+  descriptionEn: string | null;
+  provider: VideoProvider;
+  embedUrl: string;
+  thumbnailUrl: string | null;
+  sortOrder: number;
 }
 
