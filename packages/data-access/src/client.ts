@@ -14,3 +14,4 @@ export type * from "./events/admin";
 export * from "./utils/cairo-time";
 export * from "./utils/mass-schedule";
 export * from "./validations/event-schemas";
+export * from "./validations/dynamic-validator";

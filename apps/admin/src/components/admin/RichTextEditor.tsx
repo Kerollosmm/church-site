@@ -20,7 +20,7 @@ import {
   Undo,
   Redo,
 } from "lucide-react";
-import { sanitizeHtml } from "@church-site/data-access";
+import { sanitizeHtml } from "@church-site/data-access/client";
 import { ADMIN_FOCUS_RING } from "./admin-ui";
 
 export interface RichTextEditorProps {
