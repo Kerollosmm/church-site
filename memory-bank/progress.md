@@ -1,5 +1,37 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 3 Content Types Engine — 100% Complete & Verified)
+- [x] **إتمام محرك أنواع المحتوى المخصص ونظام التوليد الديناميكي (CMS Engine)**:
+  - **حزمة النطاق `@church-site/domain`**:
+    * نماذج `ContentType` و`ContentField` و`ContentEntry` ونموذج القوالب `LayoutTemplate`.
+    * محرك التحقق الديناميكي `validateContentEntryData(fields, data)`.
+    * تحديث مصفوفة الصلاحيات بالقدرات الست: `content:read`، `content:create`، `content:update`، `content:delete`، `content:publish`، `content:manage`.
+    * الالتزام: `563acf5 feat(domain): content types model and capabilities`.
+  - **قاعدة البيانات وهجرات Supabase**:
+    * إضافة الهجرة 13 `supabase/migrations/20260916130000_content_types.sql` لإنشاء جداول `content_types` و`content_fields` و`content_entries`.
+    * فهارس GIN وفهارس المفاتيح الفريدة المركبة، وسياسات RLS للقراءة العامة والكتابة الإدارية.
+    * الالتزام: `1905865 chore(db): content types schema and rls`.
+  - **حزمة الوصول للبيانات `@church-site/data-access`**:
+    * عقد المستودع `ContentTypeRepository` ومحول `JsonStoreContentTypeRepository` ومحول `SupabaseContentTypeRepository`.
+    * ترقية مخزن الملفات `.data/church-store.json` إلى الإصدار 3 مع الحفاظ على التوافق الرجعي.
+    * مطهر HTML الغني الآمن بقائمة السماح في `@church-site/data-access/client`.
+    * الالتزامات: `8ef796e feat(data-access): content type repository and runtime schema`، و`ebb0e61 fix(data-access): export dynamic-validator from client entrypoint`.
+  - **تطبيق الإدارة `apps/admin`**:
+    * إدارة نماذج المحتوى `/content-types`، وتصميم الحقول المخصصة `/content-types/[id]/fields`.
+    * تحرير وإدارة المشاركات `/content/[type]`، ومحرر النصوص الغني `RichTextEditor`، واستمارة الإدخال الديناميكية `DynamicEntryForm`.
+    * إجراءات خادمية مؤمنة في `content-type-actions.ts` و`content-entry-actions.ts`.
+    * الالتزامات: `4427e1f feat(admin): content types manager`، و`3f0ee20 feat(admin): dynamic content editor`، و`855478c test(admin): fix type narrowing in content actions test`.
+  - **تطبيق الموقع العام `apps/web`**:
+    * مسارات العرض العامة `/content/[type]` و`/content/[type]/[slug]` مع قوالب `default` و`article` و`index`.
+    * تراجع ذكي في `generateStaticParams` لضمان البناء بصفر متغيرات بيئة (53/53 مساراً ثابتاً).
+    * عزل كامل لثابت INV-01: صفر إجراءات كتابة أو استيرادات عملاء قاعدة بيانات في تطبيق الويب.
+    * الالتزامات: `e316b56 feat(web): generic content routes and templates`، و`e897c98 fix(web): ensure INV-01 isolation regex passes`.
+  - **أجنحة الاختبارات وبوابات التحقق**:
+    * 21 ملف اختبار و**362/362 فحصاً ناجحاً بنسبة 100%** في Vitest (+44 فحصاً جديداً).
+    * الالتزام: `620c1e0 test: cover content engine`.
+    * نجاح كامل لجميع بوابات التحقق G1 إلى G9 وتوثيق الأدلة في `.scratch/phase3-gates/`.
+    * **بوابة G6 للتحقق من محرك المحتوى (100% Verified)**: اختبار دورة كاملة للمحرك (إنشاء النوع، إضافة الحقول، التحقق من الصحة، نشر المشاركة، والاستعلام العام) موثق في `g6-content.txt` وسكربت الدخان الحي `live-content-smoke.sh`.
+
 ## يعمل الآن (Phase 2 Media Upload & Supabase Storage — 100% Verified)
 - [x] **إتمام منظومة رفع وتخزين الوسائط الرقمية والحفاظ على ثوابت عدم المصادقة**:
   - **حزمة النطاق `@church-site/domain`**:
@@ -23,6 +55,17 @@
     * 16 ملف اختبار و**318/318 فحصاً ناجحاً بنسبة 100%** في Vitest.
     * الالتزام: `5ffa1f3 test: cover media upload pipeline`.
     * نجاح كامل لجميع بوابات التحقق G1 إلى G9 وتوثيق الأدلة في `.scratch/phase2-gates/`.
+    * **بوابة G6 الحية (Gate G6 Live Verified — 100% PASS)**:
+      - اختبار حي شامل على مشروع Supabase الإنتاجي `mlprvcgbwwihnjyvyawm` باستخدام مفتاح الدور الخدمي والعميل الرسمي.
+      - دفع الهجرة 12 (`20260916120000_media_storage.sql`) بنجاح وتجهيز حاوية `media` العامة وسياسات RLS للكتابة الإدارية.
+      - دورة رفع حية ناجحة (HTTP 200) لملف تجريبي (68 بايت) مع تطابق تام لبصمة التجزئة SHA-256 (`63ef318d96b5d0d0ceba6e04a4e622b1158335cdc67c49e27839132c6f655058`).
+      - دورة حذف حية ناجحة (HTTP 200) مع التحقق من نفي الوجود اللاحق واسترجاع HTTP 404 (NoSuchKey).
+      - حفظ أدلة الإثبات الحية في `.scratch/phase2-gates/live/`:
+        * `live-conclusion.txt`: إقرار النجاح النهائي (`G6 LIVE SMOKE: PASS`).
+        * `live-upload.txt`: تفاصيل الرفع والتنزيل وتطابق SHA-256.
+        * `live-delete.txt`: تفاصيل الحذف واستجابة 404 NoSuchKey.
+        * `live-env.txt`: فحص سلامة المتغيرات البيئية وتطهير الأسرار.
+    * **اعتماد واختتام المرحلة الثانية بالكامل (Phase 2 Fully Complete — 100% Sign-off)**.
 
 ## يعمل الآن (Phase 1 Monorepo Split — 100% Pushed & Verified)
 - [x] **إتمام الفصل المعماري لـ Monorepo ورفع الالتزامات العشرة إلى GitHub (`origin/master`)**:
@@ -160,7 +203,8 @@
 
 ## يعمل الآن (Supabase Production Database — Project mlprvcgbwwihnjyvyawm)
 - [x] ربط المشروع البعيد `mlprvcgbwwihnjyvyawm` عبر Supabase CLI.
-- [x] تطبيق كافة الهجرات الـ 11 (`supabase db push`) بنجاح كامل.
+- [x] تطبيق كافة الهجرات الـ 12 (`supabase db push`) بنجاح كامل (شاملة الهجرة 12 لمساحة التخزين وحاوية `media`).
+- [x] اجتياز بوابة التحقق الحي G6 لمنظومة التخزين بنسبة 100% وتوثيق الأدلة في `.scratch/phase2-gates/live/`.
 - [x] التحقق الميداني المباشر من مطابقة إحصائيات قاعدة البيانات:
   - 29 جدولاً في المخطط العام `public`.
   - 56 سياسة أمنية (RLS Policies).
@@ -314,7 +358,7 @@
 - [x] 2026-09-14: تنظيفات الشفرة (Code Hygiene) — حذف `src/components/layout/MegaMenu.tsx` و`MobileDrawer.tsx` (مكوّنان غير مستوردين ولا يستوردهما أي ملف، وكانا يشيران إلى مسارات غير قائمة مثل `/clinics/schedule` و`/programs/*`)، وإضافة `.claude/settings.local.json` و`.scratch/` إلى `.gitignore`، وتوحيد ثابتَي رسم الكشف وعدد التخصصات في 8 مواضع لتُشتق من `src/lib/constants.ts` و`SEED_CLINIC_SPECIALTIES.length`. التحقق: `tsc` = 0 (خروج 0)، `build` = 55/55 (خروج 0)، وأسطر مراجع التنقل والعدّ الثابتة = 0، وفحص HTML المولّد للقيم المعروضة.
 
 ## قيد الانتظار (Deployment Layer — الفجوات المفتوحة والافتراضات الآمنة)
-- [x] **الفجوة 1: رفع الوسائط الثنائية (Binary Media Upload) [مكتملة في المرحلة 2]** — تم بناء وإنجاز منظومة رفع وتخزين الوسائط الرقمية بمحولين (Supabase Storage للإنتاج وFileMediaStorage للتطوير والاختبارات) مع الهجرة 12 وسياسات RLS، وإجراء الرفع وواجهة العميل، وعرض الصور الحقيقية بالمعرض العام.
+- [x] **الفجوة 1: رفع الوسائط الثنائية (Binary Media Upload) [مكتملة ومحققة حياً 100%]** — تم بناء وإنجاز واختبار منظومة رفع وتخزين الوسائط الرقمية بمحولين (Supabase Storage للإنتاج وFileMediaStorage للتطوير والاختبارات) مع الهجرة 12 وسياسات RLS، ودفعها للمشروع الحي `mlprvcgbwwihnjyvyawm` واجتياز بوابة G6 الحية بنجاح كامل (PASS).
 - [ ] **الفجوة 2: محول البريد الإلكتروني (Mailer Transport)** — الاشتراك في التنبيهات يعمل بمحول `noop` مسجل في سجل التدقيق وبنصوص صريحة للزائر بأنه لا يُرسل بريد. *الافتراض الآمن*: بقاء الـ no-op حتى توفير مفاتيح مزود بريد حقيقي (Resend أو SMTP).
 - [ ] **الفجوة 3: أدلة إمكانية الوصول والأداء في المتصفح (A11y & Performance Evidence)** — البنية الهيكلية سليمة، لكن لم تُفحص في متصفح حي (Lighthouse وتباين وقارئات الشاشة). *الافتراض الآمن*: صيانة المعايير الهيكلية وتوثيق الفحوص البصرية كغير متحققة في هذه البيئة حتى توفير جلسة متصفح.
 - [ ] **الفجوة 4: لقطات شاشات لوحة الإدارة (Admin Guide Screenshots)** — دليل الإدارة `docs/admin-guide.md` يحمل 10 عناصر نائبة موسومة في `docs/images/admin/`. *الافتراض الآمن*: بقاء العناصر النائبة بالأسماء الموثقة حتى التقاطها من لوحة إدارة مأهولة بجلسة حقيقية.

@@ -1,6 +1,39 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-17)
+- **اكتملت بالكامل واعتُمدت (Phase 3 Content Types Engine — Verified & Complete)**:
+  * **سلسلة التزامات المرحلة الثالثة (`563acf5`..`[HEAD]`)**:
+    1. `563acf5` `feat(domain): content types model and capabilities`
+    2. `1905865` `chore(db): content types schema and rls`
+    3. `8ef796e` `feat(data-access): content type repository and runtime schema`
+    4. `4427e1f` `feat(admin): content types manager`
+    5. `3f0ee20` `feat(admin): dynamic content editor`
+    6. `855478c` `test(admin): fix type narrowing in content actions test`
+    7. `ebb0e61` `fix(data-access): export dynamic-validator from client entrypoint`
+    8. `e316b56` `feat(web): generic content routes and templates`
+    9. `620c1e0` `test: cover content engine`
+    10. `44abeb3` `test(data-access): add e2e content proof test`
+    11. `e897c98` `fix(web): ensure INV-01 isolation regex passes`
+    12. `51e76eb` `docs: content types engine`
+  * **إحصائيات الاختبارات المحدثة**: 21 ملف اختبار، **362/362 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest بعد إضافة 44 فحصاً جديداً لمحرك المحتوى ونظام التحقق الديناميكي.
+  * **بوابات التحقق الصلبة للمرحلة الثالثة (G1–G9 All Passed & Verified)**:
+    - G1: فحص الأنواع لكافة التطبيقات والحزم = 0 أخطاء (`.scratch/phase3-gates/g1-web-tsc.txt`، `g1-admin-tsc.txt`).
+    - G2: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase3-gates/g2-lint.txt`).
+    - G3: اختبارات الوحدات = 21 ملفاً، 362 فحصاً ناجحاً (`.scratch/phase3-gates/g3-test.txt`).
+    - G4: بناء الويب بصفر متغيرات بيئة = 53/53 مساراً ثابتاً (`.scratch/phase3-gates/g4-web-build.txt`).
+    - G5: بناء الإدارة = جميع مسارات `/content-types` و`/content/*` بنجاح كامل (`.scratch/phase3-gates/g5-admin-build.txt`).
+    - G6: اختبار دورة المحرك الكاملة = 100% نجاح على محرك مخزن الملفات مع تجهيز سكربت الفحص الحي `live-content-smoke.sh` (`.scratch/phase3-gates/g6-content.txt`، `g6-label.txt`).
+    - G7: حفظ سجل Git عبر `git log --follow` مؤكد عبر التاريخ (`.scratch/phase3-gates/g7-git-log.txt`).
+    - G8: هجرة قاعدة البيانات 13 (`20260916130000_content_types.sql`) مضافة بدون أي تعديل على هجرات 1-12 (`.scratch/phase3-gates/g8-git-status.txt`).
+    - G9: عزل تام للحدود: `apps/web` لا يحوي أي استيراد أو إجراء كتابة، و`apps/admin` لا يحوي استيراداً مباشراً لـ `@supabase` (`.scratch/phase3-gates/g9-content-web.txt`، `g9-imports-admin.txt`).
+  * **تسليم التوثيق**:
+    - دليل طاقم الكنيسة بالعربية `docs/content-types-guide.md`.
+    - وثيقة المعمارية التقنية `docs/phase3-content-types.md`.
+    - سجل القرار المعماري `docs/adr/0003-content-types-engine.md`.
+    - تقرير المراجعة `REVIEW.md`: إضافة أقسام المرحلة الثالثة 10 إلى 13.
+  * **الخطوة التالية الفورية (Next Immediate Step)**:
+    - اعتماد واختتام المرحلة الثالثة بالكامل (Phase 3 100% Signed-off & Verified).
+    - رفع الالتزامات إلى الفرع الرئيسي على GitHub (`git push origin master`).
 - **اكتملت بالكامل واعتُمدت (Phase 2 Media Upload & Supabase Storage — Verified & Complete)**:
   * **سلسلة الالتزامات الستة للمرحلة الثانية (`c0e1c91`..`5ffa1f3`)**:
     1. `c0e1c91` `feat(domain): add storage fields to media model`
@@ -10,13 +43,17 @@
     5. `fc3d752` `feat(web): render real uploaded media in gallery`
     6. `5ffa1f3` `test: cover media upload pipeline`
   * **إحصائيات الاختبارات المحدثة**: 16 ملف اختبار، **318/318 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest بعد إضافة اختبارات محول التخزين ومخططات الوسائط وإجراءات الرفع ومعرض الصور.
-  * **بوابات التحقق الصلبة للمرحلة الثانية (G1–G9 All Passed)**:
+  * **بوابات التحقق الصلبة للمرحلة الثانية (G1–G9 All Passed & Live Verified)**:
     - G1: فحص الأنواع لكافة التطبيقات والحزم = 0 أخطاء (`.scratch/phase2-gates/g1-web-tsc.txt`، `g1-admin-tsc.txt`).
     - G2: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase2-gates/g2-lint.txt`).
     - G3: اختبارات الوحدات = 16 ملفاً، 318 فحصاً ناجحاً (`.scratch/phase2-gates/g3-test.txt`).
     - G4: بناء الويب بصفر متغيرات بيئة = 50/50 مساراً ثابتاً (`.scratch/phase2-gates/g4-web-build.txt`).
     - G5: بناء الإدارة = 5/5 مسارات بنجاح كامل (`.scratch/phase2-gates/g5-admin-build.txt`).
-    - G6: اختبار دورة الرفع والحذف والتحقق من التجزئة SHA-256 ناجح (`.scratch/phase2-gates/g6-upload.txt`).
+    - G6: اختبار دورة الرفع والحذف والتحقق من التجزئة SHA-256 ناجح محلياً وحياً على Supabase (PASS):
+      * مشروع Supabase الحي: `mlprvcgbwwihnjyvyawm`.
+      * تطبيق الهجرة 12 (`20260916120000_media_storage.sql`) بنجاح كامل لإنشاء حاوية `media` وسياسات RLS.
+      * اختبار الدورة الحية الكاملة: رفع بايتات تجريبية بـ HTTP 200 وتطابق كامل للتجزئة SHA-256 (`63ef318d...`)، وتنزيل بـ HTTP 200، وحذف بـ HTTP 200، وفحص نفي الوجود اللاحق بـ 404 NoSuchKey.
+      * توثيق الأدلة الحية كاملة في `.scratch/phase2-gates/live/` (`live-conclusion.txt`, `live-upload.txt`, `live-delete.txt`, `live-env.txt`).
     - G7: حفظ سجل Git عبر `git log --follow` مؤكد (`.scratch/phase2-gates/g7-git-log.txt`).
     - G8: هجرة مساحة التخزين `20260916120000_media_storage.sql` جاهزة ومؤكدة (`.scratch/phase2-gates/g8-git-status.txt`).
     - G9: عزل تام للحدود: `apps/web` لا يحوي أي استيراد تخزين؛ `apps/admin` لا يحوي أي استيراد مباشر لـ `@supabase` (`.scratch/phase2-gates/g9-storage-web.txt`، `g9-imports-admin.txt`).
@@ -25,9 +62,10 @@
     - وثيقة التخزين `docs/media-storage.md`: تفصيل الحاوية والمحول ومسار التجزئة وسياسات RLS وثابت INV-01.
     - دليل النشر `docs/deployment-split.md`: توثيق متطلبات `media` bucket ومفتاح `SUPABASE_SERVICE_ROLE_KEY`.
     - تقرير المراجعة `REVIEW.md`: إضافة أقسام المرحلة الثانية 6 إلى 9.
-  * **ملاحظات التسليم للمرحلة الثالثة (Phase 3 Handoff Notes)**:
-    - البنية التحتية للوسائط مكتملة بالكامل مع المحولين (Supabase الإنتاجي وFile المحلي للتطوير والاختبارات).
-    - الأولويات القادمة للمرحلة الثالثة: محرر مصطلحات التصنيف في لوحة الإدارة، استكمال نصوص أسفار الكتاب المقدس، أو ربط مزود البريد الحقيقي عند توفير بيانات الاعتماد.
+  * **الخطوة التالية الفورية (Next Immediate Step)**:
+    - اعتماد واختتام المرحلة الثانية بالكامل (Phase 2 100% Signed-off & Verified).
+    - جاهز لبدء التخطيط والتنفيذ للمرحلة الثالثة (Ready for Phase 3 planning / execution).
+    - أولويات المرحلة الثالثة المقترحة: محرر مصطلحات التصنيف في لوحة الإدارة، استكمال نصوص أسفار الكتاب المقدس، أو ربط مزود البريد الحقيقي عند توفير بيانات الاعتماد.
 - **اكتملت بالكامل ورُفعت إلى GitHub (Phase 1 Monorepo Split Pushed & Verified)**:
   * **الحالة على المستودع البعيد**: الفرع `master` على `https://github.com/Kerollosmm/church-site` متزامن ومحدَّث بسلسلة الالتزامات العشرة (`48c743b..7cd5a20`).
   * **سلسلة الالتزامات العشرة (The 10 Conventional Commits)**:
@@ -135,10 +173,11 @@
   - بوابات التحقق الصلبة كلها خضراء (Exit 0):
     1. فحص الأنواع: `pnpm exec tsc --noEmit` = 0 أخطاء (Exit 0).
     2. فحص الأسلوب: `pnpm run lint` = 0 أخطاء و0 تحذيرات (Exit 0).
-    3. اختبارات الوحدات: `pnpm test` (Vitest) = 12 ملف اختبار، **274/274 فحصاً ناجحاً بنسبة 100% (100% green)** (Exit 0).
-    4. بناء الإنتاج والربط: `pnpm run build` = Exit 0، وتوليد **51/51 صفحة** بنجاح كامل بدون أي أخطاء.
+    3. اختبارات الوحدات: `pnpm test` (Vitest) = 16 ملف اختبار، **318/318 فحصاً ناجحاً بنسبة 100% (100% green)** (Exit 0).
+    4. بناء الإنتاج والربط: `pnpm run build` = Exit 0، وتوليد **50/50 صفحة ويب و5 مسارات إدارة** بنجاح كامل بدون أي أخطاء.
     5. تدقيق الاعتماديات: `pnpm audit --prod` = 0 ثغرات أمنية (Exit 0).
-    6. هجرات قاعدة البيانات: **11/11 ملف هجرة مُطبَّقة على المشروع البعيد**.
+    6. هجرات قاعدة البيانات: **12/12 ملف هجرة مُطبَّقة على المشروع البعيد `mlprvcgbwwihnjyvyawm`** (شاملة هجرة التخزين وحاوية `media`).
+    7. بوابة التحقق الحي G6: اختبار التخزين الحي (رفع/حذف/تجزئة SHA-256) على الحاوية `media` بمشروع `mlprvcgbwwihnjyvyawm` ناجح 100% (PASS) وموثق في `.scratch/phase2-gates/live/`.
 
 
 ### 1. إصلاح أخطاء الأنواع (STEP 1) — الجذر الحقيقي [PROVEN]

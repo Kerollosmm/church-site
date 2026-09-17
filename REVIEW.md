@@ -214,3 +214,105 @@ git grep -n "@supabase" apps/admin/src # should return 0 matches
 git grep -n "storage\.objects" apps/web/src # should return 0 matches
 ```
 
+---
+
+# Phase 3 Content Types Engine — Reviewer Checklist & Verification Guide
+
+## 10. Phase 3 Content Types Engine Audit Table
+
+Every commit executed during Phase 3 satisfies strict verification gates prior to merging:
+
+| Commit | Step | Description | Verification Gates Run | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| `563acf5` | Step 1 | `feat(domain): content types model and capabilities` | `pnpm --filter @church-site/domain typecheck`, `pnpm test` | **GREEN** |
+| `1905865` | Step 2 | `chore(db): content types schema and rls` | `git status`, migration file checks | **GREEN** |
+| `8ef796e` | Step 3 | `feat(data-access): content type repository and runtime schema` | `pnpm typecheck`, `pnpm test` | **GREEN** |
+| `4427e1f` | Step 4 | `feat(admin): content types manager` | `pnpm --filter admin typecheck`, `pnpm lint` | **GREEN** |
+| `3f0ee20` | Step 4 | `feat(admin): dynamic content editor` | `pnpm --filter admin typecheck`, `pnpm --filter admin build` | **GREEN** |
+| `855478c` | Step 4 | `test(admin): fix type narrowing in content actions test` | `pnpm test` | **GREEN** |
+| `ebb0e61` | Step 4 | `fix(data-access): export dynamic-validator from client entrypoint` | `pnpm --filter admin build`, `pnpm --filter web build` | **GREEN** |
+| `e316b56` | Step 5 | `feat(web): generic content routes and templates` | `pnpm --filter web typecheck`, `pnpm --filter web build` (53/53 static) | **GREEN** |
+| `620c1e0` | Step 6 | `test: cover content engine` | `pnpm test` (361/361 passed across 20 files) | **GREEN** |
+| `44abeb3` | Step 6 | `test(data-access): add e2e content proof test` | `pnpm test` (362/362 passed across 21 files) | **GREEN** |
+| `e897c98` | Step 7 | `fix(web): ensure INV-01 isolation regex passes` | `rg` INV-01 isolation checks, `pnpm test` | **GREEN** |
+| `51e76eb` | Step 8 | `docs: content types engine` | ADR-0003, Arabic Guide, Architecture Doc, REVIEW.md | **GREEN** |
+
+---
+
+## 11. Final Verification Gates Table (G1–G9)
+
+All nine verification gates for Phase 3 have been empirically validated on the live repository. Raw tool evidence is archived under `.scratch/phase3-gates/`:
+
+| Gate | Check | Pass Condition | Result | Evidence File |
+| :--- | :--- | :--- | :--- | :--- |
+| **G1** | TypeScript Validation | `tsc --noEmit` on both apps (`apps/web`, `apps/admin`) and shared packages with 0 errors | **PASS (0 errors)** | `.scratch/phase3-gates/g1-web-tsc.txt`<br/>`.scratch/phase3-gates/g1-admin-tsc.txt` |
+| **G2** | ESLint Code Quality | `eslint .` across workspace and individual packages with 0 errors | **PASS (0 errors)** | `.scratch/phase3-gates/g2-lint.txt` |
+| **G3** | Test Suite (Vitest) | 100% tests passing across 21 test files (362/362 tests green; +44 net new tests) | **PASS (362/362 green)** | `.scratch/phase3-gates/g3-test.txt` |
+| **G4** | Web Production Build | `pnpm --filter web build` succeeds with 0 env vars, generating 53/53 static pages | **PASS (53/53 static pages)** | `.scratch/phase3-gates/g4-web-build.txt` |
+| **G5** | Admin Production Build | `pnpm --filter admin build` succeeds cleanly for all `/content-types` and `/content/*` routes | **PASS (Clean dynamic build)** | `.scratch/phase3-gates/g5-admin-build.txt` |
+| **G6** | Content Engine Verification | End-to-end metamodel creation, dynamic field validation, entry publishing, and public query | **PASS (100% Verified on file-store engine; live script provided)** | `.scratch/phase3-gates/g6-content.txt`<br/>`.scratch/phase3-gates/g6-label.txt`<br/>`.scratch/phase3-gates/live-content-smoke.sh` |
+| **G7** | History Preservation | `git log --follow` traces commits across refactors in domain, data-access, and web | **PASS (History Preserved)** | `.scratch/phase3-gates/g7-git-log.txt` |
+| **G8** | DB Migration Integrity | Migration `20260916130000_content_types.sql` created; exactly 0 edits to migrations 1–12 | **PASS (Validated Migration)** | `.scratch/phase3-gates/g8-git-status.txt` |
+| **G9** | Surface Boundary Integrity | `apps/web` has zero write/mutation actions or DB client imports; `apps/admin` has zero direct `@supabase` imports | **PASS (Clean Isolation)** | `.scratch/phase3-gates/g9-content-web.txt`<br/>`.scratch/phase3-gates/g9-imports-admin.txt` |
+
+---
+
+## 12. Known Gaps / Substitutions
+
+- **G6 Engine Verification Label**: Gate G6 was verified against the file-store repository engine (`JsonStoreContentTypeRepository`), exercising full metamodel creation, schema validation, persistence, and querying. Live PostgreSQL verification requires staging/production credentials; a standalone bash test script `.scratch/phase3-gates/live-content-smoke.sh` is provided for immediate execution once credentials are supplied.
+- **Zero New Dependencies**: Dynamic entry forms, rich text editing, and sanitization use zero third-party packages, avoiding bundle bloat or CVE risks.
+- **Public Route Static Fallback**: In accordance with INV-01, public `/content/[type]` and `/content/[type]/[slug]` dynamic routes implement graceful static params fallback when no database credentials are present at build time.
+
+---
+
+## 13. Reviewer Can Re-Verify Phase 3 With:
+
+A reviewer can independently re-verify all Phase 3 gates with the following standard CLI commands:
+
+### Run All Core Verification Gates (G1–G5)
+```bash
+# 1. Typecheck entire monorepo
+pnpm typecheck
+
+# 2. Lint entire workspace
+pnpm run lint
+
+# 3. Run full Vitest suite (362 tests across 21 files)
+pnpm test
+
+# 4. Build public web portal (asserting 0 env vars, 53/53 static routes)
+pnpm --filter web build
+
+# 5. Build staff admin dashboard
+pnpm --filter admin build
+```
+
+### Re-Verify Content Engine Integration Proof (G6)
+```bash
+# Execute standalone content engine proof
+pnpm --filter @church-site/data-access exec node ../../.scratch/phase3-gates/run-g6-proof.mjs
+```
+
+### Re-Verify Git History Preservation (G7)
+```bash
+git log -n 5 --oneline --follow packages/domain/src/types.ts
+git log -n 5 --oneline --follow packages/data-access/src/store/json-store.ts
+git log -n 5 --oneline --follow apps/web/src/app/content/[type]/page.tsx
+```
+
+### Re-Verify Database Migration Integrity (G8)
+```bash
+git status supabase/migrations/
+git diff origin/master -- supabase/migrations/0001_initial.sql
+git diff origin/master -- supabase/migrations/20260916120000_media_storage.sql
+```
+
+### Re-Verify Surface Boundary Integrity (G9)
+```bash
+# Ensure apps/web has 0 content write/credential actions
+rg -n "content.*(create|insert|update|publish)|uploadMediaAction|createClient" apps/web/src
+
+# Ensure apps/admin has 0 direct @supabase imports outside authorized packages
+rg -n "from ['\"]@supabase/" apps/admin/src
+```
+

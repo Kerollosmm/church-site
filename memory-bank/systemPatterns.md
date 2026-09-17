@@ -201,4 +201,18 @@
   * تطبيق الويب `apps/web` خالٍ بنسبة 100% من أي استيراد لكتب التخزين السحابي أو مفاتيح الإدارة.
   * صفحة المعرض `/gallery` تستهلك الروابط العامة HTTP وتعرض الصور عبر `<Image unoptimized />` مع نصوص بديلة (Alt Text) بالعربية، مما يحفظ أداء التوليد الثابت وعزل الأعطال الكامل بين تطبيقات المنظومة.
 
+## 34. محرك أنواع المحتوى المخصص (Phase 3 Content Types Engine Pattern)
+- **معمارية EAV-lite مع التحقق الديناميكي وقت التشغيل**:
+  * فصل تعريفات النماذج (`content_types`) والحقول المخصصة (`content_fields`) عن بيانات المشاركات (`content_entries`).
+  * تخزين الحقول المتغيرة داخل عمود `data JSONB` مع فهرس GIN (`gin_content_entries_data`) لتسريع الاستعلامات.
+  * التحقق من سلامة البيانات يتم ديناميكياً عند الإدخال والتعديل عبر `validateContentEntryData(fields, data)` في `@church-site/domain`.
+- **مبدأ التكافؤ التام بين المحركين (Dual-Driver Parity)**:
+  * يطبق كل من `JsonStoreContentTypeRepository` ومستودع `SupabaseContentTypeRepository` نفس العقد البرمجي `ContentTypeRepository`.
+  * ترقية تلقائية لمخزن الملفات المحلي `.data/church-store.json` إلى الإصدار 3 (Schema Version 3) مع دعم كامل للرجوع للخلف للإصدارين 1 و2.
+- **مسارات عامة ديناميكية مع دعم التوليد الثابت (Zero-Auth / Static-First)**:
+  * مسارات عامة موحدة تحت بادئة `/content/[type]` لقائمة المشاركات و`/content/[type]/[slug]` لتفاصيل المشاركة الواحدة.
+  * تطبيق صارم لثابت INV-01: قراءة فقط للمشاركات المنشورة (`status = 'published'`)، وتراجع تلقائي في `generateStaticParams` عند غياب متغيرات البيئة لبناء نظيف بصفر متغيرات.
+  * تطهير كامل لمحتوى HTML الغني بقائمة سماح دقيقة (Allowlist Sanitizer) لمنع هجمات XSS دون الاعتماد على أي حزم npm خارجية.
+
+
 
