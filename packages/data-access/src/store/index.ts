@@ -17,6 +17,9 @@ import { getStoreDataDir } from "./json-store";
 import type { EventRepository, RepositoryDriverName } from "./repository";
 
 export * from "./repository";
+export * from "./content-repository";
+export * from "./content-json-driver";
+export * from "./content-supabase-driver";
 
 /** The driver this environment resolves to, without constructing it. */
 export function selectRepositoryDriver(): RepositoryDriverName {
@@ -25,6 +28,9 @@ export function selectRepositoryDriver(): RepositoryDriverName {
 
 let cachedRepository: EventRepository | null = null;
 let cachedDriver: RepositoryDriverName | null = null;
+
+let cachedContentRepository: import("./content-repository").ContentTypeRepository | null = null;
+let cachedContentDriver: RepositoryDriverName | null = null;
 
 /**
  * The process-wide repository. Constructed lazily on first use (never at import time) and rebuilt if
@@ -43,3 +49,22 @@ export function getEventRepository(): EventRepository {
   });
   return cachedRepository;
 }
+
+import { JsonContentTypeRepository } from "./content-json-driver";
+import { SupabaseContentTypeRepository } from "./content-supabase-driver";
+import type { ContentTypeRepository } from "./content-repository";
+
+/**
+ * The process-wide ContentTypeRepository.
+ * Follows identical engine selection: Supabase if admin env configured, otherwise file-store.
+ */
+export function getContentTypeRepository(): ContentTypeRepository {
+  const driver = selectRepositoryDriver();
+  if (cachedContentRepository && cachedContentDriver === driver) return cachedContentRepository;
+
+  cachedContentRepository =
+    driver === "supabase" ? new SupabaseContentTypeRepository() : new JsonContentTypeRepository();
+  cachedContentDriver = driver;
+  return cachedContentRepository;
+}
+

@@ -20,6 +20,7 @@ export const REVALIDATION_TAGS = {
   clergy: "clergy",
   altars: "altars",
   donationAccounts: "donation-accounts",
+  content: "content",
 } as const;
 
 export type RevalidationTag = (typeof REVALIDATION_TAGS)[keyof typeof REVALIDATION_TAGS];

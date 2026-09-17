@@ -68,4 +68,25 @@ export async function republishEventSurfaces(paths: readonly string[] = EVENT_SU
   };
 }
 
+/** Invalidate cache tags and routes for dynamic content types */
+export function revalidateContentSurfaces(typeSlug?: string, entrySlug?: string): string[] {
+  revalidateTag(REVALIDATION_TAGS.content);
+  const paths: string[] = ["/content"];
+  if (typeSlug) {
+    paths.push(`/content/${typeSlug}`);
+    if (entrySlug) {
+      paths.push(`/content/${typeSlug}/${entrySlug}`);
+    }
+  }
+  for (const path of paths) {
+    try {
+      revalidatePath(path, "page");
+    } catch {
+      // Safe fallback when executed outside Next.js request lifecycle
+    }
+  }
+  return [REVALIDATION_TAGS.content, ...paths];
+}
+
+
 

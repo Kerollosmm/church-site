@@ -8,6 +8,9 @@
 
 import type {
   AuditLogEntry,
+  ContentEntry,
+  ContentField,
+  ContentType,
   EventExceptionRecord,
   EventRecord,
   EventSeriesRecord,
@@ -18,18 +21,16 @@ import type {
 } from "@church-site/domain";
 
 /**
- * Version 2 added the `subscribers` collection (event notifications).
+ * Version 3 added the `contentTypes`, `contentFields`, `contentEntries` collections (Phase 3 CMS).
  *
- * A version-1 document is NOT rejected: it is upgraded in memory on read (`parseStoreDocument`) and
- * written back at version 2 by the next mutation. A collection added later is the one shape change
- * that loses nothing by being tolerated, and refusing to read a parish's existing store would lose
- * every event it holds. Anything else — an older version, a newer version, a missing collection —
- * still fails loudly.
+ * Versions 1 and 2 are upgraded in memory on read (`parseStoreDocument`) and written back at
+ * version 3 by the next mutation.
  */
-export const STORE_SCHEMA_VERSION = 2;
+export const STORE_SCHEMA_VERSION = 3;
 
-/** The only older layout this build can still read (see the note above). */
-export const STORE_SCHEMA_VERSION_LEGACY = 1;
+/** Older layouts this build can still read and upgrade. */
+export const STORE_SCHEMA_VERSION_LEGACY = 2;
+export const STORE_SCHEMA_VERSION_V1 = 1;
 
 export const STORE_FILE_NAME = "church-store.json";
 
@@ -45,6 +46,9 @@ export const STORE_COLLECTIONS = [
   "eventTerms",
   "media",
   "subscribers",
+  "contentTypes",
+  "contentFields",
+  "contentEntries",
   "audit",
 ] as const;
 
@@ -60,6 +64,10 @@ export interface StoreDocument {
   media: MediaRecord[];
   /** Event-notification subscriptions (see `SubscriberRecord`). Added in schema version 2. */
   subscribers: SubscriberRecord[];
+  /** Content Types engine (see `ContentType`, `ContentField`, `ContentEntry`). Added in schema version 3. */
+  contentTypes: ContentType[];
+  contentFields: ContentField[];
+  contentEntries: ContentEntry[];
   /** Append-only, oldest first. */
   audit: AuditLogEntry[];
 }
@@ -86,17 +94,23 @@ export function parseStoreDocument(value: unknown): ParsedStoreDocument {
   }
 
   const version = value.schemaVersion;
-  if (typeof version !== "number" || (version !== STORE_SCHEMA_VERSION && version !== STORE_SCHEMA_VERSION_LEGACY)) {
+  if (
+    typeof version !== "number" ||
+    (version !== STORE_SCHEMA_VERSION &&
+      version !== STORE_SCHEMA_VERSION_LEGACY &&
+      version !== STORE_SCHEMA_VERSION_V1)
+  ) {
     throw new Error(
-      `Store document schemaVersion ${String(version)} is not supported (expected ${STORE_SCHEMA_VERSION}, or ${STORE_SCHEMA_VERSION_LEGACY} for an upgrade).`
+      `Store document schemaVersion ${String(version)} is not supported (expected ${STORE_SCHEMA_VERSION}, or legacy versions for an upgrade).`
     );
   }
 
   let upgradedFrom: number | null = null;
-  if (version === STORE_SCHEMA_VERSION_LEGACY) {
-    // Version 1 predates subscribers entirely: an existing subscription could not have been stored,
-    // so an empty collection is the only faithful value — nothing is invented and nothing is lost.
+  if (version === STORE_SCHEMA_VERSION_V1 || version === STORE_SCHEMA_VERSION_LEGACY) {
     if (!Array.isArray(value.subscribers)) value.subscribers = [];
+    if (!Array.isArray(value.contentTypes)) value.contentTypes = [];
+    if (!Array.isArray(value.contentFields)) value.contentFields = [];
+    if (!Array.isArray(value.contentEntries)) value.contentEntries = [];
     value.schemaVersion = STORE_SCHEMA_VERSION;
     upgradedFrom = version;
   }

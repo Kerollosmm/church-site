@@ -37,7 +37,7 @@ export function snapshot<T>(value: T | null | undefined): JsonValue | null {
 function labelOf(record: JsonValue | null): string | null {
   if (!record || typeof record !== "object" || Array.isArray(record)) return null;
   const fields = record as Record<string, JsonValue>;
-  for (const key of ["titleAr", "nameAr", "filename", "slug"] as const) {
+  for (const key of ["titleAr", "title_ar", "nameAr", "name_ar", "labelAr", "label_en", "filename", "slug"] as const) {
     const candidate = fields[key];
     if (typeof candidate === "string" && candidate.trim().length > 0) return candidate.trim();
   }

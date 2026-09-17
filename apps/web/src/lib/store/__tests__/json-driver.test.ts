@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { JsonEventRepository } from "@/lib/store/json-driver";
 import { StoreError } from "@/lib/store/repository";
-import { STORE_FILE_NAME } from "@/lib/store/document";
+import { STORE_FILE_NAME, STORE_SCHEMA_VERSION } from "@/lib/store/document";
 import { buildSeedDocument } from "@/lib/store/seed";
 import type { Actor } from "@/lib/domain/types";
 
@@ -68,7 +68,7 @@ describe("seed on first use", () => {
     const document = await readDocument();
     const seed = buildSeedDocument();
 
-    expect(document.schemaVersion).toBe(2);
+    expect(document.schemaVersion).toBe(STORE_SCHEMA_VERSION);
     expect(document.series).toHaveLength(seed.series.length);
     expect(document.events).toHaveLength(seed.events.length);
     expect(document.terms).toHaveLength(seed.terms.length);
