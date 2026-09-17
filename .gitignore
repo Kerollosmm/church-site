@@ -43,3 +43,6 @@ goal-container/
 
 # supabase cli temporary state
 supabase/.temp/
+
+# split prompts
+phase1-split-agent-prompt*.md
