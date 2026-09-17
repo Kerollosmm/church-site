@@ -29,8 +29,11 @@ import {
   Users,
 } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
+import { ChurchVideosSection } from "@/components/videos/ChurchVideosSection";
 import { PARISH_ADDRESS_AR, PARISH_NAME_AR } from "@/lib/constants";
 import { getActivities, getAltars, getChurchMeetings, getClergy, getSchoolsAcademies } from "@/lib/queries";
+import { getPublicParishVideos } from "@church-site/data-access";
+import type { PublicParishVideo } from "@church-site/domain";
 import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
 import { localized } from "@/lib/i18n/localized";
 import { t, type MessageKey } from "@/lib/i18n/messages";
@@ -96,16 +99,20 @@ export default async function AboutPage(): Promise<React.ReactElement> {
   // Every figure on this page is COUNTED from parish data, never typed. The reads go through the
   // public query layer, whose seeded fallback keeps the page complete with no environment at all.
   let stats: { key: MessageKey; value: number }[] = [];
+  let videos: PublicParishVideo[] = [];
 
   try {
     locale = await getLocale();
-    const [altars, clergy, meetings, activities, schools] = await Promise.all([
+    const [altars, clergy, meetings, activities, schools, parishVideos] = await Promise.all([
       getAltars(),
       getClergy(),
       getChurchMeetings(),
       getActivities(),
       getSchoolsAcademies(),
+      getPublicParishVideos(),
     ]);
+
+    videos = parishVideos;
 
     const allStats: { key: MessageKey; value: number }[] = [
       { key: "about.statAltars", value: altars.length },
@@ -198,6 +205,9 @@ export default async function AboutPage(): Promise<React.ReactElement> {
             <p className="mt-4 text-xs text-slateText-muted">{t(locale, "about.numbersHint")}</p>
           </section>
         ) : null}
+
+        {/* Parish Videos Section */}
+        <ChurchVideosSection videos={videos} locale={locale} />
 
         {/* The three detail pages of this section */}
         <section aria-labelledby="about-subpages-heading">
