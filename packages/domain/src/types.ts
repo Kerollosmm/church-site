@@ -95,7 +95,10 @@ export type AuditEntityType =
   | "event_terms"
   | "media"
   | "subscriber"
-  | "mass";
+  | "mass"
+  | "content_type"
+  | "content_field"
+  | "content_entry";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -106,6 +109,9 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   media: "ملف وسائط",
   subscriber: "مشترك في التنبيهات",
   mass: "قداس",
+  content_type: "نوع محتوى",
+  content_field: "حقل محتوى",
+  content_entry: "عنصر محتوى",
 };
 
 // ============================================================================
@@ -465,3 +471,143 @@ export interface AuditLogEntry {
   /** One-line Arabic description shown in the audit screen. */
   summary: string;
 }
+
+// ============================================================================
+// 9. Content Types Engine (Customizable CMS)
+// ============================================================================
+
+export type FieldType =
+  | "text"
+  | "richtext"
+  | "number"
+  | "date"
+  | "media"
+  | "select"
+  | "relation"
+  | "boolean";
+
+export const FIELD_TYPES = [
+  "text",
+  "richtext",
+  "number",
+  "date",
+  "media",
+  "select",
+  "relation",
+  "boolean",
+] as const satisfies readonly FieldType[];
+
+export const FIELD_TYPE_LABELS_AR: Record<FieldType, string> = {
+  text: "نص قصير",
+  richtext: "نص منسق (محرر)",
+  number: "رقم",
+  date: "تاريخ / وقت",
+  media: "وسائط (ملف / صورة)",
+  select: "قائمة اختيار",
+  relation: "ربط بنوع محتوى",
+  boolean: "نعم / لا (منطقي)",
+};
+
+export type ContentStatus = "draft" | "published" | "archived";
+
+export const CONTENT_STATUSES = ["draft", "published", "archived"] as const satisfies readonly ContentStatus[];
+
+export const CONTENT_STATUS_LABELS_AR: Record<ContentStatus, string> = {
+  draft: "مسودة",
+  published: "منشور",
+  archived: "مؤرشف",
+};
+
+export interface ContentFieldValidationRules {
+  min?: number;
+  max?: number;
+  pattern?: string;
+  [key: string]: any;
+}
+
+export interface ContentFieldOption {
+  labelAr: string;
+  labelEn?: string | null;
+  value: string;
+}
+
+export interface ContentField {
+  id: string;
+  contentTypeId: string;
+  slug: string;
+  labelAr: string;
+  labelEn: string | null;
+  fieldType: FieldType;
+  isRequired: boolean;
+  isTranslatable: boolean;
+  validationRules: ContentFieldValidationRules | null;
+  options: ContentFieldOption[] | string[] | null;
+  sortOrder: number;
+}
+
+export interface ContentType {
+  id: string;
+  slug: string;
+  nameAr: string;
+  nameEn: string | null;
+  icon: string | null;
+  template: string | null;
+  isActive: boolean;
+  createdAt: string;
+  fields?: ContentField[];
+}
+
+export interface ContentEntry {
+  id: string;
+  contentTypeId: string;
+  slug: string;
+  status: ContentStatus;
+  data: Record<string, any>;
+  publishedAt: string | null;
+  createdBy: string | null;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContentTypeInput {
+  slug: string;
+  nameAr: string;
+  nameEn?: string | null;
+  icon?: string | null;
+  template?: string | null;
+  isActive?: boolean;
+}
+
+export type UpdateContentTypeInput = Partial<CreateContentTypeInput>;
+
+export interface CreateContentFieldInput {
+  contentTypeId?: string;
+  slug: string;
+  labelAr: string;
+  labelEn?: string | null;
+  fieldType: FieldType;
+  isRequired?: boolean;
+  isTranslatable?: boolean;
+  validationRules?: ContentFieldValidationRules | null;
+  options?: ContentFieldOption[] | string[] | null;
+  sortOrder?: number;
+}
+
+export type UpdateContentFieldInput = Partial<CreateContentFieldInput>;
+
+export interface CreateContentEntryInput {
+  contentTypeId: string;
+  slug: string;
+  status?: ContentStatus;
+  data: Record<string, any>;
+  publishedAt?: string | null;
+}
+
+export interface UpdateContentEntryInput {
+  slug?: string;
+  status?: ContentStatus;
+  data?: Record<string, any>;
+  publishedAt?: string | null;
+}
+

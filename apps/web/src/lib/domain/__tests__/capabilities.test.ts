@@ -24,7 +24,7 @@ import {
 /** Every capability the event system knows, taken from the vocabulary union at runtime. */
 const ALL_CAPABILITIES = Object.keys(CAPABILITY_LABELS_AR) as Capability[];
 
-/** The six capabilities a read-only role gets — the whole read surface, nothing else. */
+/** The seven capabilities a read-only role gets — the whole read surface, nothing else. */
 const READ_CAPABILITIES: Capability[] = [
   "event:read",
   "series:read",
@@ -33,6 +33,7 @@ const READ_CAPABILITIES: Capability[] = [
   "audit:read",
   "subscribers:read",
   "mass:read",
+  "content:read",
 ];
 
 /** Destructive or account-level actions: owner only. */
@@ -44,6 +45,8 @@ const OWNER_ONLY: Capability[] = [
   "media:delete",
   "users:manage",
   "mass:delete",
+  "content:delete",
+  "content:manage",
 ];
 
 /**
@@ -70,6 +73,9 @@ const MUST_HAVE: Record<AdminRole, Capability[]> = {
     "mass:create",
     "mass:update",
     "mass:toggle",
+    "content:create",
+    "content:update",
+    "content:publish",
     "subscribers:write",
     "cache:republish",
   ],
@@ -142,6 +148,11 @@ describe("can() — the full owner | editor | viewer × capability matrix", () =
       "mass:update",
       "mass:delete",
       "mass:toggle",
+      "content:create",
+      "content:update",
+      "content:delete",
+      "content:publish",
+      "content:manage",
     ];
     for (const capability of forbidden) {
       expect(can("viewer", capability)).toBe(false);

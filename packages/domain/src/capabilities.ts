@@ -63,7 +63,14 @@ export type Capability =
   | "mass:create"
   | "mass:update"
   | "mass:delete"
-  | "mass:toggle";
+  | "mass:toggle"
+  // --- content types engine ---
+  | "content:read"
+  | "content:create"
+  | "content:update"
+  | "content:delete"
+  | "content:publish"
+  | "content:manage";
 
 /** What a `viewer` may do: read everything the event system exposes to the portal. */
 const READ_ONLY_CAPABILITIES = [
@@ -74,6 +81,7 @@ const READ_ONLY_CAPABILITIES = [
   "audit:read",
   "subscribers:read",
   "mass:read",
+  "content:read",
 ] as const satisfies readonly Capability[];
 
 /**
@@ -100,6 +108,9 @@ const EDITOR_CAPABILITIES = [
   "mass:create",
   "mass:update",
   "mass:toggle",
+  "content:create",
+  "content:update",
+  "content:publish",
   // Editing the notification list is an editorial act (retiring a subscription), not a destructive
   // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
   "subscribers:write",
@@ -115,6 +126,8 @@ const OWNER_ONLY_CAPABILITIES = [
   "media:delete",
   "users:manage",
   "mass:delete",
+  "content:delete",
+  "content:manage",
 ] as const satisfies readonly Capability[];
 
 /** The full decision table. Single source for `can()`. */
@@ -192,6 +205,12 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "mass:update": "تعديل قداس",
   "mass:delete": "حذف قداس",
   "mass:toggle": "تغيير حالة القداس",
+  "content:read": "قراءة المحتوى المخصص",
+  "content:create": "إنشاء عنصر محتوى",
+  "content:update": "تعديل عنصر محتوى",
+  "content:delete": "حذف عنصر محتوى",
+  "content:publish": "نشر عنصر محتوى",
+  "content:manage": "إدارة أنواع وحقول المحتوى",
 };
 
 /**
@@ -232,6 +251,12 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "mass:update": "mass",
   "mass:delete": "mass",
   "mass:toggle": "mass",
+  "content:read": "content_entry",
+  "content:create": "content_entry",
+  "content:update": "content_entry",
+  "content:delete": "content_entry",
+  "content:publish": "content_entry",
+  "content:manage": "content_type",
 };
 
 /**
@@ -279,6 +304,11 @@ export interface AdminCapabilities {
   auditRead: boolean;
   subscribersRead: boolean;
   subscribersWrite: boolean;
+  contentRead: boolean;
+  contentWrite: boolean;
+  contentPublish: boolean;
+  contentDelete: boolean;
+  contentManage: boolean;
 }
 
 /** Derives the screen-facing capability set from ONE role, through the same `can()` table. */
@@ -301,6 +331,11 @@ export function resolveAdminCapabilities(role: AdminRole | null): AdminCapabilit
     auditRead: can(role, "audit:read"),
     subscribersRead: can(role, "subscribers:read"),
     subscribersWrite: can(role, "subscribers:write"),
+    contentRead: can(role, "content:read"),
+    contentWrite: can(role, "content:create") && can(role, "content:update"),
+    contentPublish: can(role, "content:publish"),
+    contentDelete: can(role, "content:delete"),
+    contentManage: can(role, "content:manage"),
   };
 }
 

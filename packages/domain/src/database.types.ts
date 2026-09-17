@@ -72,6 +72,19 @@ export type AuditActionEnum =
 // --- locale of a stored record (supabase/migrations/20260916090900_subscribers.sql)
 export type LocaleEnum = "ar" | "en";
 
+// --- content types engine (supabase/migrations/20260916130000_content_types.sql)
+export type FieldTypeEnum =
+  | "text"
+  | "richtext"
+  | "number"
+  | "date"
+  | "media"
+  | "select"
+  | "relation"
+  | "boolean";
+
+export type ContentStatusEnum = "draft" | "published" | "archived";
+
 export interface Database {
   public: {
     Tables: {
@@ -1590,6 +1603,150 @@ export interface Database {
         // No foreign keys: a subscription belongs to a member of the public, not to a staff profile.
         Relationships: [];
       };
+      content_types: {
+        Row: {
+          id: string;
+          slug: string;
+          name_ar: string;
+          name_en: string | null;
+          icon: string | null;
+          template: string | null;
+          is_active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name_ar: string;
+          name_en?: string | null;
+          icon?: string | null;
+          template?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          name_ar?: string;
+          name_en?: string | null;
+          icon?: string | null;
+          template?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      content_fields: {
+        Row: {
+          id: string;
+          content_type_id: string;
+          slug: string;
+          label_ar: string;
+          label_en: string | null;
+          field_type: FieldTypeEnum;
+          is_required: boolean;
+          is_translatable: boolean;
+          validation_rules: Json | null;
+          options: Json | null;
+          sort_order: number;
+        };
+        Insert: {
+          id?: string;
+          content_type_id: string;
+          slug: string;
+          label_ar: string;
+          label_en?: string | null;
+          field_type: FieldTypeEnum;
+          is_required?: boolean;
+          is_translatable?: boolean;
+          validation_rules?: Json | null;
+          options?: Json | null;
+          sort_order: number;
+        };
+        Update: {
+          id?: string;
+          content_type_id?: string;
+          slug?: string;
+          label_ar?: string;
+          label_en?: string | null;
+          field_type?: FieldTypeEnum;
+          is_required?: boolean;
+          is_translatable?: boolean;
+          validation_rules?: Json | null;
+          options?: Json | null;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "content_fields_content_type_id_fkey";
+            columns: ["content_type_id"];
+            isOneToOne: false;
+            referencedRelation: "content_types";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      content_entries: {
+        Row: {
+          id: string;
+          content_type_id: string;
+          slug: string;
+          status: ContentStatusEnum;
+          data: Json;
+          published_at: string | null;
+          created_by: string | null;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          content_type_id: string;
+          slug: string;
+          status?: ContentStatusEnum;
+          data?: Json;
+          published_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          content_type_id?: string;
+          slug?: string;
+          status?: ContentStatusEnum;
+          data?: Json;
+          published_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "content_entries_content_type_id_fkey";
+            columns: ["content_type_id"];
+            isOneToOne: false;
+            referencedRelation: "content_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "content_entries_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "content_entries_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1652,6 +1809,8 @@ export interface Database {
       taxonomy_dimension_enum: TaxonomyDimensionEnum;
       audit_action_enum: AuditActionEnum;
       locale_enum: LocaleEnum;
+      field_type_enum: FieldTypeEnum;
+      content_status_enum: ContentStatusEnum;
     };
     CompositeTypes: {
       [_ in never]: never;
