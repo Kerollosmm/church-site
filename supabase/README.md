@@ -29,6 +29,7 @@ Files are named with a timestamp prefix so that lexicographic order == apply ord
 | 11 | `migrations/20260916091000_subscribers_rls_policies.sql` | RLS on `subscribers`: **no public read and no public insert policy at all** — staff `SELECT`/`UPDATE` through `is_staff()`, and no `DELETE` policy (stopping a subscription is `is_active = FALSE`) |
 | 12 | `migrations/20260916120000_media_storage.sql` | media storage: `media` bucket in `storage.buckets`, `storage_path` + `checksum` on `public.media`, RLS on `storage.objects` (public read, staff write for `admin`/`secretary`) |
 | 13 | `migrations/20260916130000_content_types.sql` | content types engine: `field_type_enum`, `content_status_enum`, tables `content_types`, `content_fields`, `content_entries`, GIN and composite indexes, RLS policies (public read of active types/fields and published entries; staff read/write for `admin`/`secretary`) |
+| 14 | `migrations/20260916140000_parish_videos.sql` | parish videos: `video_provider_enum` (`youtube`, `facebook`, `direct`), `parish_videos` table, `idx_parish_videos_public_active` index, RLS policies (public read of active/public videos; staff read/write for `admin`/`secretary`) |
 
 Applying in any other order fails: types must exist before tables, tables before
 indexes/policies, and `normalize_arabic()` before `bible_verses`.
@@ -43,6 +44,8 @@ them lives in `src/lib/store/supabase-driver.ts`.
 File 12 (`20260916120000_media_storage.sql`) provisions Supabase Storage infrastructure for Phase 2 media uploads (`media` bucket, storage RLS policies, and `storage_path`/`checksum` columns on `public.media`).
 
 File 13 (`20260916130000_content_types.sql`) provisions the schema-driven Content Types CMS Engine for Phase 3: custom content types, customizable dynamic fields with validation rules and options, JSONB content entries with status lifecycle (`draft`, `published`, `archived`), GIN indexing, and strict RLS isolation.
+
+File 14 (`20260916140000_parish_videos.sql`) provisions the external Parish Videos embed manager for Phase 4: `video_provider_enum` (`youtube`, `facebook`, `direct`), table `public.parish_videos` with source and normalized embed URLs, sort ordering, public/active visibility toggles, composite index on `(is_public, is_active, sort_order)`, and strict RLS policies (public read for active/public videos; staff mutations restricted to authenticated `admin`/`secretary`).
 
 ## Mandatory manual bootstrap step
 
