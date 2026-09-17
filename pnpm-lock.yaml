@@ -35,6 +35,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@church-site/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.88.0(react@19.3.0))
@@ -99,6 +102,19 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.19
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/domain:
+    dependencies:
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^20.17.19
+        version: 20.19.43
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

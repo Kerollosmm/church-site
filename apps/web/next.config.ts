@@ -77,6 +77,7 @@ const PERMISSIONS_POLICY = [
 ].join(", ");
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@church-site/domain"],
   reactStrictMode: true,
   images: {
     // The portal renders no remote images at all: `next/image` is not imported anywhere in `src/`,
