@@ -1,27 +1,39 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-17)
-- **اكتملت بالكامل (Phase 1 — Monorepo & Admin Split Complete)**:
-  * **الفصل المعماري الكامل**: تحويل المستودع إلى pnpm monorepo يضم تطبيقين مستقلين (`apps/web` و`apps/admin`) وثلاث حزم مشتركة (`packages/domain` و`packages/data-access` و`packages/ui`).
-  * **حزم مساحة العمل المشتركة**:
-    - `@church-site/domain`: النماذج، ومحرك التكرار، ومصفوفة الصلاحيات، ومخططات Zod، وأنواع قاعدة بيانات Supabase.
-    - `@church-site/data-access`: طبقة الوصول للبيانات، ومحركا التخزين (Supabase / json-store)، وعملاء Supabase الآمنين، والاستعلامات وإدارة التنبيهات.
-    - `@church-site/ui`: مكونات التصميم المشتركة، والأدوات المساعدة (`cn`)، ونظام التدويل i18n.
-  * **تطبيق بوابة المخدومين العامة (`apps/web`)**:
-    - تطبيق Next.js 15 ثابت أولاً (Static-First) بصفر مصادقة (Zero-Auth مطابقة لـ INV-01).
-    - يبني بصفر متغيرات بيئة (No-Env Invariant) مع توليد 50/50 صفحة ثابتة بنجاح، ويتراجع تلقائياً لبيانات البذرة أو مخزن JSON عند غياب بيانات Supabase.
-    - إزالة كامل السطح الإداري ومسارات `/admin` وإجراءات الخادم الإدارية من الموقع العام لمنع أي تسريب.
-  * **تطبيق لوحة الإدارة (`apps/admin`)**:
-    - تطبيق Next.js 15 مستقل ومخصص للسكرتارية والكهنة، يعمل محلياً على المنفذ `3001` وفي بيئة الإنتاج على نطاق فرعي مخصص (Subdomain).
-    - عزل كامل للأعطال (Fault Isolation): إذا تعطل الموقع العام يظل تطبيق الإدارة متاحاً ومستقراً بالكامل.
-    - جلسات خادم آمنة عبر `@supabase/ssr` مع كوكيز محصورة بنطاق لوحة الإدارة.
-  * **سير عمل CI وضبط البناء (`.github/workflows/ci.yml`)**:
-    - استمرار إعداد pnpm 10 وNode 22 مع حارس عدم وجود أي متغيرات بيئة تطبيقية في مشغل البناء.
-    - بوابات التحقق الصلبة: `pnpm typecheck` (0 أخطاء)، و`pnpm test` (274/274 فحصاً ناجحاً بنسبة 100%)، و`pnpm --filter web build` (بدون متغيرات بيئة - 50/50 صفحة)، و`pnpm --filter admin build`، و`pnpm run lint`.
-  * **التوثيق وقرارات البنية**:
-    - توثيق القرار المعماري في `docs/adr/0002-monorepo-admin-split.md`.
-    - إنشاء دليل النشر والتوزيع المستقل في `docs/deployment-split.md`.
-    - تحديث ترويسة دليل الإدارة في `docs/admin-guide.md`.
+- **اكتملت بالكامل ورُفعت إلى GitHub (Phase 1 Monorepo Split Pushed & Verified)**:
+  * **الحالة على المستودع البعيد**: الفرع `master` على `https://github.com/Kerollosmm/church-site` متزامن ومحدَّث بسلسلة الالتزامات العشرة (`48c743b..7cd5a20`).
+  * **سلسلة الالتزامات العشرة (The 10 Conventional Commits)**:
+    1. `a83b139` `refactor(web): move app into apps/web`
+    2. `2597889` `chore(packages): extract domain`
+    3. `d53a234` `chore(packages): extract data-access`
+    4. `79bd13c` `chore(packages): extract ui`
+    5. `fdd4bdc` `feat(admin): scaffold admin app`
+    6. `ccf26ab` `refactor(web): remove admin surface`
+    7. `1bbd634` `chore: wire env and build configs`
+    8. `d717230` `ci: build and test web + admin`
+    9. `f8b9d20` `docs: record admin split decision and deployment`
+    10. `7cd5a20` `docs: add reviewer checklist and verification guide`
+  * **محاسبة المسارات (Route Accounting & Invariance Proof)**:
+    - الأساس القديم (Monolith): 51 صفحة ثابتة مولَّدة مسبقاً (50 صفحة عامة + صفحة `/admin/login` الثابتة) بالإضافة لـ 11 مساراً إدارياً ديناميكياً.
+    - موقع الويب الجديد (`apps/web`): يولد بالضبط **50/50 صفحة ثابتة** (كافة المسارات العامة)، ولا يحوي أي مسار إداري.
+    - تطبيق الإدارة الجديد (`apps/admin`): يحوي **12 مساراً إدارياً** بالكامل (`/`, `/audit`, `/bookings`, `/events`, `/events/[id]/edit`, `/events/new`, `/events/series/[id]`, `/events/series/new`, `/login`, `/masses`, `/media`, `/subscribers`).
+    - الإثبات: 50 مساراً عاماً + 12 مساراً إدارياً = 100% حفظ لكافة المسارات بدون فقدان أي مسار.
+  * **إفصاح محرك فحص الكتابة الإدارية (G6 Disclosure)**:
+    - فحص الكتابة وعزل الأعطال G6 نُفِّذ واختُبِر على محرك مخزن الملفات (`driver: 'json'`) في `apps/admin/.data/church-store.json` بنجاح كامل وسجل تدقيق موثَّق. الاختبار على قاعدة Supabase الحية معلَّق لحين توفير بيانات الاعتماد في بيئة النشر.
+  * **أدلة الفحص الخام (Raw Grep Outputs)**:
+    - `g9-rg-web.txt`: مخرجات خام لـ `git grep -n admin -- apps/web/src` تثبت خلو تطبيق الويب من أي مسار أو إجراء إداري.
+    - `g9-imports-admin.txt`: مخرجات خام لـ `git grep -n '@church-site' -- apps/admin/src` تثبت استهلاك البيانات عبر الحزم فقط، و`@supabase` يعيد 0 مطابقة.
+    - ملفات الأساس `00-baseline-{build,lint,test,typecheck}.txt` مؤكَّدة ومحفوظة بالكامل على القرص.
+  * **إعادة تشغيل البوابات الصلبة مباشرة (Direct Verification with Timestamps)**:
+    - G1: فحص الأنواع لكلا التطبيقين `pnpm --filter web typecheck` و`admin typecheck` = 0 أخطاء (2026-09-17 18:11-18:12).
+    - G2: فحص الأسلوب `pnpm run lint` = 0 أخطاء (2026-09-17 18:12).
+    - G3: اختبارات الوحدات `pnpm test` = 12 ملفاً، **274/274 فحصاً ناجحاً بنسبة 100%** (2026-09-17 18:13).
+    - G4: بناء الويب بصفر متغيرات بيئة `pnpm --filter web build` = **50/50 مساراً نظيفاً** (2026-09-17 18:15).
+    - G5: بناء الإدارة `pnpm --filter admin build` = نظيف (2026-09-17 18:17).
+  * **الخطوة التالية الفورية (Next Immediate Step)**:
+    - تسليم المراجعة الخارجية عبر `REVIEW.md` و`.scratch/phase1-gates/`.
+    - بدء التجهيز للمرحلة الثانية (Phase 2): تجهيز حاويات Supabase Storage ورفع الوسائط الحقيقية للمعرض والفعاليات والكهنة عبر `@church-site/data-access`.
 - **اكتملت (Phase 1 — Step 4c)**: استخراج حزمة واجهات المستخدم **`@church-site/ui` (packages/ui)** بنجاح كامل:
   * نقل وتوحيد مكونات واجهة المستخدم والأدوات المساعدة ومكتبة التدويل: `Badge.tsx` و`Button.tsx` و`Card.tsx` و`FontSizeSwitcher.tsx` و`Skeleton.tsx`، ومساعد `cn` في `lib/utils.ts`، ومكتبة i18n (`locales.ts` و`localized.ts` و`messages.ts` و`dom.ts` و`server.ts`).
   * إنشاء حزمة مساحة العمل `@church-site/ui` بتبعياتها المحددة ودعم مسارات TypeScript وحزم `next` المرجعية.

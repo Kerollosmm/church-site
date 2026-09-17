@@ -15,10 +15,25 @@
 ## 4. الثابت اللفظي (CONTEXT §3)
 `mass_schedules` لا "فعاليات" — `parishioners` لا "users" — `condolence_booking` لا "إيجار" — `consultation_fee_egp` لا "ticket".
 
-## 5. هيكل المستودع
-`src/app` (**43 ملف مسار** بـ `page.tsx`/`route.ts` — منها الثابت والمولَّد بالبيانات العامة، ومسارات ديناميكية عامة (`/events*`، `/ministries`، `/subscribe`، `/condolence/track`، والصفحات الأربع الجديدة)، ومنطقة `/admin` المحمية)، `src/actions` (Server Actions)، `src/lib/{supabase,queries,tags,validations,security,constants,utils,domain,data,events,i18n,notify,store}`، `src/components/{ui,layout,home,masses,contact,security,events,admin,i18n}`، `docs/{adr,agents}`، `memory-bank/` (يُزامن بداية ونهاية كل مهمة).
-- **انضباط حذف الكود الميت**: لا تُترك مكوّنات أو تصديرات غير موصولة. الإثبات المطلوب قبل الحذف هو صفر مستوردين بـ `git grep` **على `HEAD`** (لا على شجرة العمل بعد الحذف)، ثم فحص ما إذا كان الحذف قد يتّم أي تصدير آخر. بهذا أُزيلت `MegaMenu`/`MobileDrawer` ثم `LiveStreamPlayer` ثم (في المرحلة الرابعة) `components/condolence/*` و`components/bible/BibleReader` و`ui/Modal` و`layout/Breadcrumb` و`ui/CopticDivider` — الأخير صار ميتاً لأن `Breadcrumb` كان مستهلكه الوحيد، وكذلك `CardHeader/CardTitle/CardContent/CardDescription/CardFooter` قُلِّمت من `Card.tsx` لذات السبب.
-- **تحذير أدوات**: `grep` في صدَفة هذا المستودع دالة غلاف تُفسد `-E` مع `-n`/`-i`/`-c` وتُرجع «0 مطابقة» كاذبة؛ استخدم `git grep` أو `command grep` في كل إثبات وجود/غياب.
+## 5. هيكل المستودع ومساحة العمل (pnpm Monorepo Architecture)
+تمت إعادة هيكلة المستودع بالكامل في المرحلة الأولى (Phase 1) إلى pnpm workspace يضم تطبيقين منفصلين وثلاث حزم مشتركة:
+- **`apps/web` (بوابة المخدومين العامة)**:
+  * تطبيق Next.js 15 App Router، ثابت أولاً (Static-First) بصفر مصادقة (Zero-Auth مطابقة لـ INV-01).
+  * يبني بصفر متغيرات بيئة (No-Env Invariant) مع توليد 50/50 صفحة ثابتة بنجاح، ويتراجع تلقائياً لمخزن الملفات أو البذرة.
+  * إزالة كاملة للسطح الإداري ومسارات `/admin` وإجراءات الخادم الإدارية لمنع أي تسريب.
+- **`apps/admin` (لوحة الإدارة)**:
+  * تطبيق Next.js 15 مستقل للسكرتارية والكهنة، يعمل على المنفذ `3001` محلياً وعلى نطاق فرعي مخصص إنتاجياً.
+  * عزل أعطال كامل (Fault Isolation): تعطل الموقع العام لا يؤثر على لوحة الإدارة (G6).
+  * جلسات `@supabase/ssr` مستقلة مع كوكيز محصورة بنطاق لوحة الإدارة (ADR-0002).
+  * يحوي المسارات الإدارية الـ 12: `/`, `/audit`, `/bookings`, `/events`, `/events/[id]/edit`, `/events/new`, `/events/series/[id]`, `/events/series/new`, `/login`, `/masses`, `/media`, `/subscribers`.
+- **`packages/domain` (`@church-site/domain`)**:
+  * المصدر الواحد والنهائي للأنواع (`src/types/database.types.ts`)، ونماذج النطاق، ومحرك التكرار، ومصفوفة الصلاحيات (`can()`).
+- **`packages/data-access` (`@church-site/data-access`)**:
+  * الطبقة الوحيدة التي تتخاطب مع قاعدة البيانات، تضم محركي التخزين (JSON / Supabase)، والعملاء الآمنين، والاستعلامات والتنبيهات، ونقطة دخول آمنة للمتصفح `@church-site/data-access/client`.
+- **`packages/ui` (`@church-site/ui`)**:
+  * مكونات الواجهة الأساسية (shadcn/ui)، والأدوات المساعدة (`cn`)، ومنظومة التدويل (i18n).
+- **انضباط حذف الكود الميت**: لا تُترك مكوّنات أو تصديرات غير موصولة. الإثبات المطلوب قبل الحذف هو صفر مستوردين بـ `git grep` **على `HEAD`** (لا على شجرة العمل بعد الحذف)، ثم فحص ما إذا كان الحذف قد يتّم أي تصدير آخر.
+- **تحذير أدوات**: استخدم `git grep` في كل إثبات وجود/غياب.
 
 ## 6. الخصوصية
 لا جداول اعترافات أو ماليّة داخلية أصلاً — غياب البنية هو الضمانة (INV-01).

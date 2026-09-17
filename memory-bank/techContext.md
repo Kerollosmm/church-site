@@ -36,17 +36,19 @@
 ## متطلبات وقت التشغيل
 - Node 20+ مع ICU كامل (تم التحقق على Node v22.22.0): يستخدم الكود `Intl.DateTimeFormat` بمنطقة `Africa/Cairo` وتقويم `gregory` وأرقام `latn` لعرض التواريخ، وهو ما يتطلب بيانات المناطق الزمنية الكاملة في بيئة البناء والتشغيل. **صار هذا المتطلب أوسع**: `src/lib/utils/zone-time.ts` يبني مُنسِّقاً لكل منطقة IANA تستعملها سلسلة فعاليات، فبيئة بلا بيانات مناطق ستكسر توسيع السلاسل.
 - Node's `crypto.randomUUID()` (بلا اعتماديات) هو مصدر معرّفات صفوف الفعاليات/المصطلحات/الوسائط، و`node:fs/promises` هو مخزن المحرك الملفي — كلاهما على الخادم فقط (`src/lib/store/*` وحدات خادمية).
-- pnpm 10 (تم التحقق على 10.33.0) مع `pnpm-lock.yaml`؛ وسير عمل CI يثبّت Node 22 وpnpm 10.
+- pnpm 10 (تم التحقق على 10.33.0) مع `pnpm-workspace.yaml` و`pnpm-lock.yaml`؛ وسير عمل CI يثبّت Node 22 وpnpm 10.
+- أوامر التشغيل المجمعة في جذر المستودع: `dev:web`, `dev:admin`, `build:web`, `build:admin`, `build`, `typecheck` (`pnpm -r typecheck`), `test` (`vitest run`), `lint`.
 
-## أدوات الجودة والأمن (v1.1 — المرحلة الثالثة)
+## أدوات الجودة والأمن (v1.1 — بعد اكتمال Phase 1 Monorepo Split)
 | البند | الحالة |
 | :--- | :--- |
-| Next.js | `^15.5.25` (أحدث 15.x؛ لا قفزة major) |
-| postcss | `^8.5.28` كـ devDependency **و** `pnpm.overrides.postcss = "^8.5.28"` — الثاني هو ما يُصلح فعلاً ثغرات `next` (يثبّت `postcss@8.4.31`)، ولا يُحذف قبل رفع next إلى نسخة تعتمد postcss مُصلَحاً |
-| ESLint | `eslint@9.39.5` + `eslint-config-next@15.5.25` + `@eslint/eslintrc@3.3.7`، إعداد flat في `eslint.config.mjs` عبر `FlatCompat` — `pnpm run lint` = `eslint .` (0/0 على 100 ملف) |
-| رؤوس الأمن | CSP مُنفَّذة + HSTS (15552000) + Permissions-Policy في `next.config.ts` (لا Report-Only) |
-| CI | `.github/workflows/ci.yml`: بوابتان صلدتان (`tsc --noEmit` + `build` بلا بيئة) وإعلاميان (`audit --prod` + `lint`) |
-| ثابت البناء | التطبيق **يجب** أن يبني بلا أي متغير بيئة (تُحقّق محلياً وفي CI بخطوة تمنع تسرّب `NEXT_PUBLIC_*`/`SUPABASE_*`/`TURNSTILE_*`/`YOUTUBE_*`) |
+| Next.js | `^15.5.25` (مستقل لكل من `apps/web` و`apps/admin`) |
+| postcss | `^8.5.28` كـ devDependency **و** `pnpm.overrides.postcss = "^8.5.28"` |
+| ESLint | `eslint@9.39.5` + `eslint-config-next@15.5.25` إعداد مساحة العمل flat في `eslint.config.mjs` — `pnpm run lint` = 0 أخطاء |
+| Vitest | `vitest@5.0.1` يفحص مساحة العمل بالكامل (`apps/` و`packages/`) — **274/274 فحصاً ناجحاً بنسبة 100% (12 ملفاً)** |
+| رؤوس الأمن | CSP مُنفَّذة + HSTS (15552000) + Permissions-Policy في `apps/web/next.config.ts` |
+| CI | `.github/workflows/ci.yml`: بوابات صلدة (`pnpm typecheck` + `pnpm test` + `pnpm --filter web build` بلا بيئة + `pnpm --filter admin build` + `pnpm run lint`) |
+| ثابت البناء | تطبيق `apps/web` **يجب** أن يبني بلا أي متغير بيئة (تُحقّق محلياً وفي CI بخطوة تمنع تسرّب أي متغيرات) |
 
 ## قيود معروفة
 - استهداف الأداء: FCP < 800ms، LCP < 1.2s على شبكات 3G/4G المصرية.

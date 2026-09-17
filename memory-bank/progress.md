@@ -1,21 +1,38 @@
 # Progress — سجل الإنجاز
 
-## يعمل الآن (Phase 1 Monorepo Split — Steps 7, 8, 9: Full Completion)
-- [x] **إتمام الفصل المعماري وبناء حزم وتطبيقات Monorepo بالكامل**:
+## يعمل الآن (Phase 1 Monorepo Split — 100% Pushed & Verified)
+- [x] **إتمام الفصل المعماري لـ Monorepo ورفع الالتزامات العشرة إلى GitHub (`origin/master`)**:
   - **التطبيقات المنفصلة**:
     * `apps/web`: بوابة المخدومين العامة، صفر مصادقة (INV-01)، ثابت أولاً، بناء بصفر متغيرات بيئة (50/50 مساراً نظيفاً)، تراجع تلقائي للبذرة ومخزن JSON.
-    * `apps/admin`: لوحة تحكم السكرتارية والكهنة، منفذ 3001 محلياً / نطاق فرعي في الإنتاج، كوكيز جلسات مستقلة عبر `@supabase/ssr`، وعزل أعطال كامل عن الموقع العام.
+    * `apps/admin`: لوحة تحكم السكرتارية والكهنة، منفذ 3001 محلياً / نطاق فرعي في الإنتاج، كوكيز جلسات مستقلة عبر `@supabase/ssr`، وعزل أعطال كامل عن الموقع العام (12 مساراً إدارياً).
   - **حزم مساحة العمل المشتركة**:
     * `packages/domain` (`@church-site/domain`): النماذج ومحرك التكرار وقواعد التحقق وأنواع Supabase.
-    * `packages/data-access` (`@church-site/data-access`): طبقة الوصول للبيانات والعملاء ومحركا التخزين.
+    * `packages/data-access` (`@church-site/data-access`): طبقة الوصول للبيانات والعملاء ومحركا التخزين ونقطة دخول العميل الآمنة.
     * `packages/ui` (`@church-site/ui`): مكونات التصميم المشتركة وأدوات المساعدة ونظام التدويل.
-  - **ضبط البناء وتكامل CI (`.github/workflows/ci.yml`)**:
-    * فحص الأنواع لكافة مشاريع الـ Workspace عبر `pnpm typecheck` (0 أخطاء).
-    * اختبارات الوحدات `pnpm test` (274/274 فحصاً ناجحاً بنسبة 100%).
-    * بناء تطبيق الويب بدون متغيرات بيئة: `pnpm --filter web build` (50/50 صفحة).
-    * بناء تطبيق الإدارة: `pnpm --filter admin build`.
-    * فحص الأسلوب `pnpm run lint` (0 أخطاء).
-  - **التوثيق**:
+  - **سلسلة الالتزامات العشرة المرفوعة (`48c743b..7cd5a20`)**:
+    1. `a83b139` `refactor(web): move app into apps/web`
+    2. `2597889` `chore(packages): extract domain`
+    3. `d53a234` `chore(packages): extract data-access`
+    4. `79bd13c` `chore(packages): extract ui`
+    5. `fdd4bdc` `feat(admin): scaffold admin app`
+    6. `ccf26ab` `refactor(web): remove admin surface`
+    7. `1bbd634` `chore: wire env and build configs`
+    8. `d717230` `ci: build and test web + admin`
+    9. `f8b9d20` `docs: record admin split decision and deployment`
+    10. `7cd5a20` `docs: add reviewer checklist and verification guide`
+  - **محاسبة المسارات (Route Accounting)**: 50 مساراً عاماً ثابتة في `apps/web` + 12 مساراً إدارياً في `apps/admin` = 100% حفظ لكافة المسارات بدون أي فقدان.
+  - **بوابات التحقق الصلبة المعاد تشغيلها مباشرة (Direct G1–G9 Verification)**:
+    * G1: فحص الأنواع لكلا التطبيقين `pnpm --filter web typecheck` و`admin typecheck` = 0 أخطاء (2026-09-17 18:11-18:12).
+    * G2: فحص الأسلوب `pnpm run lint` = 0 أخطاء (2026-09-17 18:12).
+    * G3: اختبارات الوحدات `pnpm test` = 12 ملفاً، **274/274 فحصاً ناجحاً بنسبة 100%** (2026-09-17 18:13).
+    * G4: بناء الويب بصفر متغيرات بيئة `pnpm --filter web build` = **50/50 مساراً نظيفاً** (2026-09-17 18:15).
+    * G5: بناء الإدارة `pnpm --filter admin build` = نظيف (2026-09-17 18:17).
+    * G6: إثبات عزل الأعطال موثَّق على مخزن الملفات؛ Supabase الحية معلَّقة لحين توفير بيانات الاعتماد.
+    * G7: تتبع تاريخ `git mv` مؤكد عبر `git log --follow`.
+    * G8: ثبات هجرات قاعدة البيانات `supabase/migrations/` بنسبة 100% دون أي تعديل.
+    * G9: صفر تسريب عبر مخرجات grep الخام في `g9-rg-web.txt` و`g9-imports-admin.txt`.
+  - **التوثيق ودليل المراجعة**:
+    * قائمة التحقق للمراجع الخارجي في `REVIEW.md`.
     * تسجيل القرار في `docs/adr/0002-monorepo-admin-split.md`.
     * دليل النشر في `docs/deployment-split.md`.
     * تحديث دليل الإدارة في `docs/admin-guide.md`.
