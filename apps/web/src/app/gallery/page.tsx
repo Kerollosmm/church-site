@@ -6,16 +6,12 @@
 // rows in the query). With no registered media it renders ONE clearly-marked placeholder state that
 // says the photographs will be added — it does not invent a single one.
 //
-// WHY A CARD AND NOT A PICTURE (three measured reasons, not a preference):
-//  1. The project stores media METADATA ONLY: there is no file store and no byte upload, so a row's
-//     `url` does not point at anything this site serves. A thumbnail would be a broken image.
-//  2. The CSP `img-src` is `'self' data: blob:` (see `next.config.ts`), so a file hosted anywhere else
-//     could not load even if it existed.
-//  3. There is no `<img>`/`next/image` anywhere in the project (`images.remotePatterns` is empty) and
-//     the ESLint config warns on `<img>`; introducing one for a file that cannot load would trade a
-//     real invariant for a preview that never appears.
-// The card therefore carries the file's registered DESCRIPTION as its caption — that is the
-// accessible text a picture would have carried in its `alt` — plus its name and a validated link.
+// MEDIA PRESENTATION (Phase 2):
+//  1. Real uploaded media files are rendered using public object URLs from Supabase storage / mock storage.
+//  2. Image items render responsive, unoptimized Next.js image previews with accessible captions as alt text.
+//  3. Video items render HTML5 video players with metadata preloading.
+//  4. Documents and other MIME types render a clean document card with icon, filename, and MIME type.
+//  5. Content Security Policy and remotePatterns allow safe loading from configured storage domains.
 //
 // NO GROUPING BY ALBUM: `MediaRecord` has no album/tag column, and inventing one here would mean
 // classifying the parish's files by guesswork, so the grid stays flat.
@@ -26,7 +22,8 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Images, Image as ImageIcon, ExternalLink } from "lucide-react";
+import Image from "next/image";
+import { ChevronLeft, Images, Image as ImageIcon, ExternalLink, FileText, Video } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
 import { getPublicGalleryMedia, type PublicMediaView } from "@/lib/events/feed";
 import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
@@ -52,7 +49,7 @@ function openableMediaUrl(raw: string): string | null {
 
   try {
     const parsed = new URL(value);
-    return parsed.protocol === "https:" ? parsed.toString() : null;
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : null;
   } catch {
     return null;
   }
@@ -180,6 +177,8 @@ export default async function GalleryPage(): Promise<React.ReactElement> {
                   ? localized({ ar: item.altAr ?? "", en: item.altEn }, locale)
                   : t(locale, "gallery.noAltText");
                 const href = openableMediaUrl(item.url);
+                const isImage = item.mimeType.startsWith("image/");
+                const isVideo = item.mimeType === "video/mp4";
 
                 return (
                   <li key={item.id}>
@@ -188,9 +187,49 @@ export default async function GalleryPage(): Promise<React.ReactElement> {
                       className="flex h-full flex-col justify-between rounded-2xl border border-copticGold-200 bg-white p-5 shadow-xs transition-colors hover:border-copticNavy-200"
                     >
                       <div>
+                        {isImage && href ? (
+                          <div className="mb-4 overflow-hidden rounded-xl bg-slate-100">
+                            <Image
+                              src={href}
+                              alt={caption}
+                              width={600}
+                              height={400}
+                              className="h-48 w-full rounded-xl object-cover"
+                              unoptimized
+                            />
+                          </div>
+                        ) : isVideo && href ? (
+                          <div className="mb-4 overflow-hidden rounded-xl bg-black">
+                            <video
+                              src={href}
+                              controls
+                              preload="metadata"
+                              className="h-48 w-full rounded-xl bg-black"
+                            />
+                          </div>
+                        ) : (
+                          <div className="mb-4 flex h-48 w-full flex-col items-center justify-center rounded-xl border border-dashed border-copticGold-200 bg-copticGold-50/50 p-4 text-center">
+                            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-copticGold-700 shadow-xs">
+                              <FileText aria-hidden="true" className="h-6 w-6" />
+                            </span>
+                            <p dir="ltr" className="mt-2 line-clamp-1 max-w-full font-english text-xs font-semibold text-copticNavy">
+                              {item.filename}
+                            </p>
+                            <span dir="ltr" className="mt-1 font-english text-[10px] font-bold text-copticGold-800">
+                              {item.mimeType}
+                            </span>
+                          </div>
+                        )}
+
                         <div className="mb-3 flex items-center gap-2">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-copticGold-50 text-copticGold-700">
-                            <ImageIcon aria-hidden="true" className="h-4 w-4" />
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-copticGold-50 text-copticGold-700">
+                            {isImage ? (
+                              <ImageIcon aria-hidden="true" className="h-4 w-4" />
+                            ) : isVideo ? (
+                              <Video aria-hidden="true" className="h-4 w-4" />
+                            ) : (
+                              <FileText aria-hidden="true" className="h-4 w-4" />
+                            )}
                           </span>
                           <span dir="ltr" className="font-english text-[11px] font-bold text-copticGold-800">
                             {item.mimeType}

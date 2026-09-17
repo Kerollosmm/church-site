@@ -39,11 +39,11 @@ function contentSecurityPolicy(): string {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob:",
+    "img-src 'self' data: blob: https://*.supabase.co",
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(" ")}`,
     `frame-src 'self' ${TURNSTILE_ORIGIN} ${TRUSTED_EMBED_ORIGINS.join(" ")}`,
-    "media-src 'self'",
+    "media-src 'self' https://*.supabase.co",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -80,12 +80,12 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
   images: {
-    // The portal renders no remote images at all: `next/image` is not imported anywhere in `src/`,
-    // there is no `public/` directory, and the generated HTML contains zero `<img>` tags. The
-    // previous `hostname: "**"` wildcard therefore served only one purpose — turning
-    // `/_next/image` into an open image proxy for every HTTPS origin on the internet. An empty
-    // allowlist keeps it closed; add the exact host here if a remote image is ever introduced.
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+    ],
   },
   async headers() {
     const csp = contentSecurityPolicy();
