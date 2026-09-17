@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   BellRing,
   Layers,
+  Video,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { signOut } from "@/actions/auth-actions";
@@ -44,6 +45,7 @@ export default async function AdminProtectedLayout({
   const adminNav = [
     { href: "/masses", label: "إدارة القداسات", icon: Calendar },
     { href: "/events", label: "الفعاليات والمواعيد", icon: CalendarDays },
+    { href: "/videos", label: "فيديوهات الكنيسة", icon: Video },
     { href: "/content-types", label: "نماذج المحتوى (CMS)", icon: Layers },
     { href: "/bookings", label: "حجوزات العزاء", icon: HeartHandshake },
     { href: "/media", label: "مكتبة الوسائط", icon: ImageIcon },
