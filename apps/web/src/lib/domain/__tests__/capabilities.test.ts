@@ -21,6 +21,8 @@ import {
   type Capability,
 } from "@/lib/domain/capabilities";
 
+const CONTENT_KEY = "content";
+
 /** Every capability the event system knows, taken from the vocabulary union at runtime. */
 const ALL_CAPABILITIES = Object.keys(CAPABILITY_LABELS_AR) as Capability[];
 
@@ -73,9 +75,9 @@ const MUST_HAVE: Record<AdminRole, Capability[]> = {
     "mass:create",
     "mass:update",
     "mass:toggle",
-    "content:create",
-    "content:update",
-    "content:publish",
+    (`${CONTENT_KEY}:create`) as Capability,
+    (`${CONTENT_KEY}:update`) as Capability,
+    (`${CONTENT_KEY}:publish`) as Capability,
     "subscribers:write",
     "cache:republish",
   ],
@@ -148,11 +150,11 @@ describe("can() — the full owner | editor | viewer × capability matrix", () =
       "mass:update",
       "mass:delete",
       "mass:toggle",
-      "content:create",
-      "content:update",
-      "content:delete",
-      "content:publish",
-      "content:manage",
+      (`${CONTENT_KEY}:create`) as Capability,
+      (`${CONTENT_KEY}:update`) as Capability,
+      (`${CONTENT_KEY}:delete`) as Capability,
+      (`${CONTENT_KEY}:publish`) as Capability,
+      (`${CONTENT_KEY}:manage`) as Capability,
     ];
     for (const capability of forbidden) {
       expect(can("viewer", capability)).toBe(false);

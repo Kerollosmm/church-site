@@ -65,9 +65,10 @@ export default async function ContentTypeListingPage({
     contentType = await repo.getContentTypeBySlug(typeSlug);
 
     if (contentType && contentType.isActive) {
+      const statusFilter = { status: "published" as const };
       [fields, entries] = await Promise.all([
         repo.listContentFields(contentType.id),
-        repo.listContentEntries(contentType.slug, { status: "published" }),
+        repo.listContentEntries(contentType.slug, statusFilter),
       ]);
     }
   } catch (error) {
