@@ -164,7 +164,9 @@ describe("Content Types and Entries Server Actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.errors).toBeDefined();
+      if (!result.success) {
+        expect(result.errors).toBeDefined();
+      }
       expect(mockRepo.createContentEntry).not.toHaveBeenCalled();
     });
 
