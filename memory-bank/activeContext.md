@@ -1,6 +1,18 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-17)
+- **اكتملت (Phase 1 — Step 4c)**: استخراج حزمة واجهات المستخدم **`@church-site/ui` (packages/ui)** بنجاح كامل:
+  * نقل وتوحيد مكونات واجهة المستخدم والأدوات المساعدة ومكتبة التدويل: `Badge.tsx` و`Button.tsx` و`Card.tsx` و`FontSizeSwitcher.tsx` و`Skeleton.tsx`، ومساعد `cn` في `lib/utils.ts`، ومكتبة i18n (`locales.ts` و`localized.ts` و`messages.ts` و`dom.ts` و`server.ts`).
+  * إنشاء حزمة مساحة العمل `@church-site/ui` بتبعياتها المحددة ودعم مسارات TypeScript وحزم `next` المرجعية.
+  * تحديث `apps/web/package.json` وإضافة التبعية `"@church-site/ui": "workspace:*"` وتحديث `apps/web/next.config.ts` و`apps/web/tsconfig.json`.
+  * توفير إعادة تصدير دقيقة من `@church-site/ui` داخل `apps/web/src/components/ui/` و`apps/web/src/lib/utils.ts` و`apps/web/src/lib/i18n/` لضمان استمرار عمل كافة المسارات والاختبارات الحالية بانسيابية.
+  * بوابات التحقق الكاملة (All Gates Green):
+    - فحص الأنواع لحزمة ui: `pnpm --filter @church-site/ui typecheck` = 0 أخطاء (Exit 0).
+    - فحص الأنواع لمساحة العمل بالكامل: `pnpm typecheck` = 0 أخطاء (packages/domain, packages/data-access, packages/ui, apps/web).
+    - فحص الأسلوب: `pnpm lint` = 0 أخطاء (Exit 0).
+    - اختبارات الوحدات: `pnpm test` (Vitest) = 12 ملفاً، **274/274 فحصاً ناجحاً بنسبة 100%** (Exit 0).
+    - حفظ المخرجات في `.scratch/phase1-gates/01-ui-{typecheck,lint,test}.txt`.
+  * الالتزام: `chore(packages): extract ui`.
 - **اكتملت (Phase 1 — Step 4b)**: استخراج حزمة الوصول إلى البيانات **`@church-site/data-access` (packages/data-access)** بنجاح كامل:
   * نقل وتوحيد طبقة الوصول إلى البيانات: `store/` و`supabase/` و`queries.ts` و`tags.ts` و`env.ts` و`notify/` و`events/` و`data/seed-data.ts` و`utils/` و`validations/event-schemas.ts`.
   * إنشاء حزمة مساحة العمل `@church-site/data-access` بتبعياتها المحددة ودعم مسارات TypeScript وحزمة `next` بدون تسريب شفرة الخادم إلى مكونات العميل.

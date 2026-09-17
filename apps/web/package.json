@@ -12,6 +12,7 @@
   "dependencies": {
     "@church-site/data-access": "workspace:*",
     "@church-site/domain": "workspace:*",
+    "@church-site/ui": "workspace:*",
     "@hookform/resolvers": "^3.10.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.48.1",

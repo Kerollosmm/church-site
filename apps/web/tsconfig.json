@@ -23,6 +23,8 @@
       "@church-site/domain": ["../../packages/domain/src"],
       "@church-site/data-access": ["../../packages/data-access/src"],
       "@church-site/data-access/*": ["../../packages/data-access/src/*"],
+      "@church-site/ui": ["../../packages/ui/src"],
+      "@church-site/ui/*": ["../../packages/ui/src/*"],
       "next": ["./node_modules/next"],
       "next/*": ["./node_modules/next/*"]
     }

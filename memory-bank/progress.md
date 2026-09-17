@@ -1,5 +1,14 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 1 Monorepo Split — Step 4c: UI Extraction)
+- [x] **استخراج حزمة واجهات المستخدم والتدويل `@church-site/ui` (packages/ui)**:
+  - هيكلة الحزمة وتجهيز `package.json` و`tsconfig.json`.
+  - نقل مكونات واجهة المستخدم الأساسية: `Badge.tsx`, `Button.tsx`, `Card.tsx`, `FontSizeSwitcher.tsx`, `Skeleton.tsx`.
+  - نقل أدوات المساعدة `cn` في `lib/utils.ts` ومنظومة التدويل `lib/i18n/` (`locales.ts`, `localized.ts`, `messages.ts`, `dom.ts`, `server.ts`).
+  - توفير إعادة تصدير دقيقة وموجهة داخل `apps/web/src/components/ui/` و`apps/web/src/lib/utils.ts` و`apps/web/src/lib/i18n/`.
+  - نجاح بوابات التحقق: `pnpm --filter @church-site/ui typecheck` (0 errors), `pnpm typecheck` (0 errors), `pnpm lint` (0 errors), `pnpm test` (274/274 passed).
+  - الالتزام: `chore(packages): extract ui`.
+
 ## يعمل الآن (Phase 1 Monorepo Split — Step 4b: Data Access Extraction)
 - [x] **استخراج حزمة الوصول إلى البيانات `@church-site/data-access` (packages/data-access)**:
   - هيكلة الحزمة بالكامل وتجهيز `package.json` و`tsconfig.json`.
