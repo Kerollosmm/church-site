@@ -66,8 +66,12 @@ flowchart TB
 - **Environment Variables**:
   - `NEXT_PUBLIC_SUPABASE_URL`: Required for admin operations.
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Required for admin authentication.
-  - `SUPABASE_SERVICE_ROLE_KEY`: Required for privileged actions.
+  - `SUPABASE_SERVICE_ROLE_KEY`: Required for privileged actions and media uploads to bucket `media`.
   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`: Optional.
+- **Supabase Storage Requirements**:
+  - Production Supabase instance requires bucket `media` created via migration `20260916120000_media_storage.sql`.
+  - `SUPABASE_SERVICE_ROLE_KEY` is required on `apps/admin` for administrative uploads to bucket `media`.
+  - `apps/web` needs no storage credentials or bucket access (renders via public HTTP GET URLs).
 
 ---
 
@@ -91,7 +95,11 @@ When deploying to Vercel, configure two separate Vercel projects linked to the s
 - **Output Directory**: `.next`
 - **Install Command**: `pnpm install`
 - **Domain**: `admin.stmaximus.org`
-- **Environment Variables**: Same Supabase project keys as `church-site-web`.
+- **Environment Variables**: Same Supabase project keys as `church-site-web`, plus `SUPABASE_SERVICE_ROLE_KEY` required for administrative media uploads to bucket `media`.
+
+> [!NOTE]
+> **Supabase Storage Provisioning**:
+> Production Supabase instances require bucket `media` created via migration `20260916120000_media_storage.sql` (configured with `public: true` and RLS policies on `storage.objects`). `SUPABASE_SERVICE_ROLE_KEY` is required on `church-site-admin` for staff media uploads. `church-site-web` needs no storage credentials or bucket configuration.
 
 ---
 

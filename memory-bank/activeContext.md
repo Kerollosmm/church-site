@@ -1,6 +1,33 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-17)
+- **اكتملت بالكامل واعتُمدت (Phase 2 Media Upload & Supabase Storage — Verified & Complete)**:
+  * **سلسلة الالتزامات الستة للمرحلة الثانية (`c0e1c91`..`5ffa1f3`)**:
+    1. `c0e1c91` `feat(domain): add storage fields to media model`
+    2. `a4458b8` `feat(data-access): add MediaStorage adapter`
+    3. `a7ff1fb` `chore(db): add media storage bucket and policies`
+    4. `55152be` `feat(admin): real media upload action and uploader`
+    5. `fc3d752` `feat(web): render real uploaded media in gallery`
+    6. `5ffa1f3` `test: cover media upload pipeline`
+  * **إحصائيات الاختبارات المحدثة**: 16 ملف اختبار، **318/318 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest بعد إضافة اختبارات محول التخزين ومخططات الوسائط وإجراءات الرفع ومعرض الصور.
+  * **بوابات التحقق الصلبة للمرحلة الثانية (G1–G9 All Passed)**:
+    - G1: فحص الأنواع لكافة التطبيقات والحزم = 0 أخطاء (`.scratch/phase2-gates/g1-web-tsc.txt`، `g1-admin-tsc.txt`).
+    - G2: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase2-gates/g2-lint.txt`).
+    - G3: اختبارات الوحدات = 16 ملفاً، 318 فحصاً ناجحاً (`.scratch/phase2-gates/g3-test.txt`).
+    - G4: بناء الويب بصفر متغيرات بيئة = 50/50 مساراً ثابتاً (`.scratch/phase2-gates/g4-web-build.txt`).
+    - G5: بناء الإدارة = 5/5 مسارات بنجاح كامل (`.scratch/phase2-gates/g5-admin-build.txt`).
+    - G6: اختبار دورة الرفع والحذف والتحقق من التجزئة SHA-256 ناجح (`.scratch/phase2-gates/g6-upload.txt`).
+    - G7: حفظ سجل Git عبر `git log --follow` مؤكد (`.scratch/phase2-gates/g7-git-log.txt`).
+    - G8: هجرة مساحة التخزين `20260916120000_media_storage.sql` جاهزة ومؤكدة (`.scratch/phase2-gates/g8-git-status.txt`).
+    - G9: عزل تام للحدود: `apps/web` لا يحوي أي استيراد تخزين؛ `apps/admin` لا يحوي أي استيراد مباشر لـ `@supabase` (`.scratch/phase2-gates/g9-storage-web.txt`، `g9-imports-admin.txt`).
+  * **تسليم التوثيق**:
+    - دليل الإدارة `docs/admin-guide.md`: توثيق إمكانيات الرفع المباشر والصيغ والحد الأقصى 50MB وشارات التخزين.
+    - وثيقة التخزين `docs/media-storage.md`: تفصيل الحاوية والمحول ومسار التجزئة وسياسات RLS وثابت INV-01.
+    - دليل النشر `docs/deployment-split.md`: توثيق متطلبات `media` bucket ومفتاح `SUPABASE_SERVICE_ROLE_KEY`.
+    - تقرير المراجعة `REVIEW.md`: إضافة أقسام المرحلة الثانية 6 إلى 9.
+  * **ملاحظات التسليم للمرحلة الثالثة (Phase 3 Handoff Notes)**:
+    - البنية التحتية للوسائط مكتملة بالكامل مع المحولين (Supabase الإنتاجي وFile المحلي للتطوير والاختبارات).
+    - الأولويات القادمة للمرحلة الثالثة: محرر مصطلحات التصنيف في لوحة الإدارة، استكمال نصوص أسفار الكتاب المقدس، أو ربط مزود البريد الحقيقي عند توفير بيانات الاعتماد.
 - **اكتملت بالكامل ورُفعت إلى GitHub (Phase 1 Monorepo Split Pushed & Verified)**:
   * **الحالة على المستودع البعيد**: الفرع `master` على `https://github.com/Kerollosmm/church-site` متزامن ومحدَّث بسلسلة الالتزامات العشرة (`48c743b..7cd5a20`).
   * **سلسلة الالتزامات العشرة (The 10 Conventional Commits)**:

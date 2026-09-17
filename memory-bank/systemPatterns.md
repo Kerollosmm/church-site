@@ -181,3 +181,24 @@
 - **لا `<img>` ولا `next/image`**: المشروع لا يستضيف ملفات صور، و`img-src 'self' data: blob:` في CSP تمنع أي مضيف خارجي، و`images.remotePatterns` فارغة — فوسم صورة لملف غير موجود يبادل ثابتاً حقيقياً بمعاينة مكسورة. البديل: بطاقة تعرض **الوصف المسجَّل نصاً** (وهو نص الصورة البديل) + اسم الملف + رابطاً **مُتحقَّقاً**: `https:` أو مسار نسبي فقط، و`javascript:`/`data:`/`//host` تُرفض ويُقال ذلك في البطاقة.
 - **القراءة العامة للوسائط قارئ عام واحد**: الباب الوحيد للوسائط العامة هو القارئ في `src/lib/events/feed.ts` (تركيز قراءات المستودع للأسطح العامة في وحدة واحدة)، ولا تقرأ أي صفحة الجدول أو المستودع مباشرة.
 
+## 33. بنية تخزين الوسائط وثابت عدم المصادقة (Section 20: Media Storage Architecture & Zero-Auth Invariant)
+- **نمط المحول في الوصول للبيانات (Storage Adapter Pattern)**:
+  * تُعرّف حزمة `@church-site/data-access` واجهة التخزين الموحدة `MediaStorage` في `packages/data-access/src/storage/index.ts` بدوال: `upload(input)`، و`delete(storagePath)`، و`getPublicUrl(storagePath)`.
+  * **محول الإنتاج `SupabaseMediaStorage`**: يتواصل مع خدمة التخزين السحابي Supabase Storage باستخدام عميل الإدارة `createAdminClient()` ومفتاح `SUPABASE_SERVICE_ROLE_KEY`، ويرفع إلى الحاوية العامة `media` مع توليد رابط عام `.../storage/v1/object/public/media/${storagePath}`.
+  * **محول التطوير والاختبارات `FileMediaStorage`**: مخزن ملفات محلي على القرص الصلب تحت `${CHURCH_DATA_DIR}/media` (افتراضاً `.data/media`)، يضمن تشغيل بيئات التطوير المحلية واختبارات Vitest والبناء بصفر متغيرات بيئة بهرمسية تامة دون الحاجة لأي اتصال خارجي.
+  * **المصنع الموحد `getMediaStorage()`**: يختار المحول تلقائياً بناءً على توفر متغيرات بيئة الإدارة `hasSupabaseAdminEnv()` مع دوال مساعدة عليا (`uploadMedia`، `deleteMediaObject`، `getMediaPublicUrl`).
+- **حاوية التخزين وقواعد الأمان (Supabase Storage Bucket & RLS)**:
+  * حاوية `media` عامة للقراءة (`public: true`) ومُنشأة عبر الهجرة `supabase/migrations/20260916120000_media_storage.sql`.
+  * سياسات RLS على جدول `storage.objects`:
+    1. قراءة عامة للجميع `TO public` لمستودع `media` (`bucket_id = 'media'`).
+    2. عمليات الإضافة والتعديل والحذف محصورة بالمستخدمين المصادقين من طاقم الكنيسة (`admin`, `secretary`) عبر فحص `public.profiles`.
+- **نظام المسارات والبصمة الرقمية (Storage Key & Integrity)**:
+  * تقسيم المسارات زمنياً بنمط يمنع التصادم: `YYYY/MM/<uuid>.<ext>`.
+  * حساب بصمة SHA-256 للملفات وتخزينها في حقل `checksum` بجدول `public.media` للتحقق من سلامة البيانات ومطابقتها.
+- **قائمة السماح لسياسة أمان المحتوى (CSP Allowlist)**:
+  * تحديث `next.config.ts` في تطبيق الويب للسماح بالصور والفيديوهات من حاويات التخزين: `img-src 'self' data: blob: https://*.supabase.co` و`media-src 'self' blob: https://*.supabase.co`.
+- **حفظ ثابت عدم المصادقة للجمهور (INV-01 Preservation)**:
+  * تطبيق الويب `apps/web` خالٍ بنسبة 100% من أي استيراد لكتب التخزين السحابي أو مفاتيح الإدارة.
+  * صفحة المعرض `/gallery` تستهلك الروابط العامة HTTP وتعرض الصور عبر `<Image unoptimized />` مع نصوص بديلة (Alt Text) بالعربية، مما يحفظ أداء التوليد الثابت وعزل الأعطال الكامل بين تطبيقات المنظومة.
+
+

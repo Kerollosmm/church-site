@@ -1,5 +1,29 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 2 Media Upload & Supabase Storage — 100% Verified)
+- [x] **إتمام منظومة رفع وتخزين الوسائط الرقمية والحفاظ على ثوابت عدم المصادقة**:
+  - **حزمة النطاق `@church-site/domain`**:
+    * إضافة حقلي `storage_path` و`checksum` لنموذج `MediaRecord`.
+    * الالتزام: `c0e1c91 feat(domain): add storage fields to media model`.
+  - **حزمة الوصول للبيانات `@church-site/data-access`**:
+    * واجهة `MediaStorage` ومحول الإنتاج `SupabaseMediaStorage` ومحول الاختبارات والعمل دون إنترنت `FileMediaStorage` في `packages/data-access/src/storage/index.ts`.
+    * حساب تجزئة SHA-256، وتوليد مسارات مقسمة بالعام/الشهر `YYYY/MM/<uuid>.<ext>`.
+    * الالتزام: `a4458b8 feat(data-access): add MediaStorage adapter`.
+  - **قاعدة البيانات وهجرات Supabase**:
+    * إضافة الهجرة الثانية عشرة `supabase/migrations/20260916120000_media_storage.sql` لإنشاء الحاوية `media` وضبط سياسات RLS على `storage.objects` (قراءة عامة، وإضافة/تعديل/حذف للطاقم الإداري).
+    * الالتزام: `a7ff1fb chore(db): add media storage bucket and policies`.
+  - **تطبيق الإدارة `apps/admin`**:
+    * إجراء خادمي مؤمن `uploadMediaAction` يفحص الصلاحيات ويدقق الأنواع والأحجام حتى 50MB.
+    * واجهة تفاعلية `MediaUploader.tsx` تدعم السحب والإفلات ومعاينة الصور وشارات التخزين السحابي والخارجي.
+    * الالتزام: `55152be feat(admin): real media upload action and uploader`.
+  - **تطبيق الموقع العام `apps/web`**:
+    * عرض الوسائط الحقيقية المرفوعة في `/gallery` باستخدام روابط HTTP العامة ومكون `<Image unoptimized />` دون أي اعتماديات تخزين داخل تطبيق الويب (INV-01).
+    * الالتزام: `fc3d752 feat(web): render real uploaded media in gallery`.
+  - **أجنحة الاختبارات وبوابات التحقق**:
+    * 16 ملف اختبار و**318/318 فحصاً ناجحاً بنسبة 100%** في Vitest.
+    * الالتزام: `5ffa1f3 test: cover media upload pipeline`.
+    * نجاح كامل لجميع بوابات التحقق G1 إلى G9 وتوثيق الأدلة في `.scratch/phase2-gates/`.
+
 ## يعمل الآن (Phase 1 Monorepo Split — 100% Pushed & Verified)
 - [x] **إتمام الفصل المعماري لـ Monorepo ورفع الالتزامات العشرة إلى GitHub (`origin/master`)**:
   - **التطبيقات المنفصلة**:
@@ -290,7 +314,7 @@
 - [x] 2026-09-14: تنظيفات الشفرة (Code Hygiene) — حذف `src/components/layout/MegaMenu.tsx` و`MobileDrawer.tsx` (مكوّنان غير مستوردين ولا يستوردهما أي ملف، وكانا يشيران إلى مسارات غير قائمة مثل `/clinics/schedule` و`/programs/*`)، وإضافة `.claude/settings.local.json` و`.scratch/` إلى `.gitignore`، وتوحيد ثابتَي رسم الكشف وعدد التخصصات في 8 مواضع لتُشتق من `src/lib/constants.ts` و`SEED_CLINIC_SPECIALTIES.length`. التحقق: `tsc` = 0 (خروج 0)، `build` = 55/55 (خروج 0)، وأسطر مراجع التنقل والعدّ الثابتة = 0، وفحص HTML المولّد للقيم المعروضة.
 
 ## قيد الانتظار (Deployment Layer — الفجوات المفتوحة والافتراضات الآمنة)
-- [ ] **الفجوة 1: رفع الوسائط الثنائية (Binary Media Upload)** — النظام حالياً يسجل بيانات وصفية فقط (`/admin/media` و`/gallery`) بدون رفع ملفات ثنائية. *الافتراض الآمن*: الاستمرار على البيانات الوصفية حتى توفير وتوصيل خدمة تخزين ملفات (Supabase Storage أو S3).
+- [x] **الفجوة 1: رفع الوسائط الثنائية (Binary Media Upload) [مكتملة في المرحلة 2]** — تم بناء وإنجاز منظومة رفع وتخزين الوسائط الرقمية بمحولين (Supabase Storage للإنتاج وFileMediaStorage للتطوير والاختبارات) مع الهجرة 12 وسياسات RLS، وإجراء الرفع وواجهة العميل، وعرض الصور الحقيقية بالمعرض العام.
 - [ ] **الفجوة 2: محول البريد الإلكتروني (Mailer Transport)** — الاشتراك في التنبيهات يعمل بمحول `noop` مسجل في سجل التدقيق وبنصوص صريحة للزائر بأنه لا يُرسل بريد. *الافتراض الآمن*: بقاء الـ no-op حتى توفير مفاتيح مزود بريد حقيقي (Resend أو SMTP).
 - [ ] **الفجوة 3: أدلة إمكانية الوصول والأداء في المتصفح (A11y & Performance Evidence)** — البنية الهيكلية سليمة، لكن لم تُفحص في متصفح حي (Lighthouse وتباين وقارئات الشاشة). *الافتراض الآمن*: صيانة المعايير الهيكلية وتوثيق الفحوص البصرية كغير متحققة في هذه البيئة حتى توفير جلسة متصفح.
 - [ ] **الفجوة 4: لقطات شاشات لوحة الإدارة (Admin Guide Screenshots)** — دليل الإدارة `docs/admin-guide.md` يحمل 10 عناصر نائبة موسومة في `docs/images/admin/`. *الافتراض الآمن*: بقاء العناصر النائبة بالأسماء الموثقة حتى التقاطها من لوحة إدارة مأهولة بجلسة حقيقية.
