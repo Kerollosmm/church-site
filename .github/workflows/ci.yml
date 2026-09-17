@@ -1,11 +1,8 @@
 name: CI
 
-# Hard gates: type-check + unit tests + production build. All three MUST stay green — the portal is
-# required to build with NO environment variables set (seed data covers the no-database case), and the
-# test suite proves the pure core still behaves (recurrence, capabilities, filters, subscribers, the
-# file-backed store, iCal and the Coptic calendar). The suite needs no environment either: store tests
-# point CHURCH_DATA_DIR at a temporary directory of their own.
-# Informational (non-blocking): dependency audit and ESLint.
+# Hard gates: type-check + unit tests + production builds for web (no env) and admin.
+# Web portal is required to build with NO environment variables set (seed data fallback).
+# Unit test suite proves core behavior across workspace packages.
 
 on:
   push:
@@ -56,18 +53,21 @@ jobs:
             echo "::error::Unexpected application environment variables are set: ${unexpected[*]}"
             exit 1
           fi
-          echo "No application environment variables are set — the no-env build invariant holds."
+          echo "No application environment variables are set — the no-env web build invariant holds."
 
       # ---- Hard gates -------------------------------------------------------
 
       - name: Type-check
-        run: pnpm exec tsc --noEmit
+        run: pnpm typecheck
 
       - name: Unit tests
         run: pnpm test
 
-      - name: Build
-        run: pnpm run build
+      - name: Build web (NO ENV)
+        run: pnpm --filter web build
+
+      - name: Build admin
+        run: pnpm --filter admin build
 
       # ---- Informational (does not fail the job) ----------------------------
 
@@ -77,4 +77,4 @@ jobs:
 
       - name: Lint
         run: pnpm run lint
-        continue-on-error: true
+
