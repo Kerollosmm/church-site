@@ -1,5 +1,25 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 1 Monorepo Split — Steps 7, 8, 9: Full Completion)
+- [x] **إتمام الفصل المعماري وبناء حزم وتطبيقات Monorepo بالكامل**:
+  - **التطبيقات المنفصلة**:
+    * `apps/web`: بوابة المخدومين العامة، صفر مصادقة (INV-01)، ثابت أولاً، بناء بصفر متغيرات بيئة (50/50 مساراً نظيفاً)، تراجع تلقائي للبذرة ومخزن JSON.
+    * `apps/admin`: لوحة تحكم السكرتارية والكهنة، منفذ 3001 محلياً / نطاق فرعي في الإنتاج، كوكيز جلسات مستقلة عبر `@supabase/ssr`، وعزل أعطال كامل عن الموقع العام.
+  - **حزم مساحة العمل المشتركة**:
+    * `packages/domain` (`@church-site/domain`): النماذج ومحرك التكرار وقواعد التحقق وأنواع Supabase.
+    * `packages/data-access` (`@church-site/data-access`): طبقة الوصول للبيانات والعملاء ومحركا التخزين.
+    * `packages/ui` (`@church-site/ui`): مكونات التصميم المشتركة وأدوات المساعدة ونظام التدويل.
+  - **ضبط البناء وتكامل CI (`.github/workflows/ci.yml`)**:
+    * فحص الأنواع لكافة مشاريع الـ Workspace عبر `pnpm typecheck` (0 أخطاء).
+    * اختبارات الوحدات `pnpm test` (274/274 فحصاً ناجحاً بنسبة 100%).
+    * بناء تطبيق الويب بدون متغيرات بيئة: `pnpm --filter web build` (50/50 صفحة).
+    * بناء تطبيق الإدارة: `pnpm --filter admin build`.
+    * فحص الأسلوب `pnpm run lint` (0 أخطاء).
+  - **التوثيق**:
+    * تسجيل القرار في `docs/adr/0002-monorepo-admin-split.md`.
+    * دليل النشر في `docs/deployment-split.md`.
+    * تحديث دليل الإدارة في `docs/admin-guide.md`.
+
 ## يعمل الآن (Phase 1 Monorepo Split — Step 4c: UI Extraction)
 - [x] **استخراج حزمة واجهات المستخدم والتدويل `@church-site/ui` (packages/ui)**:
   - هيكلة الحزمة وتجهيز `package.json` و`tsconfig.json`.
