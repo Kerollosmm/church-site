@@ -11,6 +11,7 @@ import {
   EVENT_STATUSES,
   MAX_MEDIA_SIZE_BYTES,
   TAXONOMY_DIMENSIONS,
+  isAllowedMediaMimeType,
   type RecurrenceRule,
 } from "@church-site/domain";
 import { isValidDateKey, isValidTimeOfDay, isValidTimeZone, validateRecurrenceRule } from "@church-site/domain";
@@ -205,12 +206,34 @@ export const MediaSchema = z.object({
     .max(MAX_MEDIA_SIZE_BYTES, `الحجم الأقصى ${Math.round(MAX_MEDIA_SIZE_BYTES / (1024 * 1024))} ميجابايت.`)
     .optional(),
   url: z.string().trim().min(1, "رابط الملف مطلوب.").max(500),
+  storagePath: z.string().trim().max(500).nullable().optional(),
+  checksum: z.string().trim().max(64).nullable().optional(),
   altAr: z.string().trim().max(255).nullable().optional(),
   altEn: z.string().trim().max(255).nullable().optional(),
   isPublic: z.boolean().optional(),
 });
 
 export const MediaUpdateSchema = MediaSchema.partial();
+
+export const MediaUploadSchema = z.object({
+  filename: z.string().trim().min(1, "اسم الملف مطلوب.").max(255),
+  mimeType: z
+    .string()
+    .trim()
+    .min(3)
+    .max(127)
+    .refine(isAllowedMediaMimeType, "نوع الملف غير مدعوم."),
+  sizeBytes: z
+    .number()
+    .int()
+    .min(1, "الملف فارغ.")
+    .max(MAX_MEDIA_SIZE_BYTES, `الحجم الأقصى ${Math.round(MAX_MEDIA_SIZE_BYTES / (1024 * 1024))} ميجابايت.`),
+  altAr: z.string().trim().max(255).nullable().optional(),
+  altEn: z.string().trim().max(255).nullable().optional(),
+  isPublic: z.boolean().default(true).optional(),
+});
+
+export type MediaUploadInput = z.infer<typeof MediaUploadSchema>;
 
 /** Occurrence identity for the per-occurrence actions. */
 export const OccurrenceRefSchema = z.object({

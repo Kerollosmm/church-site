@@ -16,7 +16,20 @@
 
 import React, { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2, Copy, Image as ImageIcon, Loader2, Save, Trash2, X } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Copy,
+  FileText,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Loader2,
+  Save,
+  Trash2,
+  Upload,
+  Video,
+  X,
+} from "lucide-react";
 import {
   deleteMediaAction,
   registerMediaAction,
@@ -24,6 +37,7 @@ import {
   updateMediaAction,
   type EventActionResult,
 } from "@/actions/event-actions";
+import { MediaUploader } from "@/components/media/MediaUploader";
 import { AdminChip } from "@/components/admin/AdminStatusBadge";
 import { AdminFeedback, type AdminFeedbackTone } from "@/components/admin/AdminFeedback";
 import { AdminCheckbox, AdminSelect, AdminTextField } from "@/components/admin/AdminFields";
@@ -67,6 +81,7 @@ export interface MediaManagerProps {
 
 export function MediaManager({ media, events, capabilities }: MediaManagerProps): React.ReactElement {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"upload" | "manual">("upload");
   const [form, setForm] = useState<MediaFormState>(emptyMediaFormState());
   const [targetEventId, setTargetEventId] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -166,129 +181,175 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
     <div className="space-y-6">
       <section aria-labelledby="media-register-heading" className={ADMIN_PANEL}>
         <h2 id="media-register-heading" className={ADMIN_SECTION_HEADING}>
-          تسجيل ملف
+          إدارة الوسائط والملفات
         </h2>
 
-        {/* The limitation, said plainly where it matters. */}
-        <div className="mt-3 flex items-start gap-2 rounded-2xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900">
-          <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-          <p className="leading-relaxed">
-            هذه الشاشة تسجّل <strong>بيانات وصفية فقط</strong> (اسم الملف ونوعه وحجمه ورابطه ونصه البديل) — لا يوجد
-            تخزين للملفات في هذا الموقع ولا رفع للبايتات. الرابط هو ما يُخزَّن، ويُستخدم بعدها في الفعاليات والمرفقات
-            وصفحات الموقع. الحد الأقصى المسجَّل للحجم: <strong>{MAX_MEDIA_SIZE_LABEL}</strong>.
-          </p>
+        {/* Tab switcher */}
+        <div className="mt-4 flex border-b border-slate-200">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "upload"}
+            onClick={() => setActiveTab("upload")}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-colors ${
+              activeTab === "upload"
+                ? "border-copticGold-600 text-copticNavy"
+                : "border-transparent text-slate-500 hover:text-copticNavy"
+            }`}
+          >
+            <Upload aria-hidden="true" className="h-4 w-4" />
+            <span>رفع ملف جديد</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "manual"}
+            onClick={() => setActiveTab("manual")}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-colors ${
+              activeTab === "manual"
+                ? "border-copticGold-600 text-copticNavy"
+                : "border-transparent text-slate-500 hover:text-copticNavy"
+            }`}
+          >
+            <LinkIcon aria-hidden="true" className="h-4 w-4" />
+            <span>تسجيل رابط يدوي</span>
+          </button>
         </div>
 
-        {capabilities.mediaWrite ? (
-          <form onSubmit={submit} noValidate aria-busy={isPending} className="mt-4 space-y-4">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <AdminTextField
-                id="media-filename"
-                label="اسم الملف"
-                required
-                value={form.filename}
-                onChange={(value) => update("filename", value, "filename")}
-                error={errors.filename}
-                maxLength={255}
-              />
-              <AdminTextField
-                id="media-mimeType"
-                label="نوع الملف (MIME)"
-                required
-                lang="en"
-                placeholder="image/jpeg"
-                value={form.mimeType}
-                onChange={(value) => update("mimeType", value, "mimeType")}
-                error={errors.mimeType}
-                hint="مثال: image/jpeg أو application/pdf."
-                maxLength={127}
-              />
-              <AdminTextField
-                id="media-sizeMb"
-                label="الحجم بالميجابايت (اختياري)"
-                lang="en"
-                placeholder="2.5"
-                value={form.sizeMb}
-                onChange={(value) => update("sizeMb", value, "sizeBytes")}
-                error={errors.sizeBytes}
-                hint={`اتركه فارغاً إن كان الحجم غير معروف. الحد الأقصى ${MAX_MEDIA_SIZE_LABEL}.`}
-              />
-              <AdminTextField
-                id="media-url"
-                label="رابط الملف"
-                required
-                lang="en"
-                placeholder="/assets/poster.jpg"
-                value={form.url}
-                onChange={(value) => update("url", value, "url")}
-                error={errors.url}
-                hint="مسار داخلي أو عنوان كامل. لا تُقدَّم الصور من نطاقات غير مدرجة في سياسة أمان المحتوى."
-                maxLength={500}
-              />
-              <AdminTextField
-                id="media-altAr"
-                label="النص البديل (عربي)"
-                lang="ar"
-                value={form.altAr}
-                onChange={(value) => update("altAr", value)}
-                error={errors.altAr}
-                hint="وصف مختصر للصورة لقارئات الشاشة."
-                maxLength={255}
-              />
-              <AdminTextField
-                id="media-altEn"
-                label="النص البديل (إنجليزي)"
-                lang="en"
-                value={form.altEn}
-                onChange={(value) => update("altEn", value)}
-                error={errors.altEn}
-                maxLength={255}
-              />
-            </div>
-
-            <AdminCheckbox
-              id="media-isPublic"
-              label="متاح للعرض العام"
-              checked={form.isPublic}
-              onChange={(checked) => update("isPublic", checked)}
-              hint="أزل العلامة لملف داخلي لا يُشار إليه من الصفحات العامة."
+        {activeTab === "upload" ? (
+          <div className="mt-4">
+            <MediaUploader
+              events={events}
+              disabled={!capabilities.mediaWrite}
+              onUploadSuccess={() => {
+                router.refresh();
+              }}
             />
-
-            <AdminSelect
-              id="media-target-event"
-              label="ربط الرابط بفعالية (اختياري)"
-              value={targetEventId}
-              onChange={setTargetEventId}
-              options={eventOptions}
-              hint="عند اختيار فعالية، يُضبط الرابط كصورة لها بعد التسجيل — وهذا تحديث حقيقي للفعالية يُسجَّل في سجل التدقيق."
-            />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="submit" disabled={isPending} aria-busy={isPending} className={ADMIN_BUTTON_PRIMARY}>
-                {busy("register") ? (
-                  <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save aria-hidden="true" className="h-4 w-4" />
-                )}
-                <span>{busy("register") ? "جارٍ التسجيل…" : "تسجيل بيانات الملف"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setForm(emptyMediaFormState());
-                  setErrors({});
-                }}
-                className={ADMIN_BUTTON_SECONDARY}
-              >
-                <X aria-hidden="true" className="h-3.5 w-3.5" />
-                <span>تفريغ الحقول</span>
-              </button>
-            </div>
-          </form>
+          </div>
         ) : (
-          <p className="mt-4 text-xs font-bold text-amber-900">
-            صلاحياتك الحالية لا تسمح بتسجيل وسائط. أي محاولة تُرفض على الخادم وتُسجَّل في سجل التدقيق.
-          </p>
+          <div className="mt-4">
+            {/* The limitation, said plainly where it matters. */}
+            <div className="flex items-start gap-2 rounded-2xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900">
+              <AlertTriangle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+              <p className="leading-relaxed">
+                هذه الشاشة تسجّل <strong>بيانات وصفية فقط</strong> (اسم الملف ونوعه وحجمه ورابطه ونصه البديل) — لا يوجد
+                تخزين للملفات في هذا الموقع ولا رفع للبايتات. الرابط هو ما يُخزَّن، ويُستخدم بعدها في الفعاليات والمرفقات
+                وصفحات الموقع. الحد الأقصى المسجَّل للحجم: <strong>{MAX_MEDIA_SIZE_LABEL}</strong>.
+              </p>
+            </div>
+
+            {capabilities.mediaWrite ? (
+              <form onSubmit={submit} noValidate aria-busy={isPending} className="mt-4 space-y-4">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <AdminTextField
+                    id="media-filename"
+                    label="اسم الملف"
+                    required
+                    value={form.filename}
+                    onChange={(value) => update("filename", value, "filename")}
+                    error={errors.filename}
+                    maxLength={255}
+                  />
+                  <AdminTextField
+                    id="media-mimeType"
+                    label="نوع الملف (MIME)"
+                    required
+                    lang="en"
+                    placeholder="image/jpeg"
+                    value={form.mimeType}
+                    onChange={(value) => update("mimeType", value, "mimeType")}
+                    error={errors.mimeType}
+                    hint="مثال: image/jpeg أو application/pdf."
+                    maxLength={127}
+                  />
+                  <AdminTextField
+                    id="media-sizeMb"
+                    label="الحجم بالميجابايت (اختياري)"
+                    lang="en"
+                    placeholder="2.5"
+                    value={form.sizeMb}
+                    onChange={(value) => update("sizeMb", value, "sizeBytes")}
+                    error={errors.sizeBytes}
+                    hint={`اتركه فارغاً إن كان الحجم غير معروف. الحد الأقصى ${MAX_MEDIA_SIZE_LABEL}.`}
+                  />
+                  <AdminTextField
+                    id="media-url"
+                    label="رابط الملف"
+                    required
+                    lang="en"
+                    placeholder="/assets/poster.jpg"
+                    value={form.url}
+                    onChange={(value) => update("url", value, "url")}
+                    error={errors.url}
+                    hint="مسار داخلي أو عنوان كامل. لا تُقدَّم الصور من نطاقات غير مدرجة في سياسة أمان المحتوى."
+                    maxLength={500}
+                  />
+                  <AdminTextField
+                    id="media-altAr"
+                    label="النص البديل (عربي)"
+                    lang="ar"
+                    value={form.altAr}
+                    onChange={(value) => update("altAr", value)}
+                    error={errors.altAr}
+                    hint="وصف مختصر للصورة لقارئات الشاشة."
+                    maxLength={255}
+                  />
+                  <AdminTextField
+                    id="media-altEn"
+                    label="النص البديل (إنجليزي)"
+                    lang="en"
+                    value={form.altEn}
+                    onChange={(value) => update("altEn", value)}
+                    error={errors.altEn}
+                    maxLength={255}
+                  />
+                </div>
+
+                <AdminCheckbox
+                  id="media-isPublic"
+                  label="متاح للعرض العام"
+                  checked={form.isPublic}
+                  onChange={(checked) => update("isPublic", checked)}
+                  hint="أزل العلامة لملف داخلي لا يُشار إليه من الصفحات العامة."
+                />
+
+                <AdminSelect
+                  id="media-target-event"
+                  label="ربط الرابط بفعالية (اختياري)"
+                  value={targetEventId}
+                  onChange={setTargetEventId}
+                  options={eventOptions}
+                  hint="عند اختيار فعالية، يُضبط الرابط كصورة لها بعد التسجيل — وهذا تحديث حقيقي للفعالية يُسجَّل في سجل التدقيق."
+                />
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="submit" disabled={isPending} aria-busy={isPending} className={ADMIN_BUTTON_PRIMARY}>
+                    {busy("register") ? (
+                      <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save aria-hidden="true" className="h-4 w-4" />
+                    )}
+                    <span>{busy("register") ? "جارٍ التسجيل…" : "تسجيل بيانات الملف"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForm(emptyMediaFormState());
+                      setErrors({});
+                    }}
+                    className={ADMIN_BUTTON_SECONDARY}
+                  >
+                    <X aria-hidden="true" className="h-3.5 w-3.5" />
+                    <span>تفريغ الحقول</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <p className="mt-4 text-xs font-bold text-amber-900">
+                صلاحياتك الحالية لا تسمح بتسجيل وسائط. أي محاولة تُرفض على الخادم وتُسجَّل في سجل التدقيق.
+              </p>
+            )}
+          </div>
         )}
       </section>
 
@@ -336,12 +397,43 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
                 {media.map((item) => (
                   <tr key={item.id} data-admin-media={item.id}>
                     <td className={ADMIN_TD}>
-                      <p className="font-heading text-xs font-bold text-copticNavy">{item.filename}</p>
-                      <p className="mt-0.5 font-english text-[10px] text-slate-500" dir="ltr">
-                        {item.url}
-                      </p>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {item.isPublic ? <AdminChip tone="gold">عام</AdminChip> : <AdminChip>داخلي</AdminChip>}
+                      <div className="flex items-center gap-3">
+                        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                          {item.mimeType.startsWith("image/") ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.url}
+                              alt={item.altAr || item.filename}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          ) : item.mimeType === "application/pdf" ? (
+                            <FileText aria-hidden="true" className="h-6 w-6 text-red-600" />
+                          ) : item.mimeType.startsWith("video/") ? (
+                            <Video aria-hidden="true" className="h-6 w-6 text-copticNavy" />
+                          ) : (
+                            <ImageIcon aria-hidden="true" className="h-6 w-6 text-slate-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-heading text-xs font-bold text-copticNavy" title={item.filename}>
+                            {item.filename}
+                          </p>
+                          <p className="mt-0.5 truncate font-english text-[10px] text-slate-500" dir="ltr" title={item.url}>
+                            {item.url}
+                          </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-1">
+                            {item.isPublic ? <AdminChip tone="gold">عام</AdminChip> : <AdminChip>داخلي</AdminChip>}
+                            {item.storagePath ? (
+                              <AdminChip tone="navy">تخزين سحابي</AdminChip>
+                            ) : (
+                              <AdminChip>رابط خارجي</AdminChip>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className={ADMIN_TD}>
