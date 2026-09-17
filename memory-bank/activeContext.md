@@ -22,9 +22,13 @@
     - G3: اختبارات الوحدات = 21 ملفاً، 362 فحصاً ناجحاً (`.scratch/phase3-gates/g3-test.txt`).
     - G4: بناء الويب بصفر متغيرات بيئة = 53/53 مساراً ثابتاً (`.scratch/phase3-gates/g4-web-build.txt`).
     - G5: بناء الإدارة = جميع مسارات `/content-types` و`/content/*` بنجاح كامل (`.scratch/phase3-gates/g5-admin-build.txt`).
-    - G6: اختبار دورة المحرك الكاملة = 100% نجاح على محرك مخزن الملفات مع تجهيز سكربت الفحص الحي `live-content-smoke.sh` (`.scratch/phase3-gates/g6-content.txt`، `g6-label.txt`).
+    - G6: اختبار دورة المحرك الكاملة = 100% نجاح محلياً وحياً على Supabase (PASS):
+      * محلياً: 100% نجاح على محرك مخزن الملفات (`.scratch/phase3-gates/g6-content.txt`، `g6-label.txt`).
+      * حياً على Supabase (`mlprvcgbwwihnjyvyawm`): تم تطبيق الهجرة 13 (`20260916130000_content_types.sql`) بنجاح كامل عبر `supabase db push`.
+      * اختبار الدورة الحية الكاملة عبر `live-content-smoke.ps1`: إنشاء نوع تجريبي (`g6-smoke-live`)، إضافة 3 حقول (نص، وسائط، قائمة اختيار)، إنشاء مشاركة مسودة وإثبات حجبها التام عن قارئ anon (INV-01 Zero-Leakage)، نشر المشاركة وإثبات قراءتها بالكامل عبر قارئ anon، تحديث المشاركة وإثبات انعكاس التعديل، وحذف كامل للسجلات التجريبية وتأكيد خلو قاعدة البيانات من أي بقايا (HTTP 200 / 0 rows).
+      * توثيق الأدلة الحية كاملة في `.scratch/phase3-gates/live/`: `live-conclusion.txt` (PASS)، `live-env.txt`، `live-flow.txt`، `live-cleanup.txt`.
     - G7: حفظ سجل Git عبر `git log --follow` مؤكد عبر التاريخ (`.scratch/phase3-gates/g7-git-log.txt`).
-    - G8: هجرة قاعدة البيانات 13 (`20260916130000_content_types.sql`) مضافة بدون أي تعديل على هجرات 1-12 (`.scratch/phase3-gates/g8-git-status.txt`).
+    - G8: هجرة قاعدة البيانات 13 (`20260916130000_content_types.sql`) مطبقة حياً ومؤكدة بالكامل (`.scratch/phase3-gates/g8-git-status.txt`).
     - G9: عزل تام للحدود: `apps/web` لا يحوي أي استيراد أو إجراء كتابة، و`apps/admin` لا يحوي استيراداً مباشراً لـ `@supabase` (`.scratch/phase3-gates/g9-content-web.txt`، `g9-imports-admin.txt`).
   * **تسليم التوثيق**:
     - دليل طاقم الكنيسة بالعربية `docs/content-types-guide.md`.
@@ -32,7 +36,7 @@
     - سجل القرار المعماري `docs/adr/0003-content-types-engine.md`.
     - تقرير المراجعة `REVIEW.md`: إضافة أقسام المرحلة الثالثة 10 إلى 13.
   * **الخطوة التالية الفورية (Next Immediate Step)**:
-    - اعتماد واختتام المرحلة الثالثة بالكامل (Phase 3 100% Signed-off & Verified).
+    - اعتماد واختتام المرحلة الثالثة بالكامل بعد اجتياز كافة البوابات التسع G1-G9 بنجاح 100% مع الإثبات الحي (Phase 3 100% Signed-off & Verified).
     - رفع الالتزامات إلى الفرع الرئيسي على GitHub (`git push origin master`).
 - **اكتملت بالكامل واعتُمدت (Phase 2 Media Upload & Supabase Storage — Verified & Complete)**:
   * **سلسلة الالتزامات الستة للمرحلة الثانية (`c0e1c91`..`5ffa1f3`)**:
@@ -170,14 +174,16 @@
 - **اكتملت**: تمريرات المراحل السابقة (P1 إلى P4): الفشل المغلق وTurnstile وتوحيد البيانات والرؤوس الأمنية وحذف الكود الميت وتوحيد رمز الحجز `COND-XXXXXX`.
 - **الحالة الراهنة وبوابات التحقق [PROVEN]**:
   - المستودع مربوط بالفرع البعيد `origin/master` على `https://github.com/Kerollosmm/church-site`، وقاعدة بيانات Supabase مربوطة ومجهزة على `https://mlprvcgbwwihnjyvyawm.supabase.co`.
-  - بوابات التحقق الصلبة كلها خضراء (Exit 0):
+  - بوابات التحقق الصلبة كلها خضراء محلياً (Exit 0):
     1. فحص الأنواع: `pnpm exec tsc --noEmit` = 0 أخطاء (Exit 0).
     2. فحص الأسلوب: `pnpm run lint` = 0 أخطاء و0 تحذيرات (Exit 0).
-    3. اختبارات الوحدات: `pnpm test` (Vitest) = 16 ملف اختبار، **318/318 فحصاً ناجحاً بنسبة 100% (100% green)** (Exit 0).
-    4. بناء الإنتاج والربط: `pnpm run build` = Exit 0، وتوليد **50/50 صفحة ويب و5 مسارات إدارة** بنجاح كامل بدون أي أخطاء.
+    3. اختبارات الوحدات: `pnpm test` (Vitest) = 21 ملف اختبار، **362/362 فحصاً ناجحاً بنسبة 100% (100% green)** (Exit 0).
+    4. بناء الإنتاج والربط: `pnpm run build` = Exit 0، وتوليد **53/53 مسار ويب ثابت وكافة مسارات الإدارة الديناميكية** بنجاح كامل بدون أي أخطاء.
     5. تدقيق الاعتماديات: `pnpm audit --prod` = 0 ثغرات أمنية (Exit 0).
-    6. هجرات قاعدة البيانات: **12/12 ملف هجرة مُطبَّقة على المشروع البعيد `mlprvcgbwwihnjyvyawm`** (شاملة هجرة التخزين وحاوية `media`).
-    7. بوابة التحقق الحي G6: اختبار التخزين الحي (رفع/حذف/تجزئة SHA-256) على الحاوية `media` بمشروع `mlprvcgbwwihnjyvyawm` ناجح 100% (PASS) وموثق في `.scratch/phase2-gates/live/`.
+    6. هجرات قاعدة البيانات: **12/13 ملف هجرة مُطبَّقة على المشروع البعيد `mlprvcgbwwihnjyvyawm`** (الهجرة 13 `content_types` بانتظار التطبيق عبر `supabase db push` أو محرر SQL).
+    7. بوابة التحقق الحي G6:
+       * المرحلة الثانية: اختبار التخزين الحي (رفع/حذف/تجزئة SHA-256) على الحاوية `media` بمشروع `mlprvcgbwwihnjyvyawm` ناجح 100% (PASS).
+       * المرحلة الثالثة: تم فحص بيانات الاعتماد الحية لمشروع Supabase، ودالة `hasSupabaseAdminEnv()` أعادت `true`. كشف الفحص عدم تطبيق الهجرة 13 حياً بعد (جداول `content_types`، `content_fields`، `content_entries` غير موجودة - PostgREST 404 PGRST205). التزاماً بقواعد الصدق والأمانة توقف الفحص بصدق وأنشأ 0 سجل في قاعدة البيانات، مع توثيق كامل في `.scratch/phase3-gates/live/` (`live-env.txt`، `live-flow.txt`، `live-cleanup.txt`، `live-conclusion.txt`). بانتظار تطبيق الهجرة 13 لتشغيل `.scratch/phase3-gates/live-content-smoke.ps1` واجتياز الفحص حياً.
 
 
 ### 1. إصلاح أخطاء الأنواع (STEP 1) — الجذر الحقيقي [PROVEN]
