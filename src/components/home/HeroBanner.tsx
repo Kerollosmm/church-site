@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Calendar, Stethoscope, Video, HeartHandshake, PhoneCall, ChevronLeft, Sparkles } from "lucide-react";
-import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
+import { Calendar, CalendarDays, Video, HeartHandshake, PhoneCall, ChevronLeft, Sparkles } from "lucide-react";
 
 export function HeroBanner() {
   return (
@@ -24,7 +23,7 @@ export function HeroBanner() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-200 leading-relaxed mb-8">
-            العصافرة — الإسكندرية. نرحب بكم في بوابتكم الروحية والمجتمعية، حيث تجدون مواعيد القداسات، خدمات المستوصف الخيري، حجز قاعة العزاء، والأنشطة الرعوية لجميع الأعمار.
+            العصافرة — الإسكندرية. نرحب بكم في بوابتكم الروحية والمجتمعية، حيث تجدون مواعيد القداسات، الفعاليات والمناسبات، حجز قاعة العزاء، والأنشطة الرعوية لجميع الأعمار.
           </p>
 
           {/* Primary Quick CTA Grid */}
@@ -39,12 +38,12 @@ export function HeroBanner() {
             </Link>
 
             <Link
-              href="/clinics"
+              href="/events"
               className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-copticGold-400/40 backdrop-blur-xs transition group"
             >
-              <Stethoscope className="w-6 h-6 text-copticGold-400 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="text-xs sm:text-sm font-bold text-white">المستوصف الطبي</span>
-              <span className="text-[10px] text-copticGold-200">{SEED_CLINIC_SPECIALTIES.length} عيادة تخصصية</span>
+              <CalendarDays className="w-6 h-6 text-copticGold-400 group-hover:scale-110 transition-transform mb-1.5" />
+              <span className="text-xs sm:text-sm font-bold text-white">الفعاليات الكنسية</span>
+              <span className="text-[10px] text-copticGold-200">المناسبات والنهضات</span>
             </Link>
 
             <Link

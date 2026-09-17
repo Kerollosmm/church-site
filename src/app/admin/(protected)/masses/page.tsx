@@ -1,4 +1,6 @@
 import React from "react";
+import { requireStaff } from "@/lib/auth/require-staff";
+import { adminRoleFromStaffRole, can } from "@/lib/domain/capabilities";
 import { getAltars, getWeeklyMasses } from "@/lib/queries";
 import { AdminMassesTable } from "./AdminMassesTable";
 
@@ -12,12 +14,24 @@ export const metadata = {
  * so the numbers shown are the current ones.
  */
 export default async function AdminMassesPage() {
-  const [masses, altars] = await Promise.all([getWeeklyMasses(), getAltars()]);
+  const [session, masses, altars] = await Promise.all([
+    requireStaff(),
+    getWeeklyMasses(),
+    getAltars(),
+  ]);
+
+  const role = adminRoleFromStaffRole(session.role);
+  const canDelete = can(role, "mass:delete");
+  const canEdit = can(role, "mass:update");
+  const canCreate = can(role, "mass:create");
 
   return (
     <AdminMassesTable
       masses={masses}
       altars={altars.map((altar) => ({ id: altar.id, name_ar: altar.name_ar }))}
+      canDelete={canDelete}
+      canEdit={canEdit}
+      canCreate={canCreate}
     />
   );
 }

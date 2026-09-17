@@ -30,7 +30,6 @@ import {
   SEED_ALTARS,
   SEED_CLERGY,
   SEED_MASS_SCHEDULES,
-  SEED_CLINIC_SPECIALTIES,
   SEED_CHURCH_MEETINGS,
   SEED_SCHOOLS,
   SEED_ACTIVITIES,
@@ -185,24 +184,6 @@ export const getWeeklyMasses = unstable_cache(
     }),
   ["weekly-masses"],
   { tags: [REVALIDATION_TAGS.masses], revalidate: 300 }
-);
-
-export const getClinicSpecialties = unstable_cache(
-  async () =>
-    readOrSeed<Tables<"clinic_specialties">>(
-      "getClinicSpecialties",
-      SEED_CLINIC_SPECIALTIES,
-      async (supabase) => {
-        const { data, error } = await supabase
-          .from("clinic_specialties")
-          .select("*")
-          .eq("is_active", true)
-          .order("display_order");
-        return { data, error };
-      }
-    ),
-  ["clinic-specialties"],
-  { tags: [REVALIDATION_TAGS.clinicSpecialties], revalidate: 3600 }
 );
 
 export const getChurchMeetings = unstable_cache(

@@ -60,17 +60,6 @@ export const ContactMessageSchema = z.object({
   turnstileToken,
 });
 
-// 3. استفسار عيادة / حجز كشف استرشادي
-export const ClinicInquirySchema = z.object({
-  patientName: z.string().min(3, "اسم المريض مطلوب"),
-  patientPhone: egyptianPhone,
-  specialtySlug: z.string().min(2, "التخصص مطلوب"),
-  notes: z.string().max(500).optional(),
-  // Kept on the same contract as the other public forms even though no clinic form is mounted
-  // yet; `submitClinicInquiry` verifies it server-side.
-  turnstileToken,
-});
-
 /**
  * Canonical allow-list of programmes that accept online enrolment, derived from the seeded
  * programmes (`SEED_PROGRAM_SLUGS` in `src/lib/data/seed-data.ts`) so the two cannot drift:
@@ -140,9 +129,7 @@ export const EventSubscriptionSchema = z.object({
 
 export type CondolenceBookingInput = z.infer<typeof CondolenceBookingSchema>;
 export type ContactMessageInput = z.infer<typeof ContactMessageSchema>;
-export type ClinicInquiryInput = z.infer<typeof ClinicInquirySchema>;
 export type ProgramApplicationInput = z.infer<typeof ProgramApplicationSchema>;
-export type JobApplicationInput = z.infer<typeof JobApplicationSchema>;
 export type StaffSignInInput = z.infer<typeof StaffSignInSchema>;
 export type EventSubscriptionInput = z.infer<typeof EventSubscriptionSchema>;
 export type ProgramSlug = ProgramApplicationInput["programSlug"];

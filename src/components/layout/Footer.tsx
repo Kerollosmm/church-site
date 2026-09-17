@@ -10,7 +10,6 @@ import {
   ExternalLink,
   ShieldCheck,
 } from "lucide-react";
-import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
 import { PARISH_ADDRESS_AR } from "@/lib/constants";
 
 // The footer's labels are deliberately Arabic literals, not `t()` calls: it renders inside the static
@@ -105,20 +104,25 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Clinics & Services */}
+          {/* Pastoral Services & Activities */}
           <div>
             <h4 className="font-heading font-bold text-copticGold-400 text-sm mb-4 pb-1 border-b border-copticGold-500/20">
-              الخدمات والمستوصف
+              الخدمات والأنشطة الرعوية
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/clinics" className="hover:text-copticGold-300 transition-colors">
-                  المستوصف التخصصي الخيري ({SEED_CLINIC_SPECIALTIES.length} عيادة)
+                <Link href="/activities" className="hover:text-copticGold-300 transition-colors">
+                  الأنشطة والخدمات الرعوية
                 </Link>
               </li>
               <li>
-                <Link href="/clinics/specialties" className="hover:text-copticGold-300 transition-colors">
-                  دليل العيادات والتجهيزات ({SEED_CLINIC_SPECIALTIES.length} تخصصاً)
+                <Link href="/masses" className="hover:text-copticGold-300 transition-colors">
+                  جداول القداسات الإلهية والتسبحة
+                </Link>
+              </li>
+              <li>
+                <Link href="/bible" className="hover:text-copticGold-300 transition-colors">
+                  الكتاب المقدس والأسفار القانونية
                 </Link>
               </li>
               <li>

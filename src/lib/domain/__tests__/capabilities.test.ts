@@ -32,6 +32,7 @@ const READ_CAPABILITIES: Capability[] = [
   "media:read",
   "audit:read",
   "subscribers:read",
+  "mass:read",
 ];
 
 /** Destructive or account-level actions: owner only. */
@@ -42,6 +43,7 @@ const OWNER_ONLY: Capability[] = [
   "taxonomy:delete",
   "media:delete",
   "users:manage",
+  "mass:delete",
 ];
 
 /**
@@ -65,6 +67,9 @@ const MUST_HAVE: Record<AdminRole, Capability[]> = {
     "taxonomy:write",
     "media:create",
     "media:update",
+    "mass:create",
+    "mass:update",
+    "mass:toggle",
     "subscribers:write",
     "cache:republish",
   ],
@@ -133,6 +138,10 @@ describe("can() — the full owner | editor | viewer × capability matrix", () =
       "subscribers:write",
       "cache:republish",
       "users:manage",
+      "mass:create",
+      "mass:update",
+      "mass:delete",
+      "mass:toggle",
     ];
     for (const capability of forbidden) {
       expect(can("viewer", capability)).toBe(false);

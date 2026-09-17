@@ -17,9 +17,9 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
       published_at: "2026-06-20",
     },
     {
-      title_ar: "افتتاح عيادة الرمد التخصصية الجديدة بالمستوصف",
-      summary_ar: "تم تزويد عيادة العيون بأحدث جهاز فحص قاع العين ومقياس ضغط العين بالتعاون مع نخبة من استشاريي طب وجراحة العيون.",
-      excerpt_ar: "تم تزويد عيادة العيون بأحدث جهاز فحص قاع العين ومقياس ضغط العين بالتعاون مع نخبة من استشاريي طب وجراحة العيون.",
+      title_ar: "استعدادات نهضة عيد الشهيد العظيم الأنبا موسى الأسود",
+      summary_ar: "استعدادات مكثفة لترتيبات النهضة الروحية السنوية لشفيع الكنيسة وتجهيز قاعات الترانيم والصلوات وبرامج الأطفال المصاحبة.",
+      excerpt_ar: "استعدادات مكثفة لترتيبات النهضة الروحية السنوية لشفيع الكنيسة وتجهيز قاعات الترانيم والصلوات وبرامج الأطفال المصاحبة.",
       category: "service",
       published_at: "2026-06-18",
     },
@@ -72,7 +72,7 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
                   {item.category === "liturgical"
                     ? "طقسي ونهضات"
                     : item.category === "service"
-                    ? "خدمات ومستوصف"
+                    ? "نهضات ومناسبات"
                     : "تعليم ورعاية"}
                 </span>
                 <span className="flex items-center gap-1 text-slateText-muted">

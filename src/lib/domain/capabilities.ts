@@ -52,7 +52,13 @@ export type Capability =
   // --- operations ---
   | "subscribers:write"
   | "cache:republish"
-  | "users:manage";
+  | "users:manage"
+  // --- masses ---
+  | "mass:read"
+  | "mass:create"
+  | "mass:update"
+  | "mass:delete"
+  | "mass:toggle";
 
 /** What a `viewer` may do: read everything the event system exposes to the portal. */
 const READ_ONLY_CAPABILITIES = [
@@ -62,6 +68,7 @@ const READ_ONLY_CAPABILITIES = [
   "media:read",
   "audit:read",
   "subscribers:read",
+  "mass:read",
 ] as const satisfies readonly Capability[];
 
 /**
@@ -85,6 +92,9 @@ const EDITOR_CAPABILITIES = [
   "taxonomy:write",
   "media:create",
   "media:update",
+  "mass:create",
+  "mass:update",
+  "mass:toggle",
   // Editing the notification list is an editorial act (retiring a subscription), not a destructive
   // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
   "subscribers:write",
@@ -99,6 +109,7 @@ const OWNER_ONLY_CAPABILITIES = [
   "taxonomy:delete",
   "media:delete",
   "users:manage",
+  "mass:delete",
 ] as const satisfies readonly Capability[];
 
 /** The full decision table. Single source for `can()`. */
@@ -171,6 +182,11 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "subscribers:write": "إيقاف أو تنشيط اشتراك في التنبيهات",
   "cache:republish": "مسح ذاكرة الموقع المؤقتة",
   "users:manage": "إدارة المستخدمين",
+  "mass:read": "قراءة القداسات",
+  "mass:create": "إنشاء قداس",
+  "mass:update": "تعديل قداس",
+  "mass:delete": "حذف قداس",
+  "mass:toggle": "تغيير حالة القداس",
 };
 
 /**
@@ -206,6 +222,11 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "subscribers:write": "subscriber",
   "cache:republish": "event",
   "users:manage": "event",
+  "mass:read": "mass",
+  "mass:create": "mass",
+  "mass:update": "mass",
+  "mass:delete": "mass",
+  "mass:toggle": "mass",
 };
 
 /**

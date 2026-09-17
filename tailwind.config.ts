@@ -60,6 +60,50 @@ const config: Config = {
         "2xl": "1rem",
         "3xl": "1.5rem",
       },
+      keyframes: {
+        fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        fadeUp: {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        shimmer: {
+          from: { backgroundPosition: "-200% 0" },
+          to: { backgroundPosition: "200% 0" },
+        },
+        pulseGold: {
+          from: { boxShadow: "0 0 0 0 rgba(197, 168, 128, 0.4)" },
+          to: { boxShadow: "0 0 0 10px rgba(197, 168, 128, 0)" },
+        },
+        goldGlow: {
+          "0%, 100%": {
+            boxShadow: "0 0 15px -3px rgba(197, 168, 128, 0.35), 0 0 6px -2px rgba(197, 168, 128, 0.2)",
+          },
+          "50%": {
+            boxShadow: "0 0 25px 2px rgba(197, 168, 128, 0.6), 0 0 10px 1px rgba(197, 168, 128, 0.35)",
+          },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
+      },
+      animation: {
+        fadeIn: "fadeIn 0.4s ease-out forwards",
+        fadeUp: "fadeUp 0.5s ease-out forwards",
+        "fade-in": "fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "slide-up": "slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "gold-glow": "goldGlow 3s ease-in-out infinite",
+        shimmer: "shimmer 2s infinite linear",
+        pulseGold: "pulseGold 2s infinite",
+        float: "float 4s ease-in-out infinite",
+      },
     },
   },
   plugins: [],

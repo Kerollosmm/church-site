@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
 import { PARISH_ADDRESS_AR, PARISH_NAME_AR } from "@/lib/constants";
-import { getActivities, getAltars, getChurchMeetings, getClergy, getClinicSpecialties, getSchoolsAcademies } from "@/lib/queries";
+import { getActivities, getAltars, getChurchMeetings, getClergy, getSchoolsAcademies } from "@/lib/queries";
 import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
 import { localized } from "@/lib/i18n/localized";
 import { t, type MessageKey } from "@/lib/i18n/messages";
@@ -57,8 +57,8 @@ const INTRO_PARAGRAPHS: readonly Bilingual[] = [
     en: `The Church of Saints Maximus & Domadius and St. Moses the Black is one of the parishes of the Diocese of East Alexandria in the Coptic Orthodox Church, serving the people of Asafra Bahary and the surrounding area.`,
   },
   {
-    ar: `تجمع الكنيسة بين الحياة الطقسية من قداسات إلهية وعشيات، والخدمة الرعوية من تربية كنسية واجتماعات ومدارس، والخدمة المجتمعية من مستوصف طبي خيري وقاعة عزاء وأنشطة متنوعة لجميع الأعمار.`,
-    en: `The parish's life brings together its liturgical life of Divine Liturgies and vespers, its pastoral service of Sunday schools, meetings and church schools, and its community service of a charitable medical clinic, a condolence hall and activities for every age.`,
+    ar: `تجمع الكنيسة بين الحياة الطقسية من قداسات إلهية وعشيات، والخدمة الرعوية من تربية كنسية واجتماعات ومدارس، والخدمة المجتمعية من قاعة عزاء وأنشطة متنوعة لجميع الأعمار.`,
+    en: `The parish's life brings together its liturgical life of Divine Liturgies and vespers, its pastoral service of Sunday schools, meetings and church schools, and its community service of a condolence hall and activities for every age.`,
   },
   {
     ar: `هذه البوابة هي الموقع العام للكنيسة: مواعيد القداسات والخدمات متاحة للجميع دون أي تسجيل دخول، ولا تُنشر فيها أي بيانات اعتراف أو سجلات مالية داخلية.`,
@@ -99,10 +99,9 @@ export default async function AboutPage(): Promise<React.ReactElement> {
 
   try {
     locale = await getLocale();
-    const [altars, clergy, specialties, meetings, activities, schools] = await Promise.all([
+    const [altars, clergy, meetings, activities, schools] = await Promise.all([
       getAltars(),
       getClergy(),
-      getClinicSpecialties(),
       getChurchMeetings(),
       getActivities(),
       getSchoolsAcademies(),
@@ -111,7 +110,6 @@ export default async function AboutPage(): Promise<React.ReactElement> {
     const allStats: { key: MessageKey; value: number }[] = [
       { key: "about.statAltars", value: altars.length },
       { key: "about.statClergy", value: clergy.length },
-      { key: "about.statClinicSpecialties", value: specialties.length },
       { key: "about.statMeetings", value: meetings.length },
       { key: "about.statActivities", value: activities.length },
       { key: "about.statSchools", value: schools.length },

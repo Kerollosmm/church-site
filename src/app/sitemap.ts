@@ -35,8 +35,6 @@ const STATIC_ROUTES: readonly StaticRoute[] = [
   { path: "/about/altars", changeFrequency: "monthly", priority: 0.6 },
   { path: "/about/clergy", changeFrequency: "monthly", priority: 0.6 },
   { path: "/masses", changeFrequency: "daily", priority: 0.8 },
-  { path: "/clinics", changeFrequency: "weekly", priority: 0.7 },
-  { path: "/clinics/specialties", changeFrequency: "monthly", priority: 0.6 },
   { path: "/meetings", changeFrequency: "monthly", priority: 0.6 },
   { path: "/education", changeFrequency: "monthly", priority: 0.6 },
   { path: "/activities", changeFrequency: "weekly", priority: 0.6 },

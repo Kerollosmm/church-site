@@ -3,14 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Stethoscope, Video, HeartHandshake, Phone } from "lucide-react";
+import { Calendar, CalendarDays, Video, HeartHandshake, Phone } from "lucide-react";
 
 export function QuickActionBar() {
   const pathname = usePathname();
 
   const actions = [
     { href: "/masses", label: "القداسات", icon: Calendar },
-    { href: "/clinics", label: "المستوصف", icon: Stethoscope },
+    { href: "/events", label: "الفعاليات", icon: CalendarDays },
     { href: "/live", label: "البث المباشر", icon: Video },
     { href: "/condolence", label: "قاعة العزاء", icon: HeartHandshake },
     { href: "/contact", label: "اتصل بنا", icon: Phone },

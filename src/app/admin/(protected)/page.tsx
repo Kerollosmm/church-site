@@ -4,7 +4,6 @@ import {
   Calendar,
   CalendarDays,
   HeartHandshake,
-  Stethoscope,
   Users,
   CheckCircle2,
   Clock,
@@ -15,7 +14,6 @@ import {
 } from "lucide-react";
 import {
   getChurchMeetings,
-  getClinicSpecialties,
   getCondolenceBookings,
   getWeeklyMasses,
 } from "@/lib/queries";
@@ -26,9 +24,8 @@ export const metadata = {
 };
 
 export default async function AdminDashboardPage() {
-  const [masses, specialties, meetings, bookingsRead] = await Promise.all([
+  const [masses, meetings, bookingsRead] = await Promise.all([
     getWeeklyMasses(),
-    getClinicSpecialties(),
     getChurchMeetings(),
     getCondolenceBookings(),
   ]);
@@ -80,14 +77,6 @@ export default async function AdminDashboardPage() {
       icon: HeartHandshake,
       href: "/admin/bookings",
       color: "bg-amber-50 text-amber-800 border-amber-200",
-    },
-    {
-      title: "عيادات المستوصف",
-      value: `${specialties.length} عيادة`,
-      desc: `${specialties.length} تخصصاً طبياً مجهزاً`,
-      icon: Stethoscope,
-      href: "/admin/clinics",
-      color: "bg-emerald-50 text-emerald-800 border-emerald-200",
     },
     {
       title: "قطاعات التربية الكنسية",
@@ -172,12 +161,6 @@ export default async function AdminDashboardPage() {
             <li className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <span>
-                <strong>معيار المستوصف:</strong> الدليل طبي استاتيكي موثوق، ولا يتم عرض تيكر للاعتذارات لحماية خصوصية الأطباء والمرضى.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              <span>
                 <strong>معيار الوصولية WCAG 2.1 AA:</strong> تباين ألوان عالي ومناسب لكبار السن مع دعم كامل للغة العربية واتجاه RTL.
               </span>
             </li>
@@ -238,13 +221,6 @@ export default async function AdminDashboardPage() {
               className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
             >
               <span className="font-bold text-slate-800">عرض جداول ومواعيد القداسات الحالية</span>
-              <ArrowLeft className="w-4 h-4 text-copticNavy" />
-            </Link>
-            <Link
-              href="/admin/clinics"
-              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition border border-slate-200"
-            >
-              <span className="font-bold text-slate-800">مراجعة بيانات العيادات التخصصية وأرقام الغرف</span>
               <ArrowLeft className="w-4 h-4 text-copticNavy" />
             </Link>
           </div>

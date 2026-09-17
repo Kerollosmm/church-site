@@ -94,7 +94,8 @@ export type AuditEntityType =
   | "taxonomy_term"
   | "event_terms"
   | "media"
-  | "subscriber";
+  | "subscriber"
+  | "mass";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -104,6 +105,7 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event_terms: "وسوم فعالية",
   media: "ملف وسائط",
   subscriber: "مشترك في التنبيهات",
+  mass: "قداس",
 };
 
 // ============================================================================

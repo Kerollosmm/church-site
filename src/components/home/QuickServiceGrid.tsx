@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import {
   Calendar,
-  Stethoscope,
+  Sparkles,
   BookOpen,
   GraduationCap,
   Users,
@@ -14,7 +14,6 @@ import {
   MapPin,
   ArrowLeft,
 } from "lucide-react";
-import { SEED_CLINIC_SPECIALTIES } from "@/lib/data/seed-data";
 
 export function QuickServiceGrid() {
   const services = [
@@ -26,11 +25,11 @@ export function QuickServiceGrid() {
       tag: "مواعيد حية",
     },
     {
-      title: "المستوصف الخيري",
-      desc: `${SEED_CLINIC_SPECIALTIES.length} عيادة تخصصية بأحدث الأجهزة وكشف رمزي`,
-      icon: Stethoscope,
-      href: "/clinics",
-      tag: "خدمة طبية",
+      title: "الاجتماعات الروحية وخدمة الشباب",
+      desc: "اجتماعات الشباب والعائلات والخريجين والنهضات الروحية الدورية",
+      icon: Sparkles,
+      href: "/meetings",
+      tag: "خدمة روحية",
     },
     {
       title: "قاعة العزاء",

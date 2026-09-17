@@ -31,7 +31,7 @@ export function DonationAccountsList({ accounts }: DonationAccountsListProps) {
       <PageHero
         title="الحسابات البنكية وقنوات العطاء الرسمي"
         englishTitle="Official Parish Bank Accounts & Donations"
-        description="المساهمة الرسمية لدعم المذبح، خدمة إخوة الرب المتعففين، المستوصف الخيري، وأعمال الصيانة الكنسية عبر البنوك المصرية المعتمدة."
+        description="المساهمة الرسمية لدعم المذبح، خدمة إخوة الرب المتعففين، وأعمال الصيانة الكنسية ومرافق الخدمات عبر البنوك المصرية المعتمدة."
         breadcrumbs={[{ label: "التبرعات والعطاء" }]}
         icon={<DollarSign className="w-8 h-8 text-copticGold-300" />}
       />

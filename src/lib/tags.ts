@@ -9,7 +9,6 @@ export const REVALIDATION_TAGS = {
   /** Media library metadata. */
   eventMedia: "event-media",
   masses: "masses",
-  clinicSpecialties: "clinic-specialties",
   meetings: "meetings",
   education: "education",
   activities: "activities",

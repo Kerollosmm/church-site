@@ -8,7 +8,6 @@ import {
   X,
   Church,
   Calendar,
-  Stethoscope,
   BookOpen,
   HeartHandshake,
   Video,
@@ -46,6 +45,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "الرئيسية" },
     {
+      href: "/about",
       label: "عن الكنيسة",
       children: [
         { href: "/about", label: t(locale, "nav.about") },
@@ -56,7 +56,6 @@ export function Header() {
     },
     { href: "/masses", label: "مواعيد القداسات" },
     { href: "/events", label: t(locale, "nav.events") },
-    { href: "/clinics", label: "المستوصف الطبي" },
     { href: "/meetings", label: "التربية الكنسية" },
     { href: "/ministries", label: t(locale, "nav.ministries") },
     { href: "/education", label: "المدارس والمعاهد" },
@@ -142,8 +141,8 @@ export function Header() {
                     onMouseEnter={() => setAboutDropdownOpen(true)}
                     onMouseLeave={() => setAboutDropdownOpen(false)}
                   >
-                    <button
-                      type="button"
+                    <Link
+                      href={item.href || "/about"}
                       className={`px-3 py-2 rounded-lg flex items-center gap-1 transition-colors ${
                         isChildActive
                           ? "text-copticNavy font-bold bg-copticGold-50"
@@ -152,7 +151,7 @@ export function Header() {
                     >
                       {item.label}
                       <ChevronDown className="w-3.5 h-3.5 text-copticGold-700" />
-                    </button>
+                    </Link>
 
                     {aboutDropdownOpen && (
                       <div className="absolute right-0 top-full pt-1 w-56 animate-in fade-in-50">
@@ -198,6 +197,12 @@ export function Header() {
           {/* Mobile Hamburger Button */}
           <div className="xl:hidden flex items-center gap-2">
             <Link
+              href="/events"
+              className="bg-copticGold-50 text-copticNavy border border-copticGold-300 text-xs px-2.5 py-1 rounded-lg font-bold"
+            >
+              الفعاليات
+            </Link>
+            <Link
               href="/masses"
               className="bg-copticGold-50 text-copticNavy border border-copticGold-300 text-xs px-2.5 py-1 rounded-lg font-bold"
             >
@@ -222,8 +227,14 @@ export function Header() {
             if (item.children) {
               return (
                 <div key={item.label} className="border-b border-copticGold-100 pb-2">
-                  <div className="font-heading font-bold text-xs text-copticGold-800 px-2 py-1">
-                    {item.label}
+                  <div className="px-2 py-1">
+                    <Link
+                      href={item.href || "/about"}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="font-heading font-bold text-xs text-copticGold-800 hover:text-copticNavy transition-colors"
+                    >
+                      {item.label}
+                    </Link>
                   </div>
                   <div className="grid grid-cols-1 gap-1 pr-3">
                     {item.children.map((child) => (
