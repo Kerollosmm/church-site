@@ -28,6 +28,7 @@ Files are named with a timestamp prefix so that lexicographic order == apply ord
 | 10 | `migrations/20260916090900_subscribers.sql` | notification subscribers: `locale_enum`, `subscribers` (`email` UNIQUE, `topics TEXT[]`, `confirmed_at`, `is_active`) + its indexes, and the new `notify` value of `audit_action_enum` |
 | 11 | `migrations/20260916091000_subscribers_rls_policies.sql` | RLS on `subscribers`: **no public read and no public insert policy at all** — staff `SELECT`/`UPDATE` through `is_staff()`, and no `DELETE` policy (stopping a subscription is `is_active = FALSE`) |
 | 12 | `migrations/20260916120000_media_storage.sql` | media storage: `media` bucket in `storage.buckets`, `storage_path` + `checksum` on `public.media`, RLS on `storage.objects` (public read, staff write for `admin`/`secretary`) |
+| 13 | `migrations/20260916130000_content_types.sql` | content types engine: `field_type_enum`, `content_status_enum`, tables `content_types`, `content_fields`, `content_entries`, GIN and composite indexes, RLS policies (public read of active types/fields and published entries; staff read/write for `admin`/`secretary`) |
 
 Applying in any other order fails: types must exist before tables, tables before
 indexes/policies, and `normalize_arabic()` before `bible_verses`.
@@ -39,7 +40,9 @@ entries, including `event_series.default_term_ids`, an array whose elements are 
 application because PostgreSQL cannot express an FK over array elements). The repository that reads
 them lives in `src/lib/store/supabase-driver.ts`.
 
-File 12 (`20260916120000_media_storage.sql`) provisions Supabase Storage infrastructure for Phase 2 media uploads (`media` bucket, storage RLS policies, and `storage_path`/`checksum` columns on `public.media`). Note: this is migration 12; future Phase 3 CMS/Content-Types shifts to migration 13.
+File 12 (`20260916120000_media_storage.sql`) provisions Supabase Storage infrastructure for Phase 2 media uploads (`media` bucket, storage RLS policies, and `storage_path`/`checksum` columns on `public.media`).
+
+File 13 (`20260916130000_content_types.sql`) provisions the schema-driven Content Types CMS Engine for Phase 3: custom content types, customizable dynamic fields with validation rules and options, JSONB content entries with status lifecycle (`draft`, `published`, `archived`), GIN indexing, and strict RLS isolation.
 
 ## Mandatory manual bootstrap step
 
