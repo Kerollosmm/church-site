@@ -4,6 +4,7 @@
 - **Date**: 2026-09-17
 - **Deciders**: Lead Architect, Parish Priest Council, Senior Engineering Lead
 - **Invariants**: **INV-01 (Strict Separation of Public Portal and Private ERP)**, **Fault Isolation Invariant**
+- **Implementation**: Implemented in Phase 1 (Monorepo Split)
 
 ---
 

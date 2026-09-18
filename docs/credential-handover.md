@@ -23,13 +23,13 @@ exist, where each one is used, how to rotate it, and what breaks while it is bei
 | # | Credential | Where it comes from | Where it is used | Public? | Rotate how often |
 | :-: | :--- | :--- | :--- | :--- | :--- |
 | 1 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | every Supabase client; also selects the store driver | public (it is in the browser bundle) | only if the project moves |
-| 2 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | same page | the public read path (`src/lib/supabase/public.ts`) — RLS-constrained | public | on suspicion, and annually |
-| 3 | `SUPABASE_SERVICE_ROLE_KEY` | same page (**reveal once**) | server only: `src/lib/supabase/admin.ts` → the public write path, and the store driver's public `subscribe()` | **SECRET — server only** | annually, and immediately on any leak or staff departure |
+| 2 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | same page | the public read path (`packages/data-access/src/supabase/public.ts`) — RLS-constrained | public | on suspicion, and annually |
+| 3 | `SUPABASE_SERVICE_ROLE_KEY` | same page (**reveal once**) | server only: `packages/data-access/src/supabase/admin.ts` → the public write path, and the store driver's public `subscribe()` | **SECRET — server only** | annually, and immediately on any leak or staff departure |
 | 4 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare → Turnstile → your widget | renders the widget in the four public forms | public | with the secret (they are a pair) |
-| 5 | `TURNSTILE_SECRET_KEY` | same page | server only: `src/lib/security/turnstile.ts` | **SECRET — server only** | with the site key |
+| 5 | `TURNSTILE_SECRET_KEY` | same page | server only: `apps/web/src/lib/security/turnstile.ts` | **SECRET — server only** | with the site key |
 | 6 | `NEXT_PUBLIC_SITE_URL` | you (the parish domain) | canonical URLs / metadata | public | only if the domain changes |
 | 7 | `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` | the parish's channel | `/live` link block | public | only if the channel changes |
-| 8 | `YOUTUBE_API_KEY` | Google Cloud console | **nothing yet** (Phase 2) — do not create it until the polling feature exists | secret if it ever exists | n/a |
+| 8 | `YOUTUBE_API_KEY` | Google Cloud console | **Not needed** — Phase 4 adopted direct URL embed normalization (ADR-0004) without external API dependencies | n/a | n/a |
 | 9 | Supabase database password (and `SUPABASE_DB_URL`) | Supabase → Database → Connection string | `pg_dump`/`pg_restore` (`docs/backup-restore.md`) — **not** used by the application | **SECRET — operator only** | quarterly, and on any operator change |
 | 10 | Host account (Vercel / server SSH) | the host | deployments, env vars | **SECRET** | on any maintainer change; enable 2FA |
 | 11 | Supabase account / project ownership | the parish's e-mail | the database and Auth | **SECRET** | transfer ownership to a parish-controlled address |
@@ -52,13 +52,14 @@ Knowing the consumer is what tells you the blast radius of a rotation:
 
 | Variable | Read by | Consumer |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | `src/lib/env.ts` → `getSupabaseUrl()` | all three Supabase clients, and `hasSupabaseAdminEnv()` (driver selection) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `src/lib/env.ts` → `getSupabaseAnonKey()` | `src/lib/supabase/public.ts` (public reads), `hasSupabaseEnv()` (admin session) |
-| `SUPABASE_SERVICE_ROLE_KEY` | `src/lib/env.ts` → `getSupabaseServiceRoleKey()` | `src/lib/supabase/admin.ts` only — the public write path and the store's public `subscribe()` |
-| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | read **literally** in `src/components/security/TurnstileWidget.tsx` (so Next inlines it into the browser bundle) and via `getTurnstileSiteKey()` for the "is the token mandatory" rule | the widget |
-| `TURNSTILE_SECRET_KEY` | `src/lib/security/turnstile.ts` | server-side verification of every public form |
-| `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` | `src/lib/env.ts` | metadata + `/live` |
-| `CHURCH_DATA_DIR`, `EVENTS_SUBSCRIPTIONS_ENABLED`, `MAIL_PROVIDER` | read directly at call time (`src/lib/store/json-store.ts`, `src/lib/env.ts`, `src/lib/notify/mailer.ts`) | operational switches — **not secrets**; see `docs/runbook.md` §3 |
+| `NEXT_PUBLIC_SUPABASE_URL` | `packages/data-access/src/env.ts` → `getSupabaseUrl()` | all three Supabase clients, and `hasSupabaseAdminEnv()` (driver selection) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `packages/data-access/src/env.ts` → `getSupabaseAnonKey()` | `packages/data-access/src/supabase/public.ts` (public reads), `hasSupabaseEnv()` (admin session) |
+| `SUPABASE_SERVICE_ROLE_KEY` | `packages/data-access/src/env.ts` → `getSupabaseServiceRoleKey()` | `packages/data-access/src/supabase/admin.ts` only — the public write path and the store's public `subscribe()` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | read **literally** in `apps/web/src/components/security/TurnstileWidget.tsx` (so Next inlines it into the browser bundle) and via `getTurnstileSiteKey()` for the "is the token mandatory" rule | the widget |
+| `TURNSTILE_SECRET_KEY` | `apps/web/src/lib/security/turnstile.ts` | server-side verification of every public form |
+| `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` | `packages/data-access/src/env.ts` | metadata + `/live` |
+| `CHURCH_DATA_DIR`, `EVENTS_SUBSCRIPTIONS_ENABLED`, `MAIL_PROVIDER` | read directly at call time (`packages/data-access/src/store/json-store.ts`, `packages/data-access/src/env.ts`, `packages/data-access/src/notify/mailer.ts`) | operational switches — **not secrets**; see `docs/runbook.md` §3 |
+| `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | `packages/data-access/src/notify/resend-mailer.ts` | transactional email delivery via built-in `fetch` |
 
 A useful property of this codebase: **nothing reads the environment at import time**. Every value is
 read at call time, so a wrong variable surfaces as a specific error or a logged fallback line rather

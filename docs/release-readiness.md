@@ -11,30 +11,36 @@ Companions: `BACKEND_AND_DATA_SPEC.md` §9 (operational security + go-live check
 
 ## 1. Automated gates
 
-Run from the repository root, in this order. All five are expected to exit **0**.
+Run from the repository root, in this order:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm exec tsc --noEmit          # type-check
-pnpm run lint                   # eslint .
-pnpm run build                  # MUST run with no application env vars set
-pnpm audit --prod               # production dependency audit
+pnpm typecheck                     # TypeScript check across web, admin, packages
+pnpm run lint                      # eslint .
+pnpm test                          # vitest unit & integration test suite (452/452 passed)
+pnpm --filter web build            # MUST run with no application env vars set (54/54 static routes)
+pnpm --filter admin build          # admin application build
+pnpm --filter web e2e:web          # Playwright E2E browser test suite (4/4 passed)
+pnpm audit --prod                  # production dependency audit
 ```
 
 | # | Gate | Command | Pass condition | Last verified |
 | :-: | :--- | :--- | :--- | :--- |
-| 1 | Type-check | `pnpm exec tsc --noEmit` | exit 0, no output | 2026-09-16 — exit 0 |
-| 2 | Lint | `pnpm run lint` | exit 0, 0 errors / 0 warnings | 2026-09-16 — exit 0, 0/0 |
-| 3 | Build (no env) | `pnpm run build` | exit 0, `✓ Generating static pages (52/52)` + 4 dynamic `/admin` routes | 2026-09-16 — exit 0, 52/52 |
-| 4 | Audit | `pnpm audit --prod` | `No known vulnerabilities found` | 2026-09-16 — exit 0 |
-| 5 | CI | `.github/workflows/ci.yml` | green on the release commit | not yet run on GitHub |
+| 1 | Type-check | `pnpm typecheck` | exit 0, no output/errors across monorepo | 2026-09-18 — exit 0 |
+| 2 | Lint | `pnpm run lint` | exit 0, 0 errors / 0 warnings | 2026-09-18 — exit 0, 0/0 |
+| 3 | Tests (Unit/Integ) | `pnpm test` | exit 0, 452/452 tests passing (Vitest) | 2026-09-18 — exit 0, 452/452 |
+| 4 | Web Build (no env) | `pnpm --filter web build` | exit 0, `✓ Generating static pages (54/54)` | 2026-09-18 — exit 0, 54/54 |
+| 5 | Admin Build | `pnpm --filter admin build` | exit 0, dynamic admin routes generated cleanly | 2026-09-18 — exit 0 |
+| 6 | E2E Browser Tests | `pnpm --filter web e2e:web` | exit 0, 4/4 Chromium Playwright tests passing | 2026-09-18 — exit 0, 4/4 |
+| 7 | Audit | `pnpm audit --prod` | `No known vulnerabilities found` | 2026-09-18 — exit 0 |
+| 8 | CI | `.github/workflows/ci.yml` | green on the release commit | locally verified |
 
 ### The no-env build invariant
 
 The portal is static-first and **must** build and serve with an empty environment: the query layer
-(`src/lib/queries.ts`) falls back to the seeded dataset and logs a structured line per query
+(`packages/data-access/src/queries.ts`) falls back to the seeded dataset and logs a structured line per query
 (`[queries] database read skipped { query, served: 'seed-data', reason: 'environment_not_configured' }`).
-Gate 3 is therefore only meaningful when no application variable is present. Guard — the same check
+Gate 4 is therefore only meaningful when no application variable is present. Guard — the same check
 the CI workflow runs before the build:
 
 ```bash
@@ -54,37 +60,39 @@ hides a broken seed fallback.
 
 | Variable | Needed for | Consumed by | If missing |
 | :--- | :--- | :--- | :--- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | `src/lib/env.ts` → all three clients | public reads fall back to seed data; writes and `/admin` fail closed |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key (RLS-constrained) | `src/lib/env.ts` | same as above |
-| `SUPABASE_SERVICE_ROLE_KEY` | server-only write path | `src/lib/supabase/admin.ts` | every public form returns a "service unavailable" message |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | `packages/data-access/src/env.ts` → all clients | public reads fall back to seed data; writes and `/admin` fail closed |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon key (RLS-constrained) | `packages/data-access/src/env.ts` | same as above |
+| `SUPABASE_SERVICE_ROLE_KEY` | server-only write path | `packages/data-access/src/supabase/admin.ts` | every public form returns a "service unavailable" message |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | renders the Turnstile widget | `src/components/security/TurnstileWidget.tsx` (literal `process.env` reference, inlined into the browser bundle) | forms render without the widget — acceptable in dev, **not** in production |
-| `TURNSTILE_SECRET_KEY` | server-side token verification | `src/lib/security/turnstile.ts` | **FAIL CLOSED in production**: every public submission is rejected |
-| `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` *(optional)* | link to the parish channel | `src/lib/env.ts` → `/live` | `/live` shows «لم تُضبط قناة البث الرسمية على هذا الموقع بعد» |
-| `NEXT_PUBLIC_SITE_URL` | canonical URL / sitemap | **not consumed by any code yet** | no effect today — see §5 |
-| `YOUTUBE_API_KEY` *(optional, Phase 2)* | automatic broadcast-status polling | **not consumed by any code yet** | no effect today |
-| `CHURCH_DATA_DIR` *(optional, server-only)* | data directory of the file-backed events store | `src/lib/store/json-store.ts` (`getStoreDataDir()`) | defaults to `<repo>/.data` (gitignored); set it to move the store, e.g. onto a mounted volume |
-| `EVENTS_SUBSCRIPTIONS_ENABLED` *(optional, server-only)* | public "subscribe to updates" form + its server action | `src/lib/env.ts` (`isEventSubscriptionsEnabled()`) → `/subscribe`, `/events`, `/admin/subscribers` | treated as ENABLED. Set it to `0`/`false`/`off`/`no` to switch the public feature off (the action refuses, the form is replaced by a notice) |
-| `MAIL_PROVIDER` *(optional, server-only)* | selects the mail implementation | `src/lib/notify/mailer.ts` (`getMailer()`) | `noop` — **no e-mail is ever sent**; the no-op mailer records a `notify` audit entry saying what would have been sent. A name that is not registered logs an error and still sends nothing |
+| `TURNSTILE_SECRET_KEY` | server-side token verification | `apps/web/src/lib/security/turnstile.ts` | **FAIL CLOSED in production**: every public submission is rejected |
+| `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` *(optional)* | link to the parish channel | `packages/data-access/src/env.ts` → `/live` | `/live` shows «لم تُضبط قناة البث الرسمية على هذا الموقع بعد» |
+| `NEXT_PUBLIC_SITE_URL` | canonical URL / sitemap | `packages/data-access/src/env.ts` → sitemap/metadata | falls back to default origin |
+| `YOUTUBE_API_KEY` *(optional)* | external API integration | **not needed** — Phase 4 adopted direct URL embed normalization (ADR-0004) | no effect |
+| `CHURCH_DATA_DIR` *(optional, server-only)* | data directory of the file-backed events store | `packages/data-access/src/store/json-store.ts` (`getStoreDataDir()`) | defaults to `<repo>/.data` (gitignored); set it to move the store, e.g. onto a mounted volume |
+| `EVENTS_SUBSCRIPTIONS_ENABLED` *(optional, server-only)* | public "subscribe to updates" form + its server action | `packages/data-access/src/env.ts` (`isEventSubscriptionsEnabled()`) → `/subscribe`, `/events`, `/admin/subscribers` | treated as ENABLED. Set it to `0`/`false`/`off`/`no` to switch the public feature off (the action refuses, the form is replaced by a notice) |
+| `MAIL_PROVIDER` *(optional, server-only)* | selects the mail implementation | `packages/data-access/src/notify/mailer.ts` (`getMailer()`) | `noop` (default, simulated) or `resend` (Phase 5 real delivery via built-in `fetch`) |
+| `RESEND_API_KEY` *(required if `MAIL_PROVIDER=resend`, server-only)* | Resend API authentication key | `packages/data-access/src/notify/resend-mailer.ts` | server-only (`re_...`); missing key falls back to `noop` with loud warning |
+| `RESEND_FROM_EMAIL` *(required if `MAIL_PROVIDER=resend`, server-only)* | verified sender address (e.g. `alerts@stmaximus.church`) | `packages/data-access/src/notify/resend-mailer.ts` | server-only; must match verified domain in Resend |
 
 Additionally, the events repository switches driver on **`NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`**
-being present together (`hasSupabaseAdminEnv()` in `src/lib/env.ts` → `src/lib/store/index.ts`). With
+being present together (`hasSupabaseAdminEnv()` in `packages/data-access/src/env.ts` → `packages/data-access/src/store/index.ts`). With
 either one missing, the portal runs on the file-backed JSON driver — which is the supported no-env
 mode, not a degraded one.
 
-Secrets: `SUPABASE_SERVICE_ROLE_KEY` and `TURNSTILE_SECRET_KEY` are server-side only and must never
+Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET_KEY`, and `RESEND_API_KEY` are server-side only and must never
 be prefixed with `NEXT_PUBLIC_`. The only client-side variables are the two `NEXT_PUBLIC_` Turnstile
-and Supabase values plus the optional channel URL.
+and Supabase values plus the optional channel URL and site URL.
 
 ---
 
 ## 3. Database
 
-Apply the eleven migrations in lexicographic (= apply) order, then run the manual bootstrap. Full
+Apply the fourteen migrations in lexicographic (= apply) order, then run the manual bootstrap. Full
 rationale and the apply table live in `supabase/README.md`.
 
 ```bash
 # via the Supabase CLI, against the release project
-supabase db push          # or paste the files into the SQL editor in numeric order
+supabase db push          # applies migrations 01 through 14 in order
 ```
 
 Mandatory manual step — there is no other path to a first admin:
@@ -95,21 +103,22 @@ UPDATE profiles SET role = 'admin' WHERE id = '<uuid-of-first-admin>';
 
 ### Post-apply verification (all counts expected exactly)
 
-Counts below are the totals after **all eleven** files (they were 21/40/21/9 when only the seven base
-files existed; files 8–9 added the events layer, files 10–11 the subscribers table):
+Counts below are the totals after **all fourteen** migration files:
 
 ```sql
-SELECT count(*) FROM pg_tables    WHERE schemaname = 'public';                                  -- 29
-SELECT count(*) FROM pg_policies  WHERE schemaname = 'public';                                  -- 56
+SELECT count(*) FROM pg_tables    WHERE schemaname = 'public';                                  -- 33
+SELECT count(*) FROM pg_policies  WHERE schemaname = 'public';                                  -- 62
 SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-       WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity;                     -- 29
+       WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relrowsecurity;                     -- 33
 SELECT count(*) FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace
-       WHERE n.nspname = 'public' AND t.typtype = 'e';                                          -- 15 enums
+       WHERE n.nspname = 'public' AND t.typtype = 'e';                                          -- 18 enums
 
 -- constraint / index names the application matches on (errors are translated by name)
 SELECT conname FROM pg_constraint WHERE conname = 'condolence_bookings_booking_reference_code_key';
 SELECT indexname FROM pg_indexes   WHERE indexname = 'uq_condolence_active_date';
 SELECT conname FROM pg_constraint WHERE conname IN ('subscribers_email_key', 'uq_taxonomy_term_dimension_slug', 'uq_event_exception_occurrence');
+SELECT conname FROM pg_constraint WHERE conname = 'uq_content_entries_type_slug';
+SELECT indexname FROM pg_indexes   WHERE indexname = 'idx_parish_videos_public_active';
 ```
 
 Then verify the public read/write paths end to end on the live project:

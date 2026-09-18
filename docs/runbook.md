@@ -126,17 +126,17 @@ route became dynamic or failed.
 
 ## 6. Database migrations
 
-Eleven SQL files in `supabase/migrations/`, named so that lexicographic order = apply order. Nothing in
+Fourteen SQL files in `supabase/migrations/`, named so that lexicographic order = apply order. Nothing in
 them seeds data. The apply table, the first-admin bootstrap and the RLS boundary live in
 `supabase/README.md`.
 
 ```bash
 # A. with the Supabase CLI, linked to the target project
 supabase link --project-ref <project-ref>
-supabase db push                 # applies every pending file in order
+supabase db push                 # applies every pending file in order (01 through 14)
 
 # B. without the CLI: paste the files into the SQL editor in numeric order
-#    (Supabase dashboard → SQL Editor → New query → one file at a time, 01 → 11)
+#    (Supabase dashboard → SQL Editor → New query → one file at a time, 01 → 14)
 ```
 
 **Before applying anything to production: take a database backup** (`docs/backup-restore.md` §2) and
@@ -198,7 +198,7 @@ what make that fast.
 | Driver | Data location | Backup |
 | :--- | :--- | :--- |
 | `json` (file) | `<repo>/.data/church-store.json`, or `$CHURCH_DATA_DIR/church-store.json` | copy the file (§`docs/backup-restore.md` §1) |
-| `supabase` | the project's PostgreSQL database | `pg_dump` (§`docs/backup-restore.md` §2) |
+| `supabase` | the project's PostgreSQL database | Supabase Managed Backups (PITR + daily automatic backups) or pg_dump / supabase db dump (§`docs/backup-restore.md` §2) |
 
 Notes on the file store:
 
@@ -207,10 +207,7 @@ Notes on the file store:
 - Every mutation is **one atomic write** (a temporary file in the same directory, then `rename`), and
   the mutation plus its audit line are in that single document: a crash can never leave a change
   recorded without its audit entry.
-- The document carries a `schemaVersion` (currently **2**). A version-1 document is upgraded in place
-  on read and rewritten at version 2 by the next mutation — logged as
-  `[store] upgraded the file-backed store document { from: 1, to: 2 }`. An unsupported version fails
-  loudly instead of being replaced by the seed.
+- The document carries a `schemaVersion` (currently **4**; Phase 3 added Content Types at version 3, Phase 4 added Parish Videos at version 4). Older schema documents are automatically upgraded in place on read and rewritten at version 4 by subsequent mutations — logged as `[store] upgraded the file-backed store document`. An unsupported future or corrupt version fails loudly instead of being replaced by the seed.
 - The write queue is **per process**. Two Node processes sharing one data directory are not
   coordinated: never point two instances at the same `.data/` directory. That is what the Supabase
   driver is for.
@@ -244,9 +241,9 @@ curl -s -o /dev/null -w "%{http_code} /\n"           http://localhost:3000/
 curl -s -o /dev/null -w "%{http_code} /events\n"     http://localhost:3000/events
 curl -s -o /dev/null -w "%{http_code} /subscribe\n"  http://localhost:3000/subscribe
 
-# 2. the admin area fails CLOSED when there is no session
-curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" http://localhost:3000/admin
-#    expected: 307 -> /admin/login?reason=session
+# 2. the admin area fails CLOSED when there is no session (Admin App on port 3001)
+curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}\n" http://localhost:3001/
+#    expected: 307 -> /login?reason=session
 
 # 3. the six security headers are present on a static page
 curl -sD - -o /dev/null http://localhost:3000/masses | head -20
@@ -267,8 +264,8 @@ Server log lines worth watching (all structured, all greppable):
 | `[notify] would-send — NO EMAIL IS SENT` | a subscription was stored and nothing was e-mailed |
 | `[events] capability denied { capability, role, userId }` | an admin attempted something their role does not allow (also recorded in the audit log) |
 
-Operational content checks (behind the login): `/admin` shows real counts, `/admin/audit` lists every
-mutation, `/admin/events` shows the driver and «آخر تعديل على المحتوى».
+Operational content checks (behind the login on `http://localhost:3001` or `admin.<parish-domain>`): `/` shows real counts, `/audit` lists every
+mutation, `/events` shows the driver and «آخر تعديل على المحتوى», `/content-types` and `/videos` list dynamic collections.
 
 ---
 

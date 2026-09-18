@@ -4,6 +4,7 @@
 - **Date**: 2026-09-17
 - **Deciders**: Lead Architect, Senior Engineering Lead, Parish Content Operations
 - **Invariants**: **INV-01 (Zero-Auth Public Portal Isolation)**, **Zero-Code Content Extensibility**, **Dual-Driver Parity**
+- **Implementation**: Implemented in Phase 3 (Content Types Engine)
 
 ---
 

@@ -59,7 +59,7 @@
   - **منشور (Published)**: معروضة مباشرة لزوار الموقع العام.
   - **مؤرشف (Archived)**: محجوبة عن الجمهور ومحفوظة في السجلات.
 
-### هـ. شاشة إضافة وتعديل المحتوى (`/content/[type]/new` و `/content/[type]/[entryId]`)
+### هـ. شاشة إضافة وتعديل المحتوى (`/content/[type]/new` و `/content/[type]/[slug]/edit`)
 1. **العنوان بالعربية والإنجليزية**: العنوان الرئيسي للمشاركة.
 2. **الرابط المخصص (Slug)**: رابط الصفحة (مثال: `st-catherine-trip-2026`).
 3. **الحقول المخصصة**: يقوم النظام تلقائياً بتوليد نماذج الإدخال المناسبة لكل حقل قمت بتعريفه.
@@ -72,8 +72,8 @@
 ## 4. كيف يظهر المحتوى للجمهور؟
 
 - **بدون تسجيل دخول إطلاقاً (Zero-Auth)**: لا يحتاج شعب الكنيسة لأي حساب أو كلمة مرور للاطلاع على المحتوى.
-- **رابط قائمة القسم**: `https://church-domain.org/content/[type]`
-  - مثال: `https://church-domain.org/content/trips` يعرض كافة الرحلات المنشورة.
-- **رابط المشاركة الواحدة**: `https://church-domain.org/content/[type]/[slug]`
-  - مثال: `https://church-domain.org/content/trips/st-catherine-trip-2026`
+- **رابط قائمة القسم**: `https://<parish-domain>/content/[type]` (أو `https://stmaximus.church/content/[type]`)
+  - مثال: `https://<parish-domain>/content/trips` يعرض كافة الرحلات المنشورة.
+- **رابط المشاركة الواحدة**: `https://<parish-domain>/content/[type]/[slug]`
+  - مثال: `https://<parish-domain>/content/trips/st-catherine-trip-2026`
 - **التصميم المتوافق**: يدعم الوضعين المضيء والليلي، ومصمم خصيصاً للقراءة باللغة العربية (RTL) والأجهزة المحمولة.
