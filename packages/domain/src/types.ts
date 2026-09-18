@@ -101,7 +101,8 @@ export type AuditEntityType =
   | "content_entry"
   | "video"
   | "service"
-  | "navigation";
+  | "navigation"
+  | "asset";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -118,6 +119,7 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   video: "فيديو",
   service: "خدمة كنسية",
   navigation: "شريط التنقل",
+  asset: "أصل خارجي",
 };
 
 // ============================================================================
@@ -393,6 +395,10 @@ export interface MediaRecord {
   uploadedBy: string | null;
   createdAt: string;
   isPublic: boolean;
+  sourceUrl?: string | null;
+  resolvedUrl?: string | null;
+  host?: string | null;
+  kind?: string | null;
 }
 
 export interface MediaCreateInput {
@@ -405,6 +411,10 @@ export interface MediaCreateInput {
   altAr?: string | null;
   altEn?: string | null;
   isPublic?: boolean;
+  sourceUrl?: string | null;
+  resolvedUrl?: string | null;
+  host?: string | null;
+  kind?: string | null;
 }
 
 export type MediaUpdateInput = Partial<MediaCreateInput>;

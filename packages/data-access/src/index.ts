@@ -38,3 +38,4 @@ export * from "./videos/normalize-video-url";
 export * from "./videos/public-videos";
 export * from "./facilities/index";
 export * from "./navigation/index";
+export * from "./assets/index";

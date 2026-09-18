@@ -81,7 +81,9 @@ export type Capability =
   | "services:delete"
   // --- navigation (CMS) ---
   | "navigation:read"
-  | "navigation:write";
+  | "navigation:write"
+  // --- external assets ---
+  | "assets:link";
 
 /** What a `viewer` may do: read everything the event system exposes to the portal. */
 const READ_ONLY_CAPABILITIES = [
@@ -128,6 +130,7 @@ const EDITOR_CAPABILITIES = [
   "videos:write",
   "services:write",
   "navigation:write",
+  "assets:link",
   // Editing the notification list is an editorial act (retiring a subscription), not a destructive
   // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
   "subscribers:write",
@@ -238,6 +241,7 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "services:delete": "حذف خدمة",
   "navigation:read": "قراءة عناصر شريط التنقل",
   "navigation:write": "تعديل وترتيب شريط التنقل",
+  "assets:link": "ربط أصل خارجي",
 };
 
 /**
@@ -292,6 +296,7 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "services:delete": "service",
   "navigation:read": "navigation",
   "navigation:write": "navigation",
+  "assets:link": "asset",
 };
 
 /**
@@ -352,6 +357,7 @@ export interface AdminCapabilities {
   servicesDelete: boolean;
   navigationRead: boolean;
   navigationWrite: boolean;
+  assetsLink: boolean;
 }
 
 /** Derives the screen-facing capability set from ONE role, through the same `can()` table. */
@@ -387,6 +393,7 @@ export function resolveAdminCapabilities(role: AdminRole | null): AdminCapabilit
     servicesDelete: can(role, "services:delete"),
     navigationRead: can(role, "navigation:read"),
     navigationWrite: can(role, "navigation:write"),
+    assetsLink: can(role, "assets:link"),
   };
 }
 

@@ -20,3 +20,4 @@ export * from "./videos/trusted-embeds";
 export * from "./videos/normalize-video-url";
 export * from "./facilities/seed-facilities";
 export * from "./navigation/seed-nav";
+export * from "./assets/index";

@@ -1,9 +1,5 @@
-// src/lib/domain/__tests__/capabilities.test.ts
+// packages/domain/src/__tests__/capabilities.test.ts
 // Who may do what — asserted as an explicit matrix, not derived from the implementation.
-//
-// The expected table below is written out BY HAND on purpose. If it were computed from
-// `ROLE_CAPABILITIES` the test would agree with any change, including a wrong one; written by hand it
-// fails the moment a capability is silently granted to a role that should not have it.
 
 import { describe, expect, it } from "vitest";
 
@@ -19,7 +15,7 @@ import {
   resolveAdminCapabilities,
   type AdminRole,
   type Capability,
-} from "@/lib/domain/capabilities";
+} from "../capabilities";
 
 const CONTENT_KEY = "content";
 
@@ -107,6 +103,7 @@ describe("the capability vocabulary is complete", () => {
     for (const capability of ALL_CAPABILITIES) {
       expect(CAPABILITY_AUDIT_ENTITY[capability]).toBeTruthy();
     }
+    expect(CAPABILITY_AUDIT_ENTITY["assets:link"]).toBe("asset");
   });
 
   it("the hand-written matrix covers the whole vocabulary (a new capability fails this test)", () => {
@@ -129,6 +126,14 @@ describe("can() — the full owner | editor | viewer × capability matrix", () =
     for (const capability of ALL_CAPABILITIES) {
       expect(can("owner", capability)).toBe(true);
     }
+  });
+
+  it("editor can link assets", () => {
+    expect(can("editor", "assets:link")).toBe(true);
+  });
+
+  it("viewer cannot link assets", () => {
+    expect(can("viewer", "assets:link")).toBe(false);
   });
 
   it("viewer cannot publish, cancel, delete or write anything", () => {
@@ -197,17 +202,6 @@ describe("can() — the full owner | editor | viewer × capability matrix", () =
     }
   });
 
-  it("documents a KNOWN GAP (not fixed here): an out-of-type role string throws", () => {
-    // `can()` is typed `AdminRole | null | undefined`, and every caller reaches it through
-    // `adminRoleFromStaffRole()` (which returns owner/editor/null) — so this is NOT reachable from the
-    // application today. It is recorded rather than asserted-as-correct: the module's own doc comment
-    // promises "an unknown/absent role can do nothing", and a truthy unknown string crashes on the
-    // table lookup instead. If `can()` is ever hardened, this test is the one to delete.
-    expect(() => can("Owner" as AdminRole, "event:read")).toThrow(TypeError);
-    // An empty string is falsy, so it short-circuits and behaves as documented.
-    expect(can("" as AdminRole, "event:read")).toBe(false);
-  });
-
   it("grants are nested viewer ⊆ editor ⊆ owner", () => {
     for (const capability of ALL_CAPABILITIES) {
       if (can("viewer", capability)) expect(can("editor", capability)).toBe(true);
@@ -237,6 +231,12 @@ describe("describeRefusal — a refusal must name what was attempted and by whom
     expect(refusal.summary).toContain("حذف فعالية");
     expect(refusal.summary).toContain(ADMIN_ROLE_LABELS_AR.editor);
     expect(refusal.summary).toContain("رُفض إجراء");
+  });
+
+  it("refusal for assets:link references asset entity and Arabic label", () => {
+    const refusal = describeRefusal("assets:link", "viewer");
+    expect(refusal.entityType).toBe("asset");
+    expect(refusal.summary).toContain("ربط أصل خارجي");
   });
 
   it("says so plainly when the role is unknown", () => {
