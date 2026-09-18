@@ -453,5 +453,70 @@ git diff 47200df -- supabase/migrations/
 bash .scratch/phase5-gates/live-email-smoke.sh
 ```
 
+## 19. Phase 6: Final Documentation & Playwright E2E — Verification & Review
+
+### 19.1 Scope & Architecture Overview
+Phase 6 concludes the complete v2 roadmap of the Coptic Orthodox Parish Portal with two final milestones:
+1. **End-to-End (E2E) Browser Verification with Playwright**: Pinned `@playwright/test@1.63.0` as a development dependency at the root. Configured `apps/web/playwright.config.ts` targeting headless Desktop Chromium against the local Next.js standalone web server (`port 3000`). Designed 4 core journeys testing public dynamic content listing, rich article reading, honest empty states, and privacy-enhanced parish video embeds (`youtube-nocookie.com`).
+2. **Comprehensive Documentation & Handover Readiness**: Authored `docs/phase6-docs-e2e.md`, refreshed `docs/release-readiness.md` with Gate 6 (E2E Browser Tests), updated `docs/deployment-split.md` and `docs/admin-guide.md` with dynamic content and video management workflows.
+
+### 19.2 Per-Commit Audit Table for Phase 6
+
+| Commit | Step | Description | Verification Gates Run | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| `ef9e93d` | Task 1 | `test(e2e): scaffold playwright` — Root `@playwright/test` 1.63.0, `playwright.config.ts`, `e2e:web` script | `pnpm --filter web typecheck`, Playwright smoke | **GREEN** |
+| `ae44e59` | Task 2 | `test(e2e): public dynamic content and videos journeys` — 4 browser journeys, 4 PNG screenshots | Playwright Chromium (4/4 passed), Vitest (452/452 passed) | **GREEN** |
+| `c722f25` | Task 2 | `docs(memory-bank): sync phase 6 task 2 completion` — Memory Bank sync for Task 2 | Memory Bank read & sync | **GREEN** |
+| `ef4fe9c` | Task 3 | `docs: finalize documentation and e2e guide` — `phase6-docs-e2e.md`, runbook & readiness updates | Typechecks, lint, docs cross-reference | **GREEN** |
+| `HEAD` | Task 4 | `docs: phase 6 e2e guide, review and memory-bank sync` — Gates G1–G10 evidence, honesty disclosure, Section 19, Memory Bank close | G1–G10 full verification run | **GREEN** |
+
+### 19.3 Final Verification Gates Table (G1–G10)
+
+| Gate | Check | Pass Condition | Result | Evidence File |
+| :--- | :--- | :--- | :--- | :--- |
+| **G1** | Web TypeScript Validation | `pnpm --filter web typecheck` (0 errors) | **PASS (0 errors)** | `.scratch/phase6-gates/g1-web-tsc.txt` |
+| **G2** | Admin TypeScript Validation | `pnpm --filter admin typecheck` (0 errors) | **PASS (0 errors)** | `.scratch/phase6-gates/g2-admin-tsc.txt` |
+| **G3** | Monorepo Linting | `eslint .` across workspace (0 errors) | **PASS (0 errors)** | `.scratch/phase6-gates/g3-lint.txt` |
+| **G4** | Test Suite (Vitest) | 100% tests passing across 32 test files (452/452 tests green) | **PASS (452/452 green)** | `.scratch/phase6-gates/g4-tests.txt` |
+| **G5** | Web Production Build | `pnpm --filter web build` with 0 env vars (54/54 static routes) | **PASS (54/54 static pages)** | `.scratch/phase6-gates/g5-web-build.txt` |
+| **G6** | E2E Browser Testing & Honesty | 4/4 Chromium journeys green, 4 screenshots captured, admin honesty disclosed | **PASS (4/4 green, 4 screenshots)** | `.scratch/phase6-gates/g6-e2e-report.txt`<br/>`.scratch/phase6-gates/g6-honesty.txt`<br/>`.scratch/phase6-gates/g6-screenshots/` |
+| **G7** | History Preservation | `git log -n 10 --oneline` and `git log --follow apps/web/src/app/content/[type]/page.tsx` | **PASS (History Preserved)** | `.scratch/phase6-gates/g7-git-log.txt` |
+| **G8** | DB Migration Immutability | `git diff dee191f -- supabase/migrations/` (0 changed files) | **PASS (0 diffs against baseline)** | `.scratch/phase6-gates/g8-git-status.txt` |
+| **G9** | Dependency Audit | `git diff dee191f -- pnpm-lock.yaml` (confirm ONLY @playwright/test 1.63.0 added) | **PASS (Only @playwright/test@1.63.0 added)** | `.scratch/phase6-gates/g9-lockfile.txt` |
+| **G10** | Security & Documentation Freshness | Zero secrets leaked, zero Supabase client in apps/web, docs & code symbols synchronized | **PASS (All invariants intact)** | `.scratch/phase6-gates/g10-inv01.txt`<br/>`.scratch/phase6-gates/g10-secrets.txt`<br/>`.scratch/phase6-gates/g10-docs.txt` |
+
+### 19.4 Known Gaps & Substitutions (Honesty Disclosure)
+
+1. **Public Browser Journeys**: Fully validated in a real Chromium browser via Playwright. Dynamic content listing (`/content/article`), detail view (`/content/article/orthodox-patristic-treasures`), empty category rendering (`/content/sermon`), and parish video embed (`/about`) execute without warnings or layout glitches in RTL mode (`dir="rtl"`).
+2. **Admin Authentication Constraint**: In `apps/admin`, administrative functions require live Supabase staff credentials (`requireStaff()`). In zero-env offline test execution, unauthenticated requests fail closed and redirect to `/login`. No artificial authentication mock or bypass was introduced in `apps/admin`, in strict accordance with Architectural Invariant INV-01 and Constraint §4.
+3. **CMS Write-Path Guarantee**: The full content creation, publication, toggle, and deletion lifecycle is 100% verified via integration test suites (`apps/admin/src/actions/__tests__/content-actions.test.ts` 9/9 passing; `packages/data-access/src/store/__tests__/e2e-content-proof.test.ts` 1/1 passing; `packages/data-access/src/store/__tests__/e2e-videos-proof.test.ts` 1/1 passing).
+
+### 19.5 Reviewer Can Re-Verify Phase 6 With:
+
+```bash
+# 1. Typecheck both applications
+pnpm --filter web typecheck
+pnpm --filter admin typecheck
+
+# 2. Lint entire monorepo
+pnpm lint
+
+# 3. Run full Vitest suite (452 tests across 32 files)
+pnpm test
+
+# 4. Zero-env build of public portal (asserting 54/54 static pages)
+pnpm --filter web build
+
+# 5. Run Playwright E2E browser test suite (Chromium headless)
+pnpm --filter web e2e:web
+
+# 6. Verify zero database schema modifications during Phase 6
+git diff dee191f -- supabase/migrations/
+
+# 7. Verify only @playwright/test was added to dependencies
+git diff dee191f -- pnpm-lock.yaml package.json
+```
+
+
 
 

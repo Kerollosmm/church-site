@@ -1,14 +1,28 @@
 # Progress — سجل الإنجاز
 
-## يعمل الآن (Phase 6 E2E Journeys & Deliverables — In Progress)
-- [x] **Task 2: Public dynamic content and videos journeys (`ae44e59`)**:
-  * حذف السقالة المؤقتة `apps/web/e2e/scaffold.spec.ts`.
-  * إضافة بيانات العينات في `apps/web/.data/church-store.json` لـ `contentEntries` و`parishVideos`.
-  * أجنحة اختبارات E2E لرحلات المحتوى الديناميكي العام `apps/web/e2e/content.spec.ts` (3 رحلات: الفهرس، التفاصيل، الحالة الفارغة الصادقة).
-  * أجنحة اختبارات E2E لرحلات فيديوهات الكنيسة `apps/web/e2e/videos.spec.ts` (فيديوهات الكنيسة في `/about` والمضمن الآمن).
-  * 4 لقطات شاشة موثقة في `.scratch/phase6-gates/g6-screenshots/`.
-  * 4/4 فحوصات Playwright ناجحة 100% في Chromium موثقة في `.scratch/phase6-gates/g6-e2e-report.txt`.
-  * 452/452 فحص وحدات في Vitest خضراء 100% (32 ملفاً).
+## يعمل الآن (Phase 6 Final Documentation & Playwright E2E — 100% Complete & Verified)
+- [x] **إتمام المرحلة السادسة بالكامل وخاتمة خارطة طريق الإصدار الثاني (All 6 Phases 100% Complete & Verified)**:
+  * **سقالة Playwright واختبارات المتصفح E2E**:
+    - تثبيت حزمة `@playwright/test@1.63.0` في جذر المستودع كـ devDependency.
+    - إعداد `apps/web/playwright.config.ts` مستهدفاً متصفح Chromium في وضع headless وبأبعاد سطح المكتب الكاملة مع تشغيل خادم Next.js المحلي تلقائياً على المنفذ 3000.
+    - إضافة سكربت `e2e:web` في جذر المستودع وحزمة الويب.
+  * **الرحلات الأربع للمتصفح الحقيقي (100% Real Browser Journeys)**:
+    - رحلة فهرس المحتوى الديناميكي `/content/article`: التحقق من اتجاه RTL، والترويسة، وبطاقة المقال المخصصة.
+    - رحلة قراءة المقال التفصيلي `/content/article/orthodox-patristic-treasures`: التحقق من سلامة العرض والنص الغني والاتجاه.
+    - رحلة الحالة الفارغة الصادقة `/content/sermon`: إثبات عرض رسالة الخلو التام بدون فبركة أو بيانات وهمية.
+    - رحلة مرئيات الكنيسة في صفحة `/about`: التحقق من عنوان القسم ومضمن الفيديو الآمن (`youtube-nocookie.com`).
+    - التقاط 4 لقطات شاشة كاملة (Full-page PNG) محفوظة في `.scratch/phase6-gates/g6-screenshots/`.
+    - اجتياز كامل لـ 4/4 فحوصات في Playwright Chromium خلال 10.3 ثانية.
+  * **إفصاح الأمانة المعمارية ومسار الكتابة الإدارية**:
+    - توثيق اشتراط المصادقة الصارم `requireStaff()` في `apps/admin`، والفشل المغلق عند غياب الجلسة نحو صفحة الدخول `/login` التزاماً بثابت INV-01.
+    - إثبات اكتمال دورة الكتابة 100% عبر أجنحة اختبارات التكامل وخادم الإجراءات ومحرك مخزن الملفات (9/9 فحوصات إجراءات المحتوى، واختبار E2E الشامل لإثبات دورة المحتوى، واختبار E2E الشامل لدورة الفيديوهات).
+  * **التوثيق النهائي وجاهزية النشر**:
+    - دليل شامل لاختبارات المتصفح وإجراءات الصيانة `docs/phase6-docs-e2e.md`.
+    - تحديث مصفوفة الجاهزية `docs/release-readiness.md` بالبوابة السادسة وتحديث أدلة النشر والإدارة و`REVIEW.md` (القسم 19).
+  * **إحصائيات الاختبارات وبوابات التحقق**:
+    - 452/452 فحص وحدات وتكامل ناجحة 100% في Vitest عبر 32 ملفاً.
+    - 4/4 رحلات E2E ناجحة في متصفح Playwright Chromium مع 4 لقطات شاشة.
+    - اجتياز بوابات التحقق العشر كاملة G1 إلى G10 بنجاح 100% وتوثيقها في `.scratch/phase6-gates/`.
 
 ## يعمل الآن (Phase 5 Hardening — 100% Complete & Verified)
 - [x] **إتمام مرحلة التقسية وتأمين بيئة الإنتاج والبريد الفعلي وسجل التدقيق (Phase 5 Hardening)**:

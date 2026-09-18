@@ -1,15 +1,31 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-18)
-- **المرحلة السادسة (Phase 6 E2E Journeys & Deliverables — قيد التقدم)**:
-  * **Task 2: Public dynamic content and videos journeys (`ae44e59`)**:
-    - حذف السقالة المؤقتة `apps/web/e2e/scaffold.spec.ts`.
-    - إضافة بيانات العينات في `apps/web/.data/church-store.json` لـ `contentEntries` (كنوز الآباء الأرثوذكسية) و`parishVideos` (صلوات عشية وتسبحة نصف الليل).
-    - إضافة اختبارات `apps/web/e2e/content.spec.ts` تغطي الرحلات الثلاث (عرض القائمة RTL، تفاصيل المقال، والحالة الصادقة لخلو العظات) والتقاط الشاشات.
-    - إضافة اختبارات `apps/web/e2e/videos.spec.ts` تغطي رحلة عرض فيديوهات الكنيسة في صفحة `/about` والمشغل الآمن `youtube-nocookie` والتقاط الشاشة.
-    - تأكيد اجتياز Playwright بـ 4/4 فحوصات خضراء في Chromium وحفظ المخرجات في `.scratch/phase6-gates/g6-e2e-report.txt`.
-    - تأكيد وجود لقطات الشاشة الأربع في `.scratch/phase6-gates/g6-screenshots/`.
-    - تأكيد بقاء كافة اختبارات الوحدات خضراء 100% في Vitest (32 ملفاً، 452/452 فحصاً ناجحاً).
+- **المرحلة السادسة (Phase 6 Final Documentation & Playwright E2E — 100% Complete & Verified)**:
+  * **اكتملت خارطة طريق الإصدار الثاني بالكامل (V2 Roadmap 100% Complete & Closed)**:
+    - كافة المراحل الست (Phase 1 Monorepo Split، Phase 2 Media Storage، Phase 3 Content Types Engine، Phase 4 Parish Videos، Phase 5 Hardening، Phase 6 Playwright E2E & Final Handover Docs) **مكتملة ومُحققة بالكامل 100%**.
+  * **سلسلة التزامات المرحلة السادسة (`ef9e93d`..`HEAD`)**:
+    1. `ef9e93d` `test(e2e): scaffold playwright` — تثبيت `@playwright/test@1.63.0` في جذر المستودع، وإعداد `apps/web/playwright.config.ts` وسكربت التشغيل `e2e:web`.
+    2. `ae44e59` `test(e2e): public dynamic content and videos journeys` — 4 رحلات E2E حقيقية في متصفح Chromium و4 لقطات شاشة كاملة.
+    3. `c722f25` `docs(memory-bank): sync phase 6 task 2 completion` — مزامنة سجلات بنك الذاكرة.
+    4. `ef4fe9c` `docs: finalize documentation and e2e guide` — توثيق `docs/phase6-docs-e2e.md` وتحديث بوابات الجاهزية وأدلة النشر والإدارة.
+    5. `HEAD` `docs: phase 6 e2e guide, review and memory-bank sync` — إثباتات بوابات التحقق الكاملة G1–G10، وإفصاح الأمانة المعمارية، وتحديث `REVIEW.md` (القسم 19)، وإغلاق بنك الذاكرة.
+  * **إحصائيات الاختبارات**: 32 ملف اختبار وحدات/تكامل، **452/452 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest + **4/4 رحلات متصفح E2E حقيقية ناجحة في Chromium (Playwright)**.
+  * **بوابات التحقق الصلبة للمرحلة السادسة (G1–G10 All Passed & Verified)**:
+    - G1: فحص الأنواع لتطبيق الويب = 0 أخطاء (`.scratch/phase6-gates/g1-web-tsc.txt`).
+    - G2: فحص الأنواع لتطبيق الإدارة = 0 أخطاء (`.scratch/phase6-gates/g2-admin-tsc.txt`).
+    - G3: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase6-gates/g3-lint.txt`).
+    - G4: اختبارات الوحدات = 32 ملفاً (452 فحصاً ناجحاً 100%) (`.scratch/phase6-gates/g4-tests.txt`).
+    - G5: بناء الويب بصفر متغيرات بيئة = 54/54 مساراً ثابتاً (`.scratch/phase6-gates/g5-web-build.txt`).
+    - G6: اختبارات المتصفح E2E الحقيقية = 4/4 رحلات خضراء و4 لقطات شاشة وإفصاح الأمانة المعمارية (`.scratch/phase6-gates/g6-e2e-report.txt`، `g6-honesty.txt`، `g6-screenshots/`).
+    - G7: حفظ سجل Git للملفات الأساسية عبر `git log` (`.scratch/phase6-gates/g7-git-log.txt`).
+    - G8: هجرات قاعدة البيانات ثابتة بنسبة 100% (صفر تعديل على ملفات الهجرة) (`.scratch/phase6-gates/g8-git-status.txt`).
+    - G9: تدقيق التبعيات = إضافة `@playwright/test@1.63.0` فقط كـ devDependency (`.scratch/phase6-gates/g9-lockfile.txt`).
+    - G10: ثوابت الأمان وعزل أسرار الخادم ومزامنة التوثيق (`.scratch/phase6-gates/g10-inv01.txt`، `g10-secrets.txt`، `g10-docs.txt`).
+  * **تسليم التوثيق**:
+    - دليل E2E واختبار المتصفح `docs/phase6-docs-e2e.md`.
+    - تحديث مصفوفة الجاهزية `docs/release-readiness.md` بالبوابة السادسة (Gate 6 Playwright E2E).
+    - تحديث `docs/deployment-split.md` و`docs/admin-guide.md` و`REVIEW.md` (القسم 19).
 - **اكتملت بالكامل واعتُمدت (Phase 5 Hardening — Verified & Complete)**:
   * **سلسلة التزامات المرحلة الخامسة (`1b29ec2`..`[HEAD]`)**:
     1. `1b29ec2` `feat(data-access): resend mailer via built-in fetch`
