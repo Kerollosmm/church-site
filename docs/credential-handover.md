@@ -33,7 +33,9 @@ exist, where each one is used, how to rotate it, and what breaks while it is bei
 | 9 | Supabase database password (and `SUPABASE_DB_URL`) | Supabase → Database → Connection string | `pg_dump`/`pg_restore` (`docs/backup-restore.md`) — **not** used by the application | **SECRET — operator only** | quarterly, and on any operator change |
 | 10 | Host account (Vercel / server SSH) | the host | deployments, env vars | **SECRET** | on any maintainer change; enable 2FA |
 | 11 | Supabase account / project ownership | the parish's e-mail | the database and Auth | **SECRET** | transfer ownership to a parish-controlled address |
-| 12 | `MAIL_PROVIDER` + provider key | — | **no provider exists**; the feature is a documented no-op (`src/lib/notify/`) | n/a | when a provider is added, its key is server-only |
+| 12 | `MAIL_PROVIDER` | deployment config | selects active mailer implementation (`resend` or `noop`) | operational switch | only when changing providers |
+| 13 | `RESEND_API_KEY` | Resend → API Keys | authenticates transactional email via built-in `fetch` | **SECRET — server only** | on suspicion or operator change |
+| 14 | `RESEND_FROM_EMAIL` | Resend → Domains | verified sender address (e.g. `alerts@stmaximus.church`) | server-side config | when sender address changes |
 
 ### Also hand over (not secrets, but you cannot run the site without them)
 
@@ -116,6 +118,39 @@ through the API keys — so the site is unaffected.
 Enable 2FA, move the account to a parish-controlled e-mail, and grant the new maintainer access with
 the least role that lets them deploy. Record who holds it in the parish office — not in this
 repository.
+
+### 3.6 Resend transactional email & domain verification
+
+When using real email delivery (`MAIL_PROVIDER=resend`):
+1. **Account setup**: Create account at [resend.com](https://resend.com) with a parish-controlled email.
+2. **Domain verification**: In Resend Dashboard → **Domains** → **Add Domain** (e.g. `stmaximus.church`).
+3. **DNS configuration**: Configure the following records at your DNS registrar:
+   - **DKIM**: TXT record named `resend._domainkey` with value provided by Resend.
+   - **SPF**: TXT record on root or subdomain with `v=spf1 include:resend.com ~all`.
+   - **MX**: MX record pointing to `feedback-smtp.resend.com` (priority 10) for bounce tracking.
+4. **API Key**: Generate a restricted or full-access API Key in Resend → **API Keys** (`re_...`).
+5. **Environment variables**:
+   - `MAIL_PROVIDER=resend`
+   - `RESEND_API_KEY=re_...`
+   - `RESEND_FROM_EMAIL=alerts@stmaximus.church` (must match verified domain).
+
+### 3.7 Supabase CLI owner login & linking
+
+To run off-app database dumps or apply schema migrations via the Supabase CLI:
+1. **Login**: In terminal, run:
+   ```bash
+   supabase login
+   ```
+   Follow the browser prompt to generate a Personal Access Token (PAT).
+2. **Link project**:
+   ```bash
+   supabase link --project-ref <your-project-ref>
+   ```
+3. **Test connectivity**:
+   ```bash
+   supabase db dump --data-only -f test_dump.sql
+   ```
+   Confirm the file is populated and remove it.
 
 ---
 

@@ -1,6 +1,31 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-18)
+- **اكتملت بالكامل واعتُمدت (Phase 5 Hardening — Verified & Complete)**:
+  * **سلسلة التزامات المرحلة الخامسة (`1b29ec2`..`[HEAD]`)**:
+    1. `1b29ec2` `feat(data-access): resend mailer via built-in fetch`
+    2. `19dcec5` `fix(data-access): fail loudly instead of seeding in production`
+    3. `a71a1ce` `feat(data-access): audit actor filter and csv export`
+    4. `e13f9de` `feat(admin): audit actor filter and csv download`
+    5. `[HEAD]` `docs: phase 5 hardening`
+  * **إحصائيات الاختبارات المحدثة**: 31 ملف اختبار، **451/451 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest (+43 فحصاً صافياً عبر Resend mailer و readOrSeed و audit CSV و actor filtering).
+  * **بوابات التحقق الصلبة للمرحلة الخامسة (G1–G10 All Passed & Verified)**:
+    - G1: فحص الأنواع لتطبيق الويب = 0 أخطاء (`.scratch/phase5-gates/g1-web-tsc.txt`).
+    - G2: فحص الأنواع لتطبيق الإدارة = 0 أخطاء (`.scratch/phase5-gates/g2-admin-tsc.txt`).
+    - G3: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase5-gates/g3-lint.txt`).
+    - G4: اختبارات الوحدات = 31 ملفاً، 451 فحصاً ناجحاً (`.scratch/phase5-gates/g4-tests.txt`).
+    - G5: بناء الويب بصفر متغيرات بيئة = 53/53 مساراً ثابتاً (`.scratch/phase5-gates/g5-web-build.txt`).
+    - G6: إثبات صلابة readOrSeed، وتصدير CSV مع BOM، ودخان البريد الحي (`.scratch/phase5-gates/g6-hardening.txt`، `live-email-smoke.sh`).
+    - G7: حفظ سجل Git للملفات الأساسية عبر `git log --follow` (`.scratch/phase5-gates/g7-git-log.txt`).
+    - G8: هجرات قاعدة البيانات ثابتة بنسبة 100% (صفر تعديل على ملفات الهجرة 1–14) (`.scratch/phase5-gates/g8-git-status.txt`).
+    - G9: صفر تغيير في التبعيات الخارجية أو `pnpm-lock.yaml` (`.scratch/phase5-gates/g9-lockfile.txt`).
+    - G10: ثوابت الأمان وعزل أسرار الخادم عن حزمة المتصفح (`.scratch/phase5-gates/g10-inv01.txt`، `g10-secrets.txt`).
+  * **تسليم التوثيق**:
+    - سجل القرار المعماري `docs/adr/0005-managed-backups-and-runbook.md`.
+    - وثيقة المعمارية التقنية للمرحلة الخامسة `docs/phase5-hardening.md`.
+    - الدليل العربي لإعداد البريد الفعلي `docs/email-setup-guide.md`.
+    - تحديث `docs/backup-restore.md`، `docs/runbook.md`، `docs/credential-handover.md`، و`REVIEW.md`.
+
 - **اكتملت بالكامل واعتُمدت (Phase 4 Parish Videos — Verified & Complete)**:
   * **سلسلة التزامات المرحلة الرابعة (`0c79601`..`[HEAD]`)**:
     1. `0c79601` `feat(domain): parish videos model and capability`

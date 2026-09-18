@@ -205,28 +205,37 @@ document {"events":2,"series":16,"terms":37,"subscribers":0,"audit":0}
 public   {"publicItems":84}   # occurrences inside the current list window; this number moves with the date
 ```
 
-### 1.6 Scheduled backups
+### 1.6 Host-level scheduled backups (File store VPS only)
 
-A cron job is enough — the store is one file:
+When running on a self-hosted Linux VPS, host-level scheduling (outside the application process) can be used:
 
 ```bash
-# daily at 02:15, keep 30 days (adjust paths)
+# host crontab (outside Node process) daily at 02:15, keep 30 days
 15 2 * * * cd /srv/church-site && mkdir -p .backups && \
   cp .data/church-store.json ".backups/church-store.$(date +\%Y\%m\%d).json" && \
   find .backups -name 'church-store.*.json' -mtime +30 -delete
 ```
 
-Store the copies somewhere that is not the same disk. Because a write replaces the whole file
-atomically, a copy is always a complete, parseable document — there is no "partially written backup"
-case to guard against.
+Store the copies somewhere that is not the same disk (e.g. off-site encrypted storage). Because a write replaces the whole file atomically, a copy is always a complete, parseable document.
 
 ---
 
-## 2. Supabase (driver `supabase`)
+## 2. Supabase (driver `supabase`) — Two Official Paths (ADR-0005)
+
+**ARCHITECTURAL INVARIANT (ADR-0005):** There is ZERO in-app cron code or dependencies. Running backup daemons inside Next.js serverless runtimes is prohibited. Backups are strictly decoupled from application processes.
+
+### Path A: Managed Automated Backups (Supabase Paid / Pro Plan — Recommended)
+- **Zero-Maintenance**: Managed entirely by Supabase infrastructure.
+- **Daily Snapshots**: Automated daily backups retained up to 7 to 30 days.
+- **Point-In-Time Recovery (PITR)**: Enables rolling back database state to any specific second in the past.
+- **Enablement**: Navigate to Supabase Dashboard → **Project Settings → Database → Backups** and toggle PITR.
+
+### Path B: Off-App CLI Dump Runbook (Supabase Free Plan / Local Archival)
+When operating on the free tier without managed PITR, the parish administrator runs external dumps off-app via the Supabase CLI or scheduled GitHub Actions.
 
 > **Status: not executed in this environment.** There is no reachable database here, so these commands
-> come from the documented procedures (`pg_dump`/`psql`, Supabase's connection-string page) and from
-> the schema in `supabase/migrations/`. Run them once on staging and correct anything that differs
+> come from the documented procedures (`supabase db dump` / `pg_dump` / `psql`) and from
+> the schema in `supabase/migrations/` (migrations 0001 through 0014). Run them once on staging and correct anything that differs
 > before relying on them.
 
 ### 2.1 Get the connection string

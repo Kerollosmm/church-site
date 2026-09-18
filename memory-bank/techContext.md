@@ -45,15 +45,15 @@
 | Next.js | `^15.5.25` (مستقل لكل من `apps/web` و`apps/admin`) |
 | postcss | `^8.5.28` كـ devDependency **و** `pnpm.overrides.postcss = "^8.5.28"` |
 | ESLint | `eslint@9.39.5` + `eslint-config-next@15.5.25` إعداد مساحة العمل flat في `eslint.config.mjs` — `pnpm run lint` = 0 أخطاء |
-| Vitest | `vitest@5.0.1` يفحص مساحة العمل بالكامل (`apps/` و`packages/`) — **274/274 فحصاً ناجحاً بنسبة 100% (12 ملفاً)** |
+| Vitest | `vitest@5.0.1` يفحص مساحة العمل بالكامل (`apps/` و`packages/`) — **451/451 فحصاً ناجحاً بنسبة 100% (31 ملفاً)** |
 | رؤوس الأمن | CSP مُنفَّذة + HSTS (15552000) + Permissions-Policy في `apps/web/next.config.ts` |
 | CI | `.github/workflows/ci.yml`: بوابات صلدة (`pnpm typecheck` + `pnpm test` + `pnpm --filter web build` بلا بيئة + `pnpm --filter admin build` + `pnpm run lint`) |
 | ثابت البناء | تطبيق `apps/web` **يجب** أن يبني بلا أي متغير بيئة (تُحقّق محلياً وفي CI بخطوة تمنع تسرّب أي متغيرات) |
 
-## قيود معروفة
+## قيود ومعالجات معروفة
 - استهداف الأداء: FCP < 800ms، LCP < 1.2s على شبكات 3G/4G المصرية.
-- إرسال واتساب آلي خارج النطاق (Phase 2) — الاشتراكات تُخزن فقط.
-- **لا مزوّد بريد**: التنبيهات تُخزَّن وتُعرض في الإدارة فقط، والوحيد المُختار `MAIL_PROVIDER=noop` الذي يُسجّل سطر تدقيق `notify` («إشعار بريدي (لم يُرسل)») ولا يُرسل شيئاً؛ ربط مزوّد حقيقي ثلاث خطوات معلَّمة في `src/lib/notify/mailer.ts`. وخطوط السجل: `[notify] would-send — NO EMAIL IS SENT`.
+- إرسال واتساب آلي خارج النطاق — الاشتراكات تُخزن فقط.
+- **مزود البريد الإلكتروني الفعلي (Phase 5 Hardening)**: دعم الإرسال الحقيقي عبر Resend (`MAIL_PROVIDER=resend`) باستخدام `fetch` المدمج في Node.js 20+، مع حفظ متغيرات البيئة السرية `RESEND_API_KEY` و`RESEND_FROM_EMAIL` على الخادم فقط. يتم تسجيل محاولات الإرسال وملاحظات الارتداد في سجل التدقيق. عند غياب المفاتيح أو اختيار `MAIL_PROVIDER=noop` يتراجع النظام صراحة لمحاكي `noopMailer` مع تسجيل تحذير في السجلات.
 - **صور دليل الإدارة غير ملتقطة**: البيئة التطويرية بلا متصفح، فالعناصر في `docs/admin-guide.md` نائبة بأسماء ملفات في `docs/images/admin/`.
 - نص الكتاب المقدس (فان دايك + أسفار ثانية) يُحمّل كبيانات بذر ضخمة — خطوة نشر مستقلة.
 - **هجرات Supabase غير منطبقة وبلا اختبار استعادة**: `pg_dump`/`pg_restore` موثّقان في `docs/backup-restore.md` §2 وموسومان «غير مختبَرين» حتى يُجريا مرة على staging.

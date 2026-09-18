@@ -387,4 +387,71 @@ bash .scratch/phase4-gates/live-videos-smoke.sh
 powershell -ExecutionPolicy Bypass -File .scratch/phase4-gates/live-videos-smoke.ps1
 ```
 
+---
+
+## 18. Phase 5: Production Hardening, Real Transactional Email & Deeper Audit UX
+
+### 18.1 Architectural Context & Goals
+Phase 5 executes the final operational hardening of the parish portal across four pillars:
+1. **Real Transactional Email via Resend**: Implemented via built-in Node 20+ `fetch` (zero third-party SDK dependencies, zero lockfile drift). Honest delivery semantics (2xx -> delivered: true; 4xx/5xx/network error -> delivered: false with descriptive note). Logs delivery attempts as audit notes on the subscriber row under actor `"نظام إرسال البريد (Resend)"`. Seam consolidated by deleting stale re-exports in `apps/web/src/lib/notify/` in favor of direct `@church-site/data-access` imports.
+2. **Production Database Integrity (`readOrSeed`)**: When `NODE_ENV === "production"` and Supabase is configured (`hasSupabaseEnv()`), any query error, empty result, or unexpected exception THROWS immediately. Serving fake seed data during live database outages or misconfigurations is strictly prohibited. Zero-env build and dev/test seed fallbacks remain intact.
+3. **Deeper Audit Trail UX**: Added `actor?: string` filtering across repository drivers (`json-driver` and `supabase-driver`), query parameter handling in `/admin/audit`, and RFC-4180 compliant CSV export featuring UTF-8 BOM (`\uFEFF`) for clean Arabic display in Microsoft Excel.
+4. **Managed Backup Policy & Runbooks**: Adopted ADR-0005 rejecting in-app cron daemons in serverless runtimes. Documented official managed PITR backups (paid) and off-app CLI dump runbook (free).
+
+### 18.2 Phase 5 Per-Commit Audit Table
+
+| Commit | Step | Description | Verification Gates Run | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| `1b29ec2` | Step 3 (A) | `feat(data-access): resend mailer via built-in fetch` — Resend mailer, honest delivery, audit logging, copy branching | `pnpm --filter data-access typecheck`, `pnpm test` (423/423 passed) | **GREEN** |
+| `19dcec5` | Step 4 (B) | `fix(data-access): fail loudly instead of seeding in production` — readOrSeed production throw invariant | `pnpm test` (433/433 passed, 10 net new readOrSeed tests) | **GREEN** |
+| `a71a1ce` | Step 5 (C1) | `feat(data-access): audit actor filter and csv export` — actor filter in drivers, exportAuditCsv with UTF-8 BOM | `pnpm --filter data-access typecheck`, `pnpm test` (447/447 passed) | **GREEN** |
+| `e13f9de` | Step 5 (C2) | `feat(admin): audit actor filter and csv download` — `/admin/audit` actor search input, `/api/audit/export` route | `pnpm --filter admin typecheck`, `pnpm test` (451/451 passed) | **GREEN** |
+| `HEAD` | Step 6 (D) | `docs: phase 5 hardening` — ADR-0005, runbook updates, credential handover, email setup guide | Full gate verification G1–G10 | **GREEN** |
+
+### 18.3 Phase 5 Verification Gates Table (G1–G10)
+
+| Gate | Check | Pass Condition | Result | Evidence File |
+| :--- | :--- | :--- | :--- | :--- |
+| **G1** | Web TypeScript Validation | `pnpm --filter web typecheck` (0 errors) | **PASS (0 errors)** | `.scratch/phase5-gates/g1-web-tsc.txt` |
+| **G2** | Admin TypeScript Validation | `pnpm --filter admin typecheck` (0 errors) | **PASS (0 errors)** | `.scratch/phase5-gates/g2-admin-tsc.txt` |
+| **G3** | Monorepo Linting | `eslint .` across workspace (0 errors) | **PASS (0 errors)** | `.scratch/phase5-gates/g3-lint.txt` |
+| **G4** | Test Suite (Vitest) | 100% tests passing across 31 test files (451/451 tests green) | **PASS (451/451 green)** | `.scratch/phase5-gates/g4-tests.txt` |
+| **G5** | Web Production Build | `pnpm --filter web build` with 0 env vars (53/53 static routes) | **PASS (53/53 static pages)** | `.scratch/phase5-gates/g5-web-build.txt` |
+| **G6** | Hardening Proofs & Smoke | readOrSeed matrix, audit CSV BOM proof, mailer factory resolution, smoke test | **PASS** | `.scratch/phase5-gates/g6-hardening.txt`<br/>`.scratch/phase5-gates/live-email-smoke.sh` |
+| **G7** | History Preservation | `git log --follow` on modified core files | **PASS (History Preserved)** | `.scratch/phase5-gates/g7-git-log.txt` |
+| **G8** | DB Migration Immutability | `git diff 47200df -- supabase/migrations/` (0 changed files) | **PASS (0 diffs against origin)** | `.scratch/phase5-gates/g8-git-status.txt` |
+| **G9** | Zero Dependency Churn | `git diff 47200df -- pnpm-lock.yaml package.json` (empty diff) | **PASS (0 changes to lockfile)** | `.scratch/phase5-gates/g9-lockfile.txt` |
+| **G10** | Security & INV-01 Invariants | Zero server secrets in browser bundle, strict RLS & auth checks | **PASS (All invariants intact)** | `.scratch/phase5-gates/g10-inv01.txt`<br/>`.scratch/phase5-gates/g10-secrets.txt` |
+
+### 18.4 Reviewer Can Re-Verify Phase 5 With:
+
+```bash
+# 1. Typecheck both applications and packages
+pnpm --filter web typecheck
+pnpm --filter admin typecheck
+pnpm --filter data-access typecheck
+
+# 2. Lint entire monorepo
+pnpm lint
+
+# 3. Run full Vitest suite (451 tests across 31 files)
+pnpm test
+
+# 4. Zero-env build of public portal (asserting 53/53 static pages)
+pnpm --filter web build
+
+# 5. Build admin dashboard
+pnpm --filter admin build
+
+# 6. Verify zero dependency additions
+git diff 47200df -- pnpm-lock.yaml package.json
+
+# 7. Verify zero database schema modifications
+git diff 47200df -- supabase/migrations/
+
+# 8. Run Phase 5 email smoke script
+bash .scratch/phase5-gates/live-email-smoke.sh
+```
+
+
 

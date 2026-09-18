@@ -57,9 +57,11 @@ both the read path and the store driver without a code change.
 | `YOUTUBE_API_KEY` | optional (Phase 2) | automatic broadcast-status polling | no effect today — no code consumes it yet |
 | `CHURCH_DATA_DIR` | optional | data directory of the file store | defaults to `<repo>/.data` |
 | `EVENTS_SUBSCRIPTIONS_ENABLED` | optional | public "subscribe to updates" feature | **enabled**. Set it to `0`, `false`, `off` or `no` to switch the public form off (the server action refuses and `/subscribe` shows a notice) |
-| `MAIL_PROVIDER` | optional | selects the mail implementation | `noop` — **no e-mail is ever sent** (see §9) |
+| `MAIL_PROVIDER` | optional | selects the mail implementation | `noop` (default, simulated) or `resend` (Phase 5 real delivery via built-in `fetch`) |
+| `RESEND_API_KEY` | required if `MAIL_PROVIDER=resend` | Resend API key (`re_...`) | server-only; missing key falls back to `noop` with loud warning |
+| `RESEND_FROM_EMAIL` | required if `MAIL_PROVIDER=resend` | verified sender address (e.g. `alerts@stmaximus.church`) | server-only |
 
-Secrets rule: `SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET_KEY` and any future mail credential are
+Secrets rule: `SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET_KEY`, `RESEND_API_KEY` are
 **server-side only** and must never be prefixed `NEXT_PUBLIC_`. Only the two public Turnstile/Supabase
 values, the channel URL and the site URL are readable by the browser.
 
@@ -215,22 +217,22 @@ Notes on the file store:
 
 ---
 
-## 9. E-mail and notifications — what the site does NOT do
+## 9. E-mail and notifications (Phase 5 Hardening)
 
-There is **no mail provider**. This is not a bug and not a missing configuration: it is the current,
-documented state.
+The notification system supports two providers configured via `MAIL_PROVIDER`:
 
-- The public form at `/subscribe` stores an e-mail address (idempotently — the same address is never
-  stored twice, and an address that was stopped is revived rather than duplicated).
-- The parish office sees the list at `/admin/subscribers` and can stop/restart a subscription.
-- The notification step runs through `src/lib/notify/`: `getMailer()` returns the **no-op** mailer,
-  which logs `[notify] would-send — NO EMAIL IS SENT` and appends an `audit_log` entry of action
-  `notify` («إشعار بريدي (لم يُرسل)») describing what would have been sent.
-- Both the public confirmation message and the admin screen state plainly that nothing is e-mailed.
+1. **`MAIL_PROVIDER=noop` (Default)**:
+   - When unset or set to `noop`, no emails are sent.
+   - Used for zero-env builds, offline operations, and local development.
+   - Logs `[notify] would-send — NO EMAIL IS SENT` and appends an `audit_log` note.
+   - Both the public `/subscribe` form and admin screen state plainly that no email is sent.
 
-To add a real provider later, follow the three marked steps in `src/lib/notify/mailer.ts` (add the
-credentials, implement `Mailer`, register it in `MAILER_FACTORIES`, select it with `MAIL_PROVIDER`).
-Nothing else changes: every caller already reads `deliverEmails` before claiming a delivery.
+2. **`MAIL_PROVIDER=resend` (Phase 5 Real Delivery)**:
+   - Uses native `fetch` to send transactional email through `https://api.resend.com/emails`.
+   - Requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+   - Follows honest delivery semantics: HTTP 2xx logs success with message ID; 4xx/5xx or network drops log a delivery note on the subscriber row without failing the subscription transaction.
+   - Public `/subscribe` page displays truthful copy confirming email will be sent.
+   - See `docs/email-setup-guide.md` and `docs/phase5-hardening.md` for full instructions.
 
 ---
 
