@@ -9,6 +9,7 @@ export * from "./events/ics";
 export * from "./events/filters";
 export * from "./events/admin-form";
 export * from "./events/audit-view";
+export * from "./events/audit-csv";
 export * from "./data/seed-data";
 export type * from "./events/admin";
 export * from "./utils/cairo-time";

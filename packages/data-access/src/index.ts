@@ -26,6 +26,7 @@ export * from "./events/subscribers";
 export * from "./events/admin";
 export * from "./events/admin-form";
 export * from "./events/audit-view";
+export * from "./events/audit-csv";
 export * from "./data/seed-data";
 export * from "./utils/cairo-time";
 export * from "./utils/mass-schedule";

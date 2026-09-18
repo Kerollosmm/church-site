@@ -1052,10 +1052,16 @@ export class JsonEventRepository implements EventRepository {
 
   async listAudit(filter: AuditListFilter = {}): Promise<AuditLogEntry[]> {
     const document = await readStoreDocument();
+    const actorTerm = filter.actor?.trim().toLowerCase();
     const matches = document.audit.filter((entry) => {
       if (filter.entityType && entry.entityType !== filter.entityType) return false;
       if (filter.entityId && entry.entityId !== filter.entityId) return false;
       if (filter.action && entry.action !== filter.action) return false;
+      if (actorTerm) {
+        const nameMatch = entry.actorName ? entry.actorName.toLowerCase().includes(actorTerm) : false;
+        const idMatch = entry.actorId ? entry.actorId.toLowerCase().includes(actorTerm) : false;
+        if (!nameMatch && !idMatch) return false;
+      }
       return true;
     });
     const newestFirst = [...matches].reverse().map((entry) => ({ ...entry }));

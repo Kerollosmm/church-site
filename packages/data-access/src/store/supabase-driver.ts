@@ -1371,6 +1371,15 @@ export class SupabaseEventRepository implements EventRepository {
     if (filter.entityType) query = query.eq("entity_type", filter.entityType);
     if (filter.entityId) query = query.eq("entity_id", filter.entityId);
     if (filter.action) query = query.eq("action", filter.action);
+    if (filter.actor && filter.actor.trim().length > 0) {
+      const actorTerm = filter.actor.trim();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(actorTerm);
+      if (isUuid) {
+        query = query.or(`actor_id.eq.${actorTerm},actor_name.ilike.%${actorTerm}%`);
+      } else {
+        query = query.ilike("actor_name", `%${actorTerm}%`);
+      }
+    }
 
     const { data, error } = await query;
     if (error) throw toStoreError(error, "audit.list");

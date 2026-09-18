@@ -112,6 +112,7 @@ export interface AuditListFilter {
   entityType?: AuditEntityType;
   entityId?: string;
   action?: AuditAction;
+  actor?: string;
   limit?: number;
 }
 
