@@ -14,6 +14,8 @@ import {
   BellRing,
   Layers,
   Video,
+  Building2,
+  Compass,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { signOut } from "@/actions/auth-actions";
@@ -46,6 +48,8 @@ export default async function AdminProtectedLayout({
     { href: "/masses", label: "إدارة القداسات", icon: Calendar },
     { href: "/events", label: "الفعاليات والمواعيد", icon: CalendarDays },
     { href: "/videos", label: "فيديوهات الكنيسة", icon: Video },
+    { href: "/services", label: "الخدمات والمرافق", icon: Building2 },
+    { href: "/navigation", label: "شريط التنقل", icon: Compass },
     { href: "/content-types", label: "نماذج المحتوى (CMS)", icon: Layers },
     { href: "/bookings", label: "حجوزات العزاء", icon: HeartHandshake },
     { href: "/media", label: "مكتبة الوسائط", icon: ImageIcon },
