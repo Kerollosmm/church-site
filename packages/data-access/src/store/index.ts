@@ -92,3 +92,45 @@ export function getParishVideoRepository(): ParishVideoRepository {
   return cachedVideoRepository;
 }
 
+let cachedFacilityRepository: import("../facilities").ParishFacilityRepository | null = null;
+let cachedFacilityDriver: RepositoryDriverName | null = null;
+
+let cachedNavigationRepository: import("../navigation").ParishNavigationRepository | null = null;
+let cachedNavigationDriver: RepositoryDriverName | null = null;
+
+import { JsonParishFacilityRepository } from "../facilities/facility-json-adapter";
+import { SupabaseParishFacilityRepository } from "../facilities/facility-supabase-adapter";
+import type { ParishFacilityRepository } from "../facilities/facility-repository";
+
+/**
+ * The process-wide ParishFacilityRepository.
+ * Follows identical engine selection: Supabase if admin env configured, otherwise file-store.
+ */
+export function getParishFacilityRepository(): ParishFacilityRepository {
+  const driver = selectRepositoryDriver();
+  if (cachedFacilityRepository && cachedFacilityDriver === driver) return cachedFacilityRepository;
+
+  cachedFacilityRepository =
+    driver === "supabase" ? new SupabaseParishFacilityRepository() : new JsonParishFacilityRepository();
+  cachedFacilityDriver = driver;
+  return cachedFacilityRepository;
+}
+
+import { JsonParishNavigationRepository } from "../navigation/navigation-json-adapter";
+import { SupabaseParishNavigationRepository } from "../navigation/navigation-supabase-adapter";
+import type { ParishNavigationRepository } from "../navigation/navigation-repository";
+
+/**
+ * The process-wide ParishNavigationRepository.
+ * Follows identical engine selection: Supabase if admin env configured, otherwise file-store.
+ */
+export function getParishNavigationRepository(): ParishNavigationRepository {
+  const driver = selectRepositoryDriver();
+  if (cachedNavigationRepository && cachedNavigationDriver === driver) return cachedNavigationRepository;
+
+  cachedNavigationRepository =
+    driver === "supabase" ? new SupabaseParishNavigationRepository() : new JsonParishNavigationRepository();
+  cachedNavigationDriver = driver;
+  return cachedNavigationRepository;
+}
+

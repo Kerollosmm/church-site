@@ -109,3 +109,40 @@ export function revalidateVideoSurfaces(): string[] {
   }
   return [REVALIDATION_TAGS.parishVideos, ...paths];
 }
+
+/** Invalidate cache tags and routes for parish facilities and services */
+export function revalidateServiceSurfaces(): string[] {
+  try {
+    revalidateTag(REVALIDATION_TAGS.services);
+  } catch {
+    // Safe fallback outside Next.js request lifecycle
+  }
+  const paths: string[] = ["/services", "/"];
+  for (const path of paths) {
+    try {
+      revalidatePath(path, "page");
+    } catch {
+      // Safe fallback outside Next.js request lifecycle
+    }
+  }
+  return [REVALIDATION_TAGS.services, ...paths];
+}
+
+/** Invalidate cache tags and routes for parish navigation menu */
+export function revalidateNavigationSurfaces(): string[] {
+  try {
+    revalidateTag(REVALIDATION_TAGS.navigation);
+  } catch {
+    // Safe fallback outside Next.js request lifecycle
+  }
+  const paths: string[] = ["/"];
+  for (const path of paths) {
+    try {
+      revalidatePath(path, "layout");
+    } catch {
+      // Safe fallback outside Next.js request lifecycle
+    }
+  }
+  return [REVALIDATION_TAGS.navigation, ...paths];
+}
+

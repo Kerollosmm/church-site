@@ -46,6 +46,8 @@ import {
   type TaxonomyTermRecord,
 } from "@church-site/domain";
 import { STORE_SCHEMA_VERSION, type StoreDocument } from "./document";
+import { SEED_PARISH_FACILITIES } from "../facilities/seed-facilities";
+import { SEED_NAVIGATION_ITEMS } from "../navigation/seed-nav";
 
 /** All seeded rows carry the parish's baseline timestamp (see `seed-data.ts`). */
 const SEEDED_AT = "2026-01-01T00:00:00.000Z";
@@ -670,6 +672,8 @@ export function buildSeedDocument(): StoreDocument {
     contentEntries: [],
     // Parish videos start empty until staff add real URLs (no invented video data).
     parishVideos: [],
+    facilities: SEED_PARISH_FACILITIES.map((f) => ({ ...f })),
+    navItems: SEED_NAVIGATION_ITEMS.map((item) => ({ ...item })),
     audit: [],
   };
 }

@@ -281,24 +281,7 @@ export const getActivityBySlug = async (slug: string) => {
   return activities.find((a) => a.slug === slug) ?? null;
 };
 
-export const getPublicServices = unstable_cache(
-  async () =>
-    readOrSeed<Tables<"public_services">>("getPublicServices", SEED_PUBLIC_SERVICES, async (supabase) => {
-      const { data, error } = await supabase
-        .from("public_services")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order");
-      return { data, error };
-    }),
-  ["public-services"],
-  { tags: [REVALIDATION_TAGS.services], revalidate: 3600 }
-);
-
-export const getServiceBySlug = async (slug: string) => {
-  const services = await getPublicServices();
-  return services.find((s) => s.slug === slug) ?? null;
-};
+export { getPublicServices, getServiceBySlug } from "./facilities/public-facilities";
 
 export const getNewsArticles = unstable_cache(
   async () =>

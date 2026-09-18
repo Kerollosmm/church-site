@@ -16,20 +16,25 @@ import type {
   EventSeriesRecord,
   EventTermLink,
   MediaRecord,
+  NavigationMenuItem,
+  ParishFacility,
   ParishVideo,
   SubscriberRecord,
   TaxonomyTermRecord,
 } from "@church-site/domain";
+import { SEED_PARISH_FACILITIES } from "../facilities/seed-facilities";
+import { SEED_NAVIGATION_ITEMS } from "../navigation/seed-nav";
 
 /**
- * Version 4 added the `parishVideos` collection (Phase 4 Parish Videos).
+ * Version 5 added `facilities` and `navItems` collections (Phase 7.2 Services & Navigation CMS).
  *
- * Versions 1, 2, and 3 are upgraded in memory on read (`parseStoreDocument`) and written back at
- * version 4 by the next mutation.
+ * Versions 1, 2, 3, and 4 are upgraded in memory on read (`parseStoreDocument`) and written back at
+ * version 5 by the next mutation.
  */
-export const STORE_SCHEMA_VERSION = 4;
+export const STORE_SCHEMA_VERSION = 5;
 
 /** Older layouts this build can still read and upgrade. */
+export const STORE_SCHEMA_VERSION_V4 = 4;
 export const STORE_SCHEMA_VERSION_LEGACY = 3;
 export const STORE_SCHEMA_VERSION_V2 = 2;
 export const STORE_SCHEMA_VERSION_V1 = 1;
@@ -52,6 +57,8 @@ export const STORE_COLLECTIONS = [
   "contentFields",
   "contentEntries",
   "parishVideos",
+  "facilities",
+  "navItems",
   "audit",
 ] as const;
 
@@ -73,6 +80,10 @@ export interface StoreDocument {
   contentEntries: ContentEntry[];
   /** Parish Videos (see `ParishVideo`). Added in schema version 4. */
   parishVideos: ParishVideo[];
+  /** Parish Facilities / Public Services (see `ParishFacility`). Added in schema version 5. */
+  facilities: ParishFacility[];
+  /** Navigation Menu Items (see `NavigationMenuItem`). Added in schema version 5. */
+  navItems: NavigationMenuItem[];
   /** Append-only, oldest first. */
   audit: AuditLogEntry[];
 }
@@ -102,6 +113,7 @@ export function parseStoreDocument(value: unknown): ParsedStoreDocument {
   if (
     typeof version !== "number" ||
     (version !== STORE_SCHEMA_VERSION &&
+      version !== STORE_SCHEMA_VERSION_V4 &&
       version !== STORE_SCHEMA_VERSION_LEGACY &&
       version !== STORE_SCHEMA_VERSION_V2 &&
       version !== STORE_SCHEMA_VERSION_V1)
@@ -115,13 +127,20 @@ export function parseStoreDocument(value: unknown): ParsedStoreDocument {
   if (
     version === STORE_SCHEMA_VERSION_V1 ||
     version === STORE_SCHEMA_VERSION_V2 ||
-    version === STORE_SCHEMA_VERSION_LEGACY
+    version === STORE_SCHEMA_VERSION_LEGACY ||
+    version === STORE_SCHEMA_VERSION_V4
   ) {
     if (!Array.isArray(value.subscribers)) value.subscribers = [];
     if (!Array.isArray(value.contentTypes)) value.contentTypes = [];
     if (!Array.isArray(value.contentFields)) value.contentFields = [];
     if (!Array.isArray(value.contentEntries)) value.contentEntries = [];
     if (!Array.isArray(value.parishVideos)) value.parishVideos = [];
+    if (!Array.isArray(value.facilities)) {
+      value.facilities = SEED_PARISH_FACILITIES.map((f) => ({ ...f }));
+    }
+    if (!Array.isArray(value.navItems)) {
+      value.navItems = SEED_NAVIGATION_ITEMS.map((item) => ({ ...item }));
+    }
     value.schemaVersion = STORE_SCHEMA_VERSION;
     upgradedFrom = version;
   }

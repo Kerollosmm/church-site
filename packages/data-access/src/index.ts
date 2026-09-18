@@ -36,3 +36,5 @@ export * from "./storage/index";
 export * from "./videos/trusted-embeds";
 export * from "./videos/normalize-video-url";
 export * from "./videos/public-videos";
+export * from "./facilities/index";
+export * from "./navigation/index";

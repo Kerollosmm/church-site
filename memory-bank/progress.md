@@ -1,5 +1,20 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 7.2 Services & Navigation CMS — Domain Layer Complete & Verified)
+- [x] **إتمام طبقة النطاق لمنظومة الخدمات وشريط التنقل CMS (Phase 7.2 Domain Layer)**:
+  * **حزمة النطاق `@church-site/domain`**:
+    - القدرات الأمنية: `services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`.
+    - مصفوفة الصلاحيات: إضافة القراءة لـ `READ_ONLY_CAPABILITIES`، والكتابة لـ `EDITOR_CAPABILITIES`، والحذف لـ `OWNER_ONLY_CAPABILITIES`.
+    - معجم التدقيق: إضافة التسميات العربية `CAPABILITY_LABELS_AR`، وإضافة `service` و`navigation` إلى `AuditEntityType` و`AUDIT_ENTITY_TYPE_LABELS_AR`.
+    - واجهة الشاشات: إضافة الحقول الخمسة إلى `AdminCapabilities` وحسابها بـ `can()` في `resolveAdminCapabilities`.
+    - نماذج النطاق والمدخلات: `ParishFacility`, `PublicParishFacility`, `CreateParishFacilityInput`, `UpdateParishFacilityInput`, `NavSection`, `NavigationMenuItem`, `PublicNavItem`, `CreateNavItemInput`, `UpdateNavItemInput`, `ReorderNavItemsInput`.
+    - مخطط قاعدة البيانات: إضافة جدول `nav_menu_items` بجميع أعمدته وعلاقاته، والأعمدة التراكمية لـ `public_services` في `database.types.ts`.
+  * **بوابات التحقق**:
+    - `apps/web/src/lib/domain/__tests__/capabilities.test.ts` (162/162 فحصاً أخضر).
+    - `pnpm --filter @church-site/domain typecheck` = 0 أخطاء.
+    - `pnpm typecheck` = 0 أخطاء لكامل الـ Monorepo.
+    - `pnpm test` = 33 ملف اختبار (471/471 فحصاً أخضر بنسبة 100%).
+
 ## يعمل الآن (Phase 6 Final Documentation & Playwright E2E — 100% Complete & Verified)
 - [x] **إتمام المرحلة السادسة بالكامل وخاتمة خارطة طريق الإصدار الثاني (All 6 Phases 100% Complete & Verified)**:
   * **سقالة Playwright واختبارات المتصفح E2E**:

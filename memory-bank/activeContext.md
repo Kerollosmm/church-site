@@ -1,6 +1,19 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-18)
+- **المرحلة السابعة 7.2 (Phase 7.2 Services & Navigation CMS — Domain Layer Complete & Verified)**:
+  * **حزمة النطاق `@church-site/domain`**:
+    - إضافة قدرات: `services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`.
+    - تحديث `READ_ONLY_CAPABILITIES`, `EDITOR_CAPABILITIES`, `OWNER_ONLY_CAPABILITIES`, و`ROLE_CAPABILITIES`.
+    - إضافة التسميات العربية `CAPABILITY_LABELS_AR` وربط كيانات التدقيق `CAPABILITY_AUDIT_ENTITY` (`service`, `navigation`).
+    - توسيع واجهة `AdminCapabilities` ودالة `resolveAdminCapabilities(role)` بالحقول الخمسة.
+    - تحديث `AuditEntityType` وتسمياتها العربية `AUDIT_ENTITY_TYPE_LABELS_AR`.
+    - إضافة نماذج `ParishFacility`, `PublicParishFacility`, `CreateParishFacilityInput`, `UpdateParishFacilityInput`, `NavSection`, `NavigationMenuItem`, `PublicNavItem`, `CreateNavItemInput`, `UpdateNavItemInput`, `ReorderNavItemsInput`.
+    - تحديث `Database["public"]["Tables"]` بجدول `nav_menu_items` والأعمدة التراكمية لـ `public_services`.
+  * **الاختبارات وبوابات التحقق**:
+    - تحديث `apps/web/src/lib/domain/__tests__/capabilities.test.ts` (162 فحصاً بنسبة 100% نجاح).
+    - نجاح كامل لفحص الأنواع: `pnpm --filter @church-site/domain typecheck` و`pnpm typecheck` (كافة حزم وتطبيقات مساحة العمل: packages/domain, packages/data-access, packages/ui, apps/admin, apps/web) = 0 أخطاء.
+    - نجاح كامل لاختبارات مساحة العمل: `pnpm test` = 33 ملف اختبار (471/471 فحصاً أخضر بنسبة 100%).
 - **المرحلة السادسة (Phase 6 Final Documentation & Playwright E2E — 100% Complete & Verified)**:
   * **اكتملت خارطة طريق الإصدار الثاني بالكامل (V2 Roadmap 100% Complete & Closed)**:
     - كافة المراحل الست (Phase 1 Monorepo Split، Phase 2 Media Storage، Phase 3 Content Types Engine، Phase 4 Parish Videos، Phase 5 Hardening، Phase 6 Playwright E2E & Final Handover Docs) **مكتملة ومُحققة بالكامل 100%**.

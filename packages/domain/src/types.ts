@@ -719,6 +719,20 @@ export interface PublicParishFacility {
   contactWhatsapp: string | null;
   guidelinesAr: string | null;
   displayOrder: number;
+
+  // Compatibility aliases for legacy/existing web templates
+  name_ar: string;
+  name_en: string | null;
+  service_type: string;
+  description_ar: string;
+  description_en: string | null;
+  working_hours_ar: string;
+  operating_hours_ar: string;
+  location_ar: string;
+  contact_phone: string | null;
+  contact_whatsapp: string | null;
+  guidelines_ar: string | null;
+  display_order: number;
 }
 
 export interface CreateParishFacilityInput {
