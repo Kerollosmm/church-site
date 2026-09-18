@@ -31,6 +31,7 @@ Files are named with a timestamp prefix so that lexicographic order == apply ord
 | 13 | `migrations/20260916130000_content_types.sql` | content types engine: `field_type_enum`, `content_status_enum`, tables `content_types`, `content_fields`, `content_entries`, GIN and composite indexes, RLS policies (public read of active types/fields and published entries; staff read/write for `admin`/`secretary`) |
 | 14 | `migrations/20260916140000_parish_videos.sql` | parish videos: `video_provider_enum` (`youtube`, `facebook`, `direct`), `parish_videos` table, `idx_parish_videos_public_active` index, RLS policies (public read of active/public videos; staff read/write for `admin`/`secretary`) |
 | 15 | `migrations/20260916150000_services_navigation.sql` | services & navigation CMS: additive columns on `public_services` (`name_en`, `description_en`, `updated_at`, `created_by`, `updated_by`), `nav_menu_items` table with parent-child dropdowns and section filtering (`main`/`secondary`), composite indexes, RLS policies (public read of active/public items; staff read/write for `admin`/`secretary`) |
+| 16 | `migrations/20260916160000_external_assets.sql` | external assets: additive columns on `public.media` (`source_url`, `resolved_url`, `host`, `kind`) |
 
 Applying in any other order fails: types must exist before tables, tables before
 indexes/policies, and `normalize_arabic()` before `bible_verses`.
@@ -49,6 +50,8 @@ File 13 (`20260916130000_content_types.sql`) provisions the schema-driven Conten
 File 14 (`20260916140000_parish_videos.sql`) provisions the external Parish Videos embed manager for Phase 4: `video_provider_enum` (`youtube`, `facebook`, `direct`), table `public.parish_videos` with source and normalized embed URLs, sort ordering, public/active visibility toggles, composite index on `(is_public, is_active, sort_order)`, and strict RLS policies (public read for active/public videos; staff mutations restricted to authenticated `admin`/`secretary`).
 
 File 15 (`20260916150000_services_navigation.sql`) provisions the Services & Navigation CMS for Phase 7.2: additive translations and audit tracking fields on `public.public_services`, new `public.nav_menu_items` table supporting main and secondary navbar menus, dropdown hierarchies with `parent_id`, sort ordering, active/public toggles, composite indexes, and strict RLS policies (public read for active/public menu items; staff mutations restricted to authenticated `admin`/`secretary`).
+
+File 16 (`20260916160000_external_assets.sql`) provisions external asset metadata for Phase 7.3: additive columns on `public.media` (`source_url`, `resolved_url`, `host`, `kind`) allowing third-party images and video thumbnails to be registered, resolved, and rendered safely under strict allowlist policies.
 
 ## Mandatory manual bootstrap step
 

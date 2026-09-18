@@ -861,6 +861,10 @@ export class JsonEventRepository implements EventRepository {
         uploadedBy: actor.id,
         createdAt: nowIso(),
         isPublic: input.isPublic ?? true,
+        sourceUrl: input.sourceUrl ?? null,
+        resolvedUrl: input.resolvedUrl ?? null,
+        host: input.host ?? null,
+        kind: input.kind ?? null,
       };
 
       document.media.push(record);
@@ -895,6 +899,10 @@ export class JsonEventRepository implements EventRepository {
         altAr: patch.altAr,
         altEn: patch.altEn,
         isPublic: patch.isPublic,
+        sourceUrl: patch.sourceUrl,
+        resolvedUrl: patch.resolvedUrl,
+        host: patch.host,
+        kind: patch.kind,
       });
 
       document.audit.push(

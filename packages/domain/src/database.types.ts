@@ -1520,6 +1520,10 @@ export interface Database {
           uploaded_by: string | null;
           created_at: string;
           is_public: boolean;
+          source_url: string | null;
+          resolved_url: string | null;
+          host: string | null;
+          kind: string | null;
         };
         Insert: {
           id?: string;
@@ -1532,6 +1536,10 @@ export interface Database {
           uploaded_by?: string | null;
           created_at?: string;
           is_public?: boolean;
+          source_url?: string | null;
+          resolved_url?: string | null;
+          host?: string | null;
+          kind?: string | null;
         };
         Update: {
           id?: string;
@@ -1544,6 +1552,10 @@ export interface Database {
           uploaded_by?: string | null;
           created_at?: string;
           is_public?: boolean;
+          source_url?: string | null;
+          resolved_url?: string | null;
+          host?: string | null;
+          kind?: string | null;
         };
         Relationships: [
           {

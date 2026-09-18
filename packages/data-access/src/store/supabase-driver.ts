@@ -265,6 +265,10 @@ function toMediaRecord(row: MediaRow): MediaRecord {
     uploadedBy: row.uploaded_by,
     createdAt: toInstant(row.created_at),
     isPublic: row.is_public,
+    sourceUrl: row.source_url ?? null,
+    resolvedUrl: row.resolved_url ?? null,
+    host: row.host ?? null,
+    kind: row.kind ?? null,
   };
 }
 
@@ -1128,6 +1132,10 @@ export class SupabaseEventRepository implements EventRepository {
         uploaded_by: actor.id,
         created_at: nowIso(),
         is_public: input.isPublic ?? true,
+        source_url: input.sourceUrl ?? null,
+        resolved_url: input.resolvedUrl ?? null,
+        host: input.host ?? null,
+        kind: input.kind ?? null,
       })
       .select("*")
       .single();
@@ -1159,6 +1167,10 @@ export class SupabaseEventRepository implements EventRepository {
     if (patch.altAr !== undefined) columns.alt_ar = patch.altAr;
     if (patch.altEn !== undefined) columns.alt_en = patch.altEn;
     if (patch.isPublic !== undefined) columns.is_public = patch.isPublic;
+    if (patch.sourceUrl !== undefined) columns.source_url = patch.sourceUrl;
+    if (patch.resolvedUrl !== undefined) columns.resolved_url = patch.resolvedUrl;
+    if (patch.host !== undefined) columns.host = patch.host;
+    if (patch.kind !== undefined) columns.kind = patch.kind;
 
     const { data, error } = await client
       .from("media")
