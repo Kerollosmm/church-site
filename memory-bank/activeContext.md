@@ -1,6 +1,43 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-18)
+- **المرحلة السابعة 7.3 (Phase 7.3 External Assets & Link Resolver — 100% Complete & Verified)**:
+  * **اكتمال منظومة معالجة الروابط الخارجية للوسائط (External Assets & Link Resolver)**:
+    1. **مصدر الحقيقة الموحد للأمان (`asset-allowlist.ts`)**:
+       - تعريف قائمة النطاقات الثابتة `ASSET_ALLOWED_HOSTS` المعتمدة لـ YouTube (`i.ytimg.com`, `*.ytimg.com`, `ytimg.com`, `img.youtube.com`) وGoogle Drive / المحتوى (`drive.usercontent.google.com`, `*.googleusercontent.com`, `googleusercontent.com`).
+       - اشتقاق قواعد Next.js `images.remotePatterns` وسياسة أمان المحتوى CSP `img-src` في `apps/web` و`apps/admin` مباشرة من هذا الثابت لمنع أي انحراف أمني.
+    2. **محرك التحقق وحل الروابط (`asset-resolver.ts`)**:
+       - دالة `resolveExternalImageUrl()`: معالجة وتحويل روابط YouTube المتنوعة إلى صور `hqdefault.jpg` عالية الجودة مع التحقق من المعرف عبر Regex (`^[a-zA-Z0-9_-]{11}$`)، وتحويل روابط Google Drive إلى نقاط تنزيل وعرض مباشرة مع التحقق عبر Regex (`^[a-zA-Z0-9_-]{20,}$`).
+       - الرفض الصادق والواضح لروابط ألبومات Google Photos (`photos.app.goo.gl`) مع توجيه الخدام للرابط المباشر (`lh3.googleusercontent.com`).
+       - دالة `getSafeRenderableImageUrl()`: بوابة العرض الآمن في الموقع العام لضمان عدم وصول أي رابط خارجي غير مفحوص إلى وسوم `<img>` أو `next/image`.
+       - الحماية الصارمة من ثغرات SSRF ورفض بروتوكول HTTP غير المشفر والمنافذ المخصصة وبيانات الاعتماد (userinfo) والمسافات ومحارف التحكم.
+       - إسقاط متعمد لمسار البروكسي (`/api/media/proxy`) لحذف سطح هجوم SSRF بالكامل والاعتماد على جلب المتصفح المباشر المحمي بـ CSP.
+    3. **قاعدة البيانات وهجرة Supabase 16 (`20260916160000_external_assets.sql`)**:
+       - إضافة أعمدة وصفية إضافية لجدول `public.media`: `source_url`, `resolved_url`, `host`, `kind`.
+       - تخزين `resolved_url` في عمود `media.url` لضمان التوافق الخلفي التام مع كافة المكونات القديمة دون كسر.
+       - دعم كامل للمحركين (JSON file-store وSupabase PostgreSQL) وتحديث أنواع `Database`.
+    4. **شاشات وإجراءات الإدارة `apps/admin`**:
+       - صلاحية `assets:link` الممنوحة لأدوار `owner`/`admin` و`editor`/`secretary`.
+       - إضافة تبويب «إضافة رابط خارجي» في `MediaManager.tsx` مع معاينة حية فورية وشارة أمان خضراء أو تنبيه بالأخطاء، وإمكانية الربط بفعالية.
+       - تكامل حقول الوسائط في محرر المحتوى الديناميكي `DynamicEntryForm.tsx` وتطبيع الروابط تلقائياً وقت الحفظ.
+    5. **الموقع العام `apps/web`**:
+       - تحديث معرض الصور `/gallery` وصفحات المحتوى الديناميكي `/content/[type]` لاستخدام `getSafeRenderableImageUrl()` للعرض الآمن.
+    6. **أجنحة الاختبارات وبوابات الجودة (G1–G10 All Green)**:
+       - 42 ملف اختبار في مساحة العمل، **717/717 فحصاً أخضر بنسبة 100% (Green)** في Vitest (+219 فحصاً شاملاً).
+       - فحص الأنواع لكامل مساحة العمل: 0 أخطاء (`pnpm typecheck`).
+       - فحص الأسلوب: 0 أخطاء (`pnpm lint`).
+       - بناء موقع الويب بصفر متغيرات بيئة: 52/52 مساراً ثابتاً بنجاح (`pnpm --filter web build`).
+       - بناء تطبيق الإدارة: نجاح كامل لجميع المسارات (`pnpm --filter admin build`).
+  * **سلسلة التزامات المرحلة 7.3 (`cb134fb`..`c0c142a`)**:
+    1. `cb134fb` `feat(data-access): external asset resolver and allowlist`
+    2. `7a28d4a` `feat(web): allowlist external image hosts driven by shared constant`
+    3. `2b2d9fb` `chore(db): external assets schema and rls`
+    4. `f094cce` `feat(admin): add assets by url`
+    5. `c0c142a` `feat(web): render resolved external assets safely`
+  * **تسليم التوثيق**:
+    - المعمارية التقنية `docs/phase7-external-assets.md`.
+    - دليل طاقم الكنيسة بالعربية `docs/external-assets-guide.md`.
+    - تحديث تقرير المراجعة `REVIEW.md` (القسم 21) وتزامن بنك الذاكرة بالكامل.
 - **المرحلة السابعة 7.2 (Phase 7.2 Services & Navigation CMS — 100% Complete & Verified)**:
   * **اكتمال كافة طبقات منظومة إدارة الخدمات وقوائم التنقل (Full Stack Delivery)**:
     1. **قاعدة البيانات وهجرة Supabase 15 (`20260916150000_services_navigation.sql`)**:

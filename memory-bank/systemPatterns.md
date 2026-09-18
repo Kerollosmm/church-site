@@ -274,3 +274,23 @@
   * عند غياب قاعدة البيانات أو أثناء البناء بصفر متغيرات بيئة، يتراجع النظام صراحة للبذرة المعتمدة `SEED_PUBLIC_NAVIGATION` و`SEED_PUBLIC_FACILITIES` لضمان استقرار البناء الثابت 100%.
   * دعم متقدم للقوائم المنسدلة (Dropdowns) والدرج الجانبي للهواتف مع الحفاظ على متطلبات الوصولية والاتجاه الكامل من اليمين لليسار (RTL).
 
+## 39. معمارية حل وتضمين الروابط الخارجية للوسائط (Phase 7.3 External Assets & Link Resolver Architecture)
+- **المصدر الموحد للحقيقة وقائمة النطاقات المعتمدة (`ASSET_ALLOWED_HOSTS`)**:
+  * تقع في `packages/data-access/src/assets/asset-allowlist.ts` كثابت مجمد (`as const`).
+  * تحصر النطاقات بنطاقات CDN الرسمية التابعة لـ YouTube (`i.ytimg.com`, `*.ytimg.com`, `ytimg.com`, `img.youtube.com`) ونطاقات Google Drive والمحتوى المباشر (`drive.usercontent.google.com`, `*.googleusercontent.com`, `googleusercontent.com`).
+  * يشتق كل من `apps/web/next.config.ts` و`apps/admin/next.config.ts` إعدادات `images.remotePatterns` ورؤوس سياسة أمان المحتوى CSP `img-src` مباشرة من هذا الثابت، لمنع أي انحراف أمني.
+- **محرك التحقق وحل الروابط (`AssetResolver`)**:
+  * يقع في `packages/data-access/src/assets/asset-resolver.ts` ويقدم دالتين أساسيتين:
+    1. `resolveExternalImageUrl()`: مخصصة لوقت الإدخال في لوحة الإدارة. تحول روابط YouTube المختلفة (`watch?v=`, `youtu.be/`, `/shorts/`, `/embed/`, `/vi/`) إلى صور `hqdefault.jpg` عالية الجودة مع التحقق من المعرف عبر Regex (`^[a-zA-Z0-9_-]{11}$`)، وتحول روابط Google Drive (`/file/d/`, `/uc?id=`, `/open?id=`) إلى نقاط تنزيل وعرض مباشرة مع التحقق عبر Regex (`^[a-zA-Z0-9_-]{20,}$`).
+    2. `getSafeRenderableImageUrl()`: بوابة العرض الآمن في الواجهات العامة. تسمح بمرور الروابط النسبية ومخزن Supabase وتفحص أي رابط خارجي بدقة. تضمن عدم وصول أي رابط خارجي خام أو غير معتمد لوسوم `<img>` أو `next/image`.
+  * **الرفض الصادق لصور Google Photos**: يرفض النظام صراحة روابط ألبومات `photos.app.goo.gl` مع إرشاد الخدام باللغة العربية لنسخ عنوان الصورة المباشر (`lh3.googleusercontent.com`).
+- **نموذج التهديدات والحماية الصارمة من ثغرات SSRF**:
+  * إلزام بروتوكول HTTPS المشفر، وحظر المنافذ المخصصة غير القياسية، وحظر بيانات الاعتماد في الرابط (`userinfo`)، وحظر المسافات ومحارف التحكم قبل المعالجة.
+  * **الإسقاط المتعمد لمسار البروكسي (Proxy Omission)**: تم رفض إنشاء مسار وسيط خادمي (`/api/media/proxy`) لحذف ثغرات SSRF بالكامل؛ فالجلب المباشر من المتصفح المقيد بـ CSP كافٍ وآمن تماماً ويوفر استهلاك موارد الخادم.
+- **قاعدة البيانات والتوافق الخلفي التام (Migration 16 & Backward Compatibility)**:
+  * الهجرة الإضافية 16 (`supabase/migrations/20260916160000_external_assets.sql`) تضيف أعمدة `source_url`, `resolved_url`, `host`, `kind` إلى جدول `public.media`.
+  * يتم تخزين `resolved_url` داخل عمود `media.url` الأساسي، مما يتيح لكافة المكونات والمستهلكين القدامى عرض الصور دون أي تعديل على كود الاستعلامات أو المكونات.
+  * دعم كامل ومتماثل في كلا المحركين (المخزن الملفي JSON وقاعدة بيانات Supabase).
+- **العزل وثابت INV-01 في العرض العام**:
+  * لا يتطلب عرض الصور الخارجية في معرض الصور `/gallery` أو صفحات المقالات أي جلسة مصادقة، وتظل صفحات الويب قادرة على البناء بصفر متغيرات بيئة.
+

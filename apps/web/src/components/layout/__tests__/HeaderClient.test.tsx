@@ -3,8 +3,8 @@
 // Unit tests for HeaderClient ensuring dynamic links, dropdowns, and seed fallback render reliably.
 
 import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { HeaderClient } from "../HeaderClient";
 import { SEED_PUBLIC_NAVIGATION } from "@church-site/data-access/client";
 
@@ -18,6 +18,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("HeaderClient Component", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it("renders navigation using provided dynamic hierarchy", () => {
     const customNav = {
       main: [

@@ -1,5 +1,41 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 7.3 External Assets & Link Resolver — 100% Complete & Verified)
+- [x] **إتمام منظومة معالجة وتضمين الروابط الخارجية للوسائط والصور (AssetResolver & Allowlist)**:
+  * **قائمة النطاقات المعتمدة والمصدر الموحد للأمان (`asset-allowlist.ts`)**:
+    - اعتماد الثابت `ASSET_ALLOWED_HOSTS` كمصدر حقيقة وحيد لكافة نطاقات CDN الرسمية لـ YouTube وGoogle Drive وGoogle User Content.
+    - اشتقاق قواعد Next.js `remotePatterns` وسياسة أمان المحتوى CSP `img-src` في كلا التطبيقين (`web` و`admin`) مباشرة من الثابت.
+  * **محرك التحقق وحل الروابط (`asset-resolver.ts`)**:
+    - دالة `resolveExternalImageUrl()`: معالجة كافة روابط YouTube وتوليد `hqdefault.jpg` والتحقق من معرف الفيديو بـ Regex (`^[a-zA-Z0-9_-]{11}$`)، وتحويل روابط Google Drive إلى روابط تنزيل وعرض مباشرة والتحقق من المعرف بـ Regex (`^[a-zA-Z0-9_-]{20,}$`).
+    - الرفض الصادق لروابط ألبومات Google Photos مع رسالة إرشادية واضحة للخدام لاستخدام الرابط المباشر.
+    - دالة `getSafeRenderableImageUrl()`: بوابة العرض الآمن في الواجهات العامة لضمان عدم وصول أي رابط غير معتمد لوسم `<img>`.
+    - حماية تامة من هجمات SSRF وحجب بروتوكول HTTP غير المشفر والمنافذ المخصصة وبيانات userinfo ومحارف التحكم، وإسقاط مسار البروكسي الداخلي تماماً.
+  * **قاعدة البيانات وهجرة Supabase 16 (`20260916160000_external_assets.sql`)**:
+    - إضافة أعمدة وصفية إضافية لجدول `public.media`: `source_url`, `resolved_url`, `host`, `kind`.
+    - حفظ `resolved_url` في عمود `media.url` لضمان التوافق الخلفي مع كافة المكونات القديمة دون أي تعديل عليها.
+    - دعم كامل لكلا المحركين (JSON وSupabase) وتحديث `database.types.ts`.
+  * **شاشات وإجراءات لوحة الإدارة `apps/admin`**:
+    - صلاحية RBAC جديدة `assets:link` وإجراء خادمي مؤمن `linkExternalAssetAction`.
+    - تبويب جديد «إضافة رابط خارجي» في `MediaManager.tsx` مع معاينة حية فورية وشارات أمان خضراء وتنبيهات الأخطاء.
+    - دعم الروابط الخارجية في حقول الوسائط بنموذج المحتوى الديناميكي `DynamicEntryForm.tsx` مع التطبيع وقت الحفظ.
+  * **الموقع العام `apps/web`**:
+    - تحديث `gallery/page.tsx` وصفحات المحتوى العام لاستخدام `getSafeRenderableImageUrl()`.
+  * **بوابات التحقق الصلبة للمرحلة 7.3 (G1–G10 All Passed & Verified)**:
+    - G1: فحص الأنواع لمساحة العمل = 0 أخطاء (`pnpm typecheck`).
+    - G2: فحص الأسلوب = 0 أخطاء (`pnpm lint`).
+    - G3: اختبارات الوحدات والتكامل = 42 ملفاً، **717/717 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest.
+    - G4: بناء الويب بصفر متغيرات بيئة = 52/52 مساراً ثابتاً بنجاح (`pnpm --filter web build`).
+    - G5: بناء الإدارة = جميع المسارات بنجاح كامل بما فيها `/media` بحلتها الجديدة (`pnpm --filter admin build`).
+    - G6: اختبارات الأمان ومحلل الروابط = 43/43 فحصاً ناجحاً في `asset-resolver.test.ts`.
+    - G7: إجراءات الإدارة والصلاحيات = 5/5 فحوصات ناجحة في `admin-asset-actions.test.ts`.
+    - G8: المعرض والعرض الآمن = 5/5 فحوصات ناجحة في `gallery.test.tsx`.
+    - G9: تطابق تام لسياسات CSP و`remotePatterns`.
+    - G10: الهجرة 16 إضافية وآمنة بالكامل وثابت INV-01 محقق بنسبة 100%.
+  * **تسليم التوثيق**:
+    - وثيقة المعمارية التقنية `docs/phase7-external-assets.md`.
+    - دليل طاقم الكنيسة بالعربية `docs/external-assets-guide.md`.
+    - تقرير المراجعة `REVIEW.md` (القسم 21) وتزامن بنك الذاكرة بالكامل.
+
 ## يعمل الآن (Phase 7.2 Services & Navigation CMS — 100% Complete & Verified)
 - [x] **إتمام منظومة إدارة الخدمات الكنسية وشريط وقوائم التنقل (Services & Navigation CMS)**:
   * **قاعدة البيانات وهجرة Supabase 15 (`20260916150000_services_navigation.sql`)**:

@@ -573,7 +573,76 @@ pnpm --filter admin build
 pnpm --filter @church-site/data-access test src/store/__tests__/e2e-services-navigation-proof.test.ts
 ```
 
+---
 
+## 21. Phase 7.3: External Assets & Link Resolver (AssetResolver) — Verification & Review
 
+### 21.1 Scope & Architecture Overview
+Phase 7.3 delivers a secure, zero-overhead **External Asset & Link Resolver (`AssetResolver`)** addressing the church leadership's request to register and display assets from YouTube and Google Drive without consuming database storage quotas or re-uploading large binaries:
+1. **Single Source of Truth Allowlist (`packages/data-access/src/assets/asset-allowlist.ts`)**: Pinned allowlist `ASSET_ALLOWED_HOSTS` containing canonical CDN origins for YouTube (`i.ytimg.com`, `*.ytimg.com`, `ytimg.com`, `img.youtube.com`) and Google Drive / user content (`drive.usercontent.google.com`, `*.googleusercontent.com`, `googleusercontent.com`).
+2. **Resolution Mechanics (`packages/data-access/src/assets/asset-resolver.ts`)**:
+   - `resolveExternalImageUrl()`: Ingest-time resolver converting various YouTube video URL structures (`watch?v=`, `youtu.be/`, `/shorts/`, `/embed/`, `/vi/`) into canonical high-resolution thumbnails (`https://i.ytimg.com/vi/{id}/hqdefault.jpg`) validated by an 11-character regex (`^[a-zA-Z0-9_-]{11}$`), and Google Drive URLs (`/file/d/{id}`, `/uc?id=`, `/open?id=`) into direct content streaming links (`https://drive.usercontent.google.com/download?id={id}&export=view`) validated by a 20+ character regex (`^[a-zA-Z0-9_-]{20,}$`).
+   - Honest rejection of Google Photos album links (`photos.app.goo.gl`) with helpful Arabic guidance explaining why direct image links (`lh3.googleusercontent.com`) must be used instead.
+   - `getSafeRenderableImageUrl()`: Public render gate ensuring relative parish paths and Supabase storage pass through, while untrusted, malicious, or non-allowlisted URLs return `null`. Raw external source URLs never touch `<img>` or `next/image` elements.
+3. **Unified Security Configuration (`apps/web` & `apps/admin`)**: Both `apps/web/next.config.ts` and `apps/admin/next.config.ts` import `ASSET_ALLOWED_HOSTS` directly. CSP `img-src` headers and Next.js `images.remotePatterns` are automatically derived from this constant, guaranteeing zero configuration drift.
+4. **Deliberate Proxy Route Omission**: Server-side proxying (`/api/media/proxy`) was deliberately omitted to eliminate Server-Side Request Forgery (SSRF) attack vectors and prevent proxy bandwidth exhaustion. Modern browsers fetch directly from allowlisted CDNs with strict CSP headers.
+5. **Database & Schema Additive Migration 16**: Authored `supabase/migrations/20260916160000_external_assets.sql` adding `source_url`, `resolved_url`, `host`, and `kind` to `public.media`. The canonical `media.url` column stores `resolved_url`, preserving 100% backward compatibility for existing public and internal consumers.
+6. **Administrative & Content UI Integration**: Added dedicated "إضافة رابط خارجي" (Add External Link) tab to `MediaManager.tsx` with instant live preview and security status badge; integrated write-time external link normalization into `DynamicEntryForm.tsx` for dynamic content types.
 
+### 21.2 Per-Commit Audit Table for Phase 7.3
 
+| Commit | Step | Description | Verification Gates Run | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| `cb134fb` | Step 1 | `feat(data-access): external asset resolver and allowlist` — `asset-allowlist.ts`, `asset-resolver.ts`, `assets:link` capability, unit tests | `pnpm --filter @church-site/data-access test`, `asset-resolver.test.ts` (43 tests), capabilities tests (167 tests) | **GREEN** |
+| `7a28d4a` | Step 2 | `feat(web): allowlist external image hosts driven by shared constant` — Next.js `remotePatterns` and CSP `img-src` wired to `ASSET_ALLOWED_HOSTS` | `pnpm --filter web build`, `pnpm --filter admin build`, config validation | **GREEN** |
+| `2b2d9fb` | Step 5 | `chore(db): external assets schema and rls` — Migration 16, driver mappings in JSON and Supabase repositories, `Database` types | `pnpm typecheck`, `pnpm test`, database type checks | **GREEN** |
+| `f094cce` | Step 6 | `feat(admin): add assets by url` — `linkExternalAssetAction`, `MediaManager.tsx` URL tab, `DynamicEntryForm.tsx` field support | `admin-asset-actions.test.ts` (5 tests), `pnpm --filter admin typecheck`, `pnpm --filter admin build` | **GREEN** |
+| `c0c142a` | Step 7 | `feat(web): render resolved external assets safely` — Public gallery and dynamic content rendering via `getSafeRenderableImageUrl()` | `gallery.test.tsx` (5 tests), `asset-resolver.test.ts`, `pnpm --filter web build` (52 static routes) | **GREEN** |
+
+### 21.3 Final Verification Gates Table (G1–G10)
+
+All ten quality and security gates have been empirically verified on the live repository:
+
+| Gate | Check | Pass Condition | Result | Proof Details |
+| :--- | :--- | :--- | :--- | :--- |
+| **G1** | Monorepo Typecheck | `pnpm typecheck` across all 5 workspace projects (0 errors) | **PASS (0 errors)** | `packages/domain`, `packages/data-access`, `packages/ui`, `apps/admin`, `apps/web` |
+| **G2** | Monorepo Lint | `pnpm lint` across workspace with 0 errors / 0 warnings | **PASS (0 errors)** | `eslint .` clean |
+| **G3** | Test Suite (Vitest) | 100% tests green across 42 test files | **PASS (717/717 green)** | 717 tests passed in 37.85s |
+| **G4** | Web Production Build | `pnpm --filter web build` with zero env vars (52 static routes) | **PASS (52/52 static pages)** | Clean prerendering with zero missing variable warnings |
+| **G5** | Admin Production Build | `pnpm --filter admin build` succeeds cleanly | **PASS (Clean build)** | Compiled `/media` with external URL tab and dynamic entry editors |
+| **G6** | Resolver & Security Tests | Full suite of URL variations, regex IDs, SSRF mitigations | **PASS (43/43 green)** | `packages/data-access/src/assets/__tests__/asset-resolver.test.ts` |
+| **G7** | Admin Action & RBAC | `assets:link` capability enforced via `requireStaff()` | **PASS (5/5 green)** | `apps/admin/src/actions/__tests__/admin-asset-actions.test.ts` |
+| **G8** | Safe Public Rendering | Gallery renders allowlisted URLs; rejects unverified strings | **PASS (5/5 green)** | `apps/web/src/app/gallery/__tests__/gallery.test.tsx` |
+| **G9** | CSP & remotePatterns Sync | Headers and Next image patterns derived from single constant | **PASS (Verified)** | `apps/web/next.config.ts`, `apps/admin/next.config.ts` |
+| **G10** | Additive Migration & Invariants | Migration 16 strictly additive; INV-01 zero-auth preserved | **PASS (Verified)** | `supabase/migrations/20260916160000_external_assets.sql` |
+
+### 21.4 Reviewer Can Re-Verify Phase 7.3 With:
+
+```bash
+# 1. Typecheck all applications and packages
+pnpm typecheck
+
+# 2. Lint entire monorepo
+pnpm lint
+
+# 3. Run full Vitest test suite (717 tests across 42 files)
+pnpm test
+
+# 4. Run dedicated AssetResolver unit tests
+pnpm --filter @church-site/data-access test src/assets/__tests__/asset-resolver.test.ts
+
+# 5. Run Admin Asset Actions unit tests
+pnpm --filter admin test src/actions/__tests__/admin-asset-actions.test.ts
+
+# 6. Run Public Gallery Component tests
+pnpm --filter web test src/app/gallery/__tests__/gallery.test.tsx
+
+# 7. Zero-env build of public portal (generating 52 static routes)
+pnpm --filter web build
+
+# 8. Build staff admin dashboard (compiling /media with external asset resolver)
+pnpm --filter admin build
+
+# 9. Verify database migration 16 is strictly additive
+git diff origin/master -- supabase/migrations/
+```
