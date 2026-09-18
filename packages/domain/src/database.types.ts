@@ -527,9 +527,11 @@ export interface Database {
         Row: {
           id: string;
           name_ar: string;
+          name_en?: string | null;
           slug: string;
           service_type: string;
           description_ar: string;
+          description_en?: string | null;
           working_hours_ar: string;
           location_ar: string;
           contact_phone: string | null;
@@ -538,14 +540,19 @@ export interface Database {
           display_order: number;
           is_active: boolean;
           created_at: string;
+          updated_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
           operating_hours_ar?: string | null;
         };
         Insert: {
           id?: string;
           name_ar: string;
+          name_en?: string | null;
           slug: string;
           service_type: string;
           description_ar: string;
+          description_en?: string | null;
           working_hours_ar: string;
           location_ar: string;
           contact_phone?: string | null;
@@ -554,13 +561,18 @@ export interface Database {
           display_order?: number;
           is_active?: boolean;
           created_at?: string;
+          updated_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
         };
         Update: {
           id?: string;
           name_ar?: string;
+          name_en?: string | null;
           slug?: string;
           service_type?: string;
           description_ar?: string;
+          description_en?: string | null;
           working_hours_ar?: string;
           location_ar?: string;
           contact_phone?: string | null;
@@ -569,8 +581,26 @@ export interface Database {
           display_order?: number;
           is_active?: boolean;
           created_at?: string;
+          updated_at?: string | null;
+          created_by?: string | null;
+          updated_by?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "public_services_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "public_services_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       condolence_bookings: {
         Row: {

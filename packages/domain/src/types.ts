@@ -99,7 +99,9 @@ export type AuditEntityType =
   | "content_type"
   | "content_field"
   | "content_entry"
-  | "video";
+  | "video"
+  | "service"
+  | "navigation";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -114,6 +116,8 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   content_field: "حقل محتوى",
   content_entry: "عنصر محتوى",
   video: "فيديو",
+  service: "خدمة كنسية",
+  navigation: "شريط التنقل",
 };
 
 // ============================================================================
@@ -673,5 +677,125 @@ export interface PublicParishVideo {
   embedUrl: string;
   thumbnailUrl: string | null;
   sortOrder: number;
+}
+
+// ============================================================================
+// 11. Parish Facilities / Services (CMS)
+// ============================================================================
+
+export interface ParishFacility {
+  id: string;
+  nameAr: string;
+  nameEn: string | null;
+  slug: string;
+  serviceType: string;
+  descriptionAr: string;
+  descriptionEn: string | null;
+  workingHoursAr: string;
+  locationAr: string;
+  contactPhone: string | null;
+  contactWhatsapp: string | null;
+  guidelinesAr: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string | null;
+  createdBy: string | null;
+  updatedBy: string | null;
+}
+
+/** Public-safe projection: strips staff tracking fields and only contains public fields */
+export interface PublicParishFacility {
+  id: string;
+  nameAr: string;
+  nameEn: string | null;
+  slug: string;
+  serviceType: string;
+  descriptionAr: string;
+  descriptionEn: string | null;
+  workingHoursAr: string;
+  locationAr: string;
+  contactPhone: string | null;
+  contactWhatsapp: string | null;
+  guidelinesAr: string | null;
+  displayOrder: number;
+}
+
+export interface CreateParishFacilityInput {
+  nameAr: string;
+  nameEn?: string | null;
+  slug: string;
+  serviceType: string;
+  descriptionAr: string;
+  descriptionEn?: string | null;
+  workingHoursAr: string;
+  locationAr: string;
+  contactPhone?: string | null;
+  contactWhatsapp?: string | null;
+  guidelinesAr?: string | null;
+  displayOrder?: number;
+  isActive?: boolean;
+}
+
+export type UpdateParishFacilityInput = Partial<CreateParishFacilityInput>;
+
+// ============================================================================
+// 12. Navigation Menu Items (CMS)
+// ============================================================================
+
+export type NavSection = "main" | "secondary";
+
+export const NAV_SECTIONS = ["main", "secondary"] as const satisfies readonly NavSection[];
+
+export interface NavigationMenuItem {
+  id: string;
+  key: string;
+  labelAr: string;
+  labelEn: string | null;
+  href: string;
+  section: NavSection;
+  parentId: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+}
+
+/** Public-safe projection: stripped of staff tracking fields, optional tree children */
+export interface PublicNavItem {
+  id: string;
+  key: string;
+  labelAr: string;
+  labelEn: string | null;
+  href: string;
+  section: NavSection;
+  parentId: string | null;
+  sortOrder: number;
+  children?: PublicNavItem[];
+}
+
+export interface CreateNavItemInput {
+  key: string;
+  labelAr: string;
+  labelEn?: string | null;
+  href: string;
+  section: NavSection;
+  parentId?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+  isPublic?: boolean;
+}
+
+export type UpdateNavItemInput = Partial<CreateNavItemInput>;
+
+export interface ReorderNavItemsInput {
+  items: Array<{
+    id: string;
+    sortOrder: number;
+    parentId?: string | null;
+  }>;
 }
 

@@ -74,7 +74,14 @@ export type Capability =
   // --- parish videos ---
   | "videos:read"
   | "videos:write"
-  | "videos:delete";
+  | "videos:delete"
+  // --- services (CMS) ---
+  | "services:read"
+  | "services:write"
+  | "services:delete"
+  // --- navigation (CMS) ---
+  | "navigation:read"
+  | "navigation:write";
 
 /** What a `viewer` may do: read everything the event system exposes to the portal. */
 const READ_ONLY_CAPABILITIES = [
@@ -87,6 +94,8 @@ const READ_ONLY_CAPABILITIES = [
   "mass:read",
   "content:read",
   "videos:read",
+  "services:read",
+  "navigation:read",
 ] as const satisfies readonly Capability[];
 
 /**
@@ -117,6 +126,8 @@ const EDITOR_CAPABILITIES = [
   "content:update",
   "content:publish",
   "videos:write",
+  "services:write",
+  "navigation:write",
   // Editing the notification list is an editorial act (retiring a subscription), not a destructive
   // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
   "subscribers:write",
@@ -135,6 +146,7 @@ const OWNER_ONLY_CAPABILITIES = [
   "content:delete",
   "content:manage",
   "videos:delete",
+  "services:delete",
 ] as const satisfies readonly Capability[];
 
 /** The full decision table. Single source for `can()`. */
@@ -221,6 +233,11 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "videos:read": "قراءة الفيديوهات",
   "videos:write": "إضافة وتعديل الفيديوهات",
   "videos:delete": "حذف فيديو",
+  "services:read": "قراءة خدمات الكنيسة",
+  "services:write": "إضافة وتعديل الخدمات",
+  "services:delete": "حذف خدمة",
+  "navigation:read": "قراءة عناصر شريط التنقل",
+  "navigation:write": "تعديل وترتيب شريط التنقل",
 };
 
 /**
@@ -270,6 +287,11 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "videos:read": "video",
   "videos:write": "video",
   "videos:delete": "video",
+  "services:read": "service",
+  "services:write": "service",
+  "services:delete": "service",
+  "navigation:read": "navigation",
+  "navigation:write": "navigation",
 };
 
 /**
@@ -325,6 +347,11 @@ export interface AdminCapabilities {
   videosRead: boolean;
   videosWrite: boolean;
   videosDelete: boolean;
+  servicesRead: boolean;
+  servicesWrite: boolean;
+  servicesDelete: boolean;
+  navigationRead: boolean;
+  navigationWrite: boolean;
 }
 
 /** Derives the screen-facing capability set from ONE role, through the same `can()` table. */
@@ -355,6 +382,11 @@ export function resolveAdminCapabilities(role: AdminRole | null): AdminCapabilit
     videosRead: can(role, "videos:read"),
     videosWrite: can(role, "videos:write"),
     videosDelete: can(role, "videos:delete"),
+    servicesRead: can(role, "services:read"),
+    servicesWrite: can(role, "services:write"),
+    servicesDelete: can(role, "services:delete"),
+    navigationRead: can(role, "navigation:read"),
+    navigationWrite: can(role, "navigation:write"),
   };
 }
 
