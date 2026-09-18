@@ -33,7 +33,7 @@ yarn-error.log*
 .scratch/
 
 # file-backed repository store (json driver runtime data — never committed)
-/.data/
+.data/
 
 # local data backups taken by the procedure in docs/backup-restore.md (data, never code)
 /.backups/
@@ -46,3 +46,9 @@ supabase/.temp/
 
 # split prompts
 phase1-split-agent-prompt*.md
+
+# playwright
+test-results/
+playwright-report/
+blob-report/
+
