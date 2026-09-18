@@ -12,7 +12,7 @@ import { getParishFacilityRepository } from "../store";
 import { REVALIDATION_TAGS } from "../tags";
 import { SEED_PUBLIC_PARISH_FACILITIES, toPublicParishFacility } from "./seed-facilities";
 
-async function fetchPublicServices(): Promise<PublicParishFacility[]> {
+export async function fetchPublicServices(): Promise<PublicParishFacility[]> {
   try {
     const repository = getParishFacilityRepository();
     const facilities = await repository.listFacilities({ isActive: true });
@@ -26,16 +26,30 @@ async function fetchPublicServices(): Promise<PublicParishFacility[]> {
   }
 }
 
-/**
- * Retrieves public parish facilities for display on website surfaces (/services, /services/[slug]).
- * Cached with Next.js ISR tag for instant revalidation.
- */
-export const getPublicServices = typeof unstable_cache === "function"
+const cachedPublicServices = typeof unstable_cache === "function"
   ? unstable_cache(fetchPublicServices, ["public-services"], {
       tags: [REVALIDATION_TAGS.services],
       revalidate: 3600,
     })
   : fetchPublicServices;
+
+/**
+ * Retrieves public parish facilities for display on website surfaces (/services, /services/[slug]).
+ * Cached with Next.js ISR tag with automatic standalone fallback for tests/scripts.
+ */
+export async function getPublicServices(): Promise<PublicParishFacility[]> {
+  try {
+    return await cachedPublicServices();
+  } catch (err: any) {
+    if (
+      err?.message?.includes("incrementalCache missing") ||
+      err?.message?.includes("Invariant")
+    ) {
+      return fetchPublicServices();
+    }
+    throw err;
+  }
+}
 
 /**
  * Retrieves a single public parish facility by slug.

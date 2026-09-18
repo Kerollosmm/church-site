@@ -21,7 +21,7 @@ export interface PublicNavigationResult {
   secondary: PublicNavItem[];
 }
 
-async function fetchPublicNavigation(): Promise<PublicNavigationResult> {
+export async function fetchPublicNavigation(): Promise<PublicNavigationResult> {
   try {
     const repository = getParishNavigationRepository();
     const items = await repository.listItems({ isActive: true, isPublic: true });
@@ -35,14 +35,28 @@ async function fetchPublicNavigation(): Promise<PublicNavigationResult> {
   }
 }
 
-/**
- * Retrieves the public navigation menu hierarchy for the website Header and Navigation.
- * Guaranteed never to return empty arrays if seed fallback is available.
- * Cached with Next.js ISR tag for instant revalidation.
- */
-export const getPublicNavigation = typeof unstable_cache === "function"
+const cachedPublicNavigation = typeof unstable_cache === "function"
   ? unstable_cache(fetchPublicNavigation, ["public-navigation"], {
       tags: [REVALIDATION_TAGS.navigation],
       revalidate: 3600,
     })
   : fetchPublicNavigation;
+
+/**
+ * Retrieves the public navigation menu hierarchy for the website Header and Navigation.
+ * Guaranteed never to return empty arrays if seed fallback is available.
+ * Cached with Next.js ISR tag with automatic standalone fallback for tests/scripts.
+ */
+export async function getPublicNavigation(): Promise<PublicNavigationResult> {
+  try {
+    return await cachedPublicNavigation();
+  } catch (err: any) {
+    if (
+      err?.message?.includes("incrementalCache missing") ||
+      err?.message?.includes("Invariant")
+    ) {
+      return fetchPublicNavigation();
+    }
+    throw err;
+  }
+}
