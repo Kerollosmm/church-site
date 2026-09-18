@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 import { TRUSTED_EMBED_ORIGINS, TURNSTILE_ORIGIN } from "./src/lib/security/trusted-embeds";
+import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset-allowlist";
 
 /** True for `next build` / `next start`, false under `next dev`. */
 const isProduction = process.env.NODE_ENV === "production";
+
+const externalImageOrigins = ASSET_ALLOWED_HOSTS.map((host) => `https://${host}`);
 
 /**
  * Content-Security-Policy for the whole portal.
@@ -39,7 +42,7 @@ function contentSecurityPolicy(): string {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://*.supabase.co",
+    `img-src 'self' data: blob: https://*.supabase.co ${externalImageOrigins.join(" ")}`,
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(" ")}`,
     `frame-src 'self' ${TURNSTILE_ORIGIN} ${TRUSTED_EMBED_ORIGINS.join(" ")}`,
@@ -85,6 +88,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.supabase.co",
       },
+      ...ASSET_ALLOWED_HOSTS.map((host) => ({
+        protocol: "https" as const,
+        hostname: host,
+      })),
     ],
   },
   async headers() {
