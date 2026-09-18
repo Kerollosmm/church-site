@@ -15,12 +15,14 @@
 // (the field is optional) — the cap applies to what is declared.
 
 import React, { useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   CheckCircle2,
   Copy,
   FileText,
+  Globe,
   Image as ImageIcon,
   Link as LinkIcon,
   Loader2,
@@ -37,6 +39,7 @@ import {
   updateMediaAction,
   type EventActionResult,
 } from "@/actions/event-actions";
+import { linkExternalAssetAction } from "@/actions/admin-asset-actions";
 import { MediaUploader } from "@/components/media/MediaUploader";
 import { AdminChip } from "@/components/admin/AdminStatusBadge";
 import { AdminFeedback, type AdminFeedbackTone } from "@/components/admin/AdminFeedback";
@@ -63,6 +66,8 @@ import {
   type MediaFormState,
   type AdminEventRow,
   formatCairoDateTime,
+  resolveExternalImageUrl,
+  isResolvedAsset,
 } from "@church-site/data-access/client";
 
 /** The public pages that consume a media URL — the honest answer to "for a page". */
@@ -81,9 +86,14 @@ export interface MediaManagerProps {
 
 export function MediaManager({ media, events, capabilities }: MediaManagerProps): React.ReactElement {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"upload" | "manual">("upload");
+  const [activeTab, setActiveTab] = useState<"upload" | "url" | "manual">("upload");
   const [form, setForm] = useState<MediaFormState>(emptyMediaFormState());
   const [targetEventId, setTargetEventId] = useState("");
+  const [urlInput, setUrlInput] = useState("");
+  const [urlAltAr, setUrlAltAr] = useState("");
+  const [urlAltEn, setUrlAltEn] = useState("");
+  const [urlIsPublic, setUrlIsPublic] = useState(true);
+  const [urlTargetEventId, setUrlTargetEventId] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<{ tone: AdminFeedbackTone; title: string; message: string } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -93,6 +103,45 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
   const [altAr, setAltAr] = useState("");
   const [altEn, setAltEn] = useState("");
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+  const resolvedAsset = urlInput.trim() ? resolveExternalImageUrl(urlInput.trim()) : null;
+  const isValidAsset = isResolvedAsset(resolvedAsset);
+
+  function submitExternalAsset(formEvent: React.FormEvent<HTMLFormElement>): void {
+    formEvent.preventDefault();
+    if (!isValidAsset || !resolvedAsset) {
+      setFeedback({
+        tone: "error",
+        title: "الرابط غير صالح",
+        message: resolvedAsset?.reason || "يرجى إدخال رابط معتمد وصالح قبل الحفظ.",
+      });
+      return;
+    }
+
+    startTransition(async () => {
+      setPendingKey("link-asset");
+      const result = await linkExternalAssetAction({
+        url: urlInput.trim(),
+        altAr: urlAltAr.trim() || undefined,
+        altEn: urlAltEn.trim() || undefined,
+        isPublic: urlIsPublic,
+        targetEventId: urlTargetEventId || undefined,
+      });
+      setPendingKey(null);
+      setFeedback({
+        tone: result.success ? "success" : "error",
+        title: result.success ? "إضافة أصل خارجي" : "فشل التحقق من الأصل",
+        message: result.message,
+      });
+      if (result.success) {
+        setUrlInput("");
+        setUrlAltAr("");
+        setUrlAltEn("");
+        setUrlTargetEventId("");
+        router.refresh();
+      }
+    });
+  }
 
   function update<K extends keyof MediaFormState>(key: K, value: MediaFormState[K], errorKey?: string): void {
     setForm((current) => ({ ...current, [key]: value }));
@@ -203,6 +252,20 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
           <button
             type="button"
             role="tab"
+            aria-selected={activeTab === "url"}
+            onClick={() => setActiveTab("url")}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-colors ${
+              activeTab === "url"
+                ? "border-copticGold-600 text-copticNavy"
+                : "border-transparent text-slate-500 hover:text-copticNavy"
+            }`}
+          >
+            <Globe aria-hidden="true" className="h-4 w-4" />
+            <span>إضافة رابط خارجي</span>
+          </button>
+          <button
+            type="button"
+            role="tab"
             aria-selected={activeTab === "manual"}
             onClick={() => setActiveTab("manual")}
             className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-colors ${
@@ -225,6 +288,141 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
                 router.refresh();
               }}
             />
+          </div>
+        ) : activeTab === "url" ? (
+          <div className="mt-4">
+            {capabilities.assetsLink ? (
+              <form onSubmit={submitExternalAsset} noValidate aria-busy={isPending} className="mt-4 space-y-4">
+                <AdminTextField
+                  id="asset-url"
+                  label="رابط الأصل الخارجي (YouTube / Google Drive / مباشر)"
+                  required
+                  lang="en"
+                  placeholder="https://www.youtube.com/watch?v=... أو https://drive.google.com/..."
+                  value={urlInput}
+                  onChange={setUrlInput}
+                  hint="يتم التحقق فوراً من النطاق وتوليد رابط معاينة مباشر للملفات المعتمدة."
+                  maxLength={1000}
+                />
+
+                {urlInput.trim().length > 0 && (
+                  <div className="mt-3">
+                    {isValidAsset && resolvedAsset ? (
+                      <div className="rounded-xl border border-emerald-300 bg-emerald-50/50 p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-emerald-800 text-xs font-bold">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                          <span>الرابط معتمد ومطابق لسياسة الأمان.</span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <AdminChip tone="gold">
+                            {resolvedAsset.kind === "youtube-thumb"
+                              ? "يوتيوب"
+                              : resolvedAsset.kind === "drive"
+                                ? "Google Drive"
+                                : "رابط مباشر"}
+                          </AdminChip>
+                          <span
+                            className="text-[11px] font-mono text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200"
+                            dir="ltr"
+                          >
+                            {resolvedAsset.host}
+                          </span>
+                        </div>
+
+                        <div className="relative w-60 h-36 rounded-lg overflow-hidden border border-slate-200 bg-slate-900/10 shadow-sm flex items-center justify-center">
+                          <Image
+                            src={resolvedAsset.resolvedUrl}
+                            alt="معاينة الأصل"
+                            width={240}
+                            height={140}
+                            className="h-full w-full object-cover rounded-lg"
+                            unoptimized
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-rose-200 bg-rose-50 p-3.5 flex items-start gap-2 text-xs text-rose-800">
+                        <AlertTriangle className="h-4 w-4 text-rose-600 mt-0.5 shrink-0" />
+                        <p className="leading-relaxed">
+                          {resolvedAsset?.reason || "الرابط غير مدعوم في قائمة النطاقات المعتمدة."}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <AdminTextField
+                    id="asset-altAr"
+                    label="النص البديل (عربي)"
+                    lang="ar"
+                    value={urlAltAr}
+                    onChange={setUrlAltAr}
+                    hint="وصف مختصر للصورة لقارئات الشاشة."
+                    maxLength={255}
+                  />
+                  <AdminTextField
+                    id="asset-altEn"
+                    label="النص البديل (إنجليزي)"
+                    lang="en"
+                    value={urlAltEn}
+                    onChange={setUrlAltEn}
+                    maxLength={255}
+                  />
+                </div>
+
+                <AdminCheckbox
+                  id="asset-isPublic"
+                  label="متاح للعرض العام"
+                  checked={urlIsPublic}
+                  onChange={setUrlIsPublic}
+                  hint="أزل العلامة لملف داخلي لا يُشار إليه من الصفحات العامة."
+                />
+
+                <AdminSelect
+                  id="asset-target-event"
+                  label="ربط الرابط بفعالية (اختياري)"
+                  value={urlTargetEventId}
+                  onChange={setUrlTargetEventId}
+                  options={eventOptions}
+                  hint="عند اختيار فعالية، يُضبط الرابط المعتمد كصورة لها بعد التسجيل مباشرة."
+                />
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={isPending || !isValidAsset}
+                    aria-busy={busy("link-asset")}
+                    className={ADMIN_BUTTON_PRIMARY}
+                  >
+                    {busy("link-asset") ? (
+                      <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save aria-hidden="true" className="h-4 w-4" />
+                    )}
+                    <span>{busy("link-asset") ? "جارٍ التحقق والربط…" : "ربط الأصل الخارجي"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUrlInput("");
+                      setUrlAltAr("");
+                      setUrlAltEn("");
+                      setUrlTargetEventId("");
+                    }}
+                    className={ADMIN_BUTTON_SECONDARY}
+                  >
+                    <X aria-hidden="true" className="h-3.5 w-3.5" />
+                    <span>تفريغ الحقول</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <p className="mt-4 text-xs font-bold text-amber-900">
+                صلاحياتك الحالية لا تسمح بربط أصول خارجية. أي محاولة تُرفض على الخادم وتُسجَّل في سجل التدقيق.
+              </p>
+            )}
           </div>
         ) : (
           <div className="mt-4">
@@ -402,7 +600,7 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
                           {item.mimeType.startsWith("image/") ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={item.url}
+                              src={item.resolvedUrl || item.url}
                               alt={item.altAr || item.filename}
                               className="h-full w-full object-cover"
                               loading="lazy"
@@ -425,9 +623,27 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
                           <p className="mt-0.5 truncate font-english text-[10px] text-slate-500" dir="ltr" title={item.url}>
                             {item.url}
                           </p>
+                          {item.sourceUrl ? (
+                            <p className="mt-0.5 truncate font-english text-[10px] text-slate-500" dir="ltr" title={item.sourceUrl}>
+                              <span className="font-sans font-bold text-slate-600">المصدر:</span> {item.sourceUrl}
+                            </p>
+                          ) : null}
+                          {item.resolvedUrl ? (
+                            <p className="mt-0.5 truncate font-english text-[10px] text-slate-500" dir="ltr" title={item.resolvedUrl}>
+                              <span className="font-sans font-bold text-slate-600">المعتمد:</span> {item.resolvedUrl}
+                            </p>
+                          ) : null}
                           <div className="mt-1 flex flex-wrap items-center gap-1">
                             {item.isPublic ? <AdminChip tone="gold">عام</AdminChip> : <AdminChip>داخلي</AdminChip>}
-                            {item.storagePath ? (
+                            {item.kind ? (
+                              <AdminChip tone="navy">
+                                {item.kind === "youtube-thumb"
+                                  ? "يوتيوب"
+                                  : item.kind === "drive"
+                                    ? "Google Drive"
+                                    : "رابط خارجي"}
+                              </AdminChip>
+                            ) : item.storagePath ? (
                               <AdminChip tone="navy">تخزين سحابي</AdminChip>
                             ) : (
                               <AdminChip>رابط خارجي</AdminChip>

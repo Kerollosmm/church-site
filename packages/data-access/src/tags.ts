@@ -8,6 +8,7 @@ export const REVALIDATION_TAGS = {
   eventTaxonomy: "event-taxonomy",
   /** Media library metadata. */
   eventMedia: "event-media",
+  media: "event-media",
   masses: "masses",
   meetings: "meetings",
   education: "education",

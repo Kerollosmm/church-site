@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  CheckCircle2,
   FileText,
   Upload,
 } from "lucide-react";
@@ -24,6 +25,10 @@ import type {
   MediaRecord,
   ContentFieldOption,
 } from "@church-site/domain";
+import {
+  resolveExternalImageUrl,
+  isResolvedAsset,
+} from "@church-site/data-access/client";
 import {
   createContentEntryAction,
   updateContentEntryAction,
@@ -373,62 +378,99 @@ export function DynamicEntryForm({
                       </div>
                     )}
 
-                    {field.fieldType === "media" && (
-                      <div className="space-y-3">
-                        <div className="flex gap-2">
-                          <input
-                            id={`field-${field.slug}`}
-                            type="text"
-                            placeholder="رابط الوسائط (URL) أو ارفع ملفاً أدناه"
-                            value={(value as string) || ""}
-                            onChange={(e) => handleFieldChange(field.slug, e.target.value)}
-                            className={`${ADMIN_INPUT} ${error ? ADMIN_INPUT_INVALID : ""}`}
-                            disabled={isPending}
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActiveMediaField(activeMediaField === field.slug ? null : field.slug)
-                            }
-                            className={ADMIN_BUTTON_SECONDARY}
-                            title="رفع ملف جديد"
-                          >
-                            <Upload className="w-4 h-4" />
-                            <span>رفع</span>
-                          </button>
-                        </div>
+                    {field.fieldType === "media" && (() => {
+                      const strValue = typeof value === "string" ? value.trim() : "";
+                      const resolved = strValue ? resolveExternalImageUrl(strValue) : null;
+                      const isResolved = isResolvedAsset(resolved);
+                      const isDirectImg = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(strValue);
+                      const previewUrl = isResolved ? resolved.resolvedUrl : strValue;
 
-                        {typeof value === "string" && value.length > 0 && (
-                          <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center">
-                            {/\.(jpg|jpeg|png|webp|gif|svg)$/i.test(value) ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={value}
-                                alt="معاينة"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <FileText className="w-8 h-8 text-slate-400" />
-                            )}
-                          </div>
-                        )}
-
-                        {activeMediaField === field.slug && (
-                          <div className="p-4 rounded-xl border border-copticGold-200 bg-copticGold-50/50 space-y-3">
-                            <p className="text-xs font-bold text-copticNavy">
-                              رفع وسائط جديدة لحقل «{field.labelAr}»:
-                            </p>
-                            <MediaUploader
-                              onUploadSuccess={(media: MediaRecord) => {
-                                handleFieldChange(field.slug, media.url);
-                                setActiveMediaField(null);
-                              }}
+                      return (
+                        <div className="space-y-3">
+                          <div className="flex gap-2">
+                            <input
+                              id={`field-${field.slug}`}
+                              type="text"
+                              placeholder="رابط الوسائط (URL) أو ارفع ملفاً أدناه"
+                              value={(value as string) || ""}
+                              onChange={(e) => handleFieldChange(field.slug, e.target.value)}
+                              className={`${ADMIN_INPUT} ${error ? ADMIN_INPUT_INVALID : ""}`}
                               disabled={isPending}
                             />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveMediaField(activeMediaField === field.slug ? null : field.slug)
+                              }
+                              className={ADMIN_BUTTON_SECONDARY}
+                              title="رفع ملف جديد"
+                            >
+                              <Upload className="w-4 h-4" />
+                              <span>رفع</span>
+                            </button>
                           </div>
-                        )}
-                      </div>
-                    )}
+
+                          {isResolved && resolved && (
+                            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50/70 p-2.5 text-xs">
+                              <div className="flex items-center gap-1.5 text-emerald-800 font-bold">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span>
+                                  أصل خارجي معتمد ({resolved.kind === "youtube-thumb" ? "يوتيوب" : resolved.kind === "drive" ? "Google Drive" : "رابط مباشر"} - {resolved.host})
+                                </span>
+                              </div>
+                              {resolved.resolvedUrl !== strValue && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleFieldChange(field.slug, resolved.resolvedUrl)}
+                                  className="text-[11px] font-bold text-copticGold-700 underline hover:text-copticGold-900"
+                                >
+                                  اعتماد الرابط المباشر
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {resolved && resolved.kind === "unsupported" && (
+                            <p className="text-[11px] text-amber-700">
+                              {resolved.reason || "الرابط غير مدرج في النطاقات المعتمدة."}
+                            </p>
+                          )}
+
+                          {strValue.length > 0 && (
+                            <div className="relative w-36 h-24 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center shadow-xs">
+                              {isResolved || isDirectImg ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={previewUrl}
+                                  alt="معاينة"
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <FileText className="w-8 h-8 text-slate-400" />
+                              )}
+                            </div>
+                          )}
+
+                          {activeMediaField === field.slug && (
+                            <div className="p-4 rounded-xl border border-copticGold-200 bg-copticGold-50/50 space-y-3">
+                              <p className="text-xs font-bold text-copticNavy">
+                                رفع وسائط جديدة لحقل «{field.labelAr}»:
+                              </p>
+                              <MediaUploader
+                                onUploadSuccess={(media: MediaRecord) => {
+                                  handleFieldChange(field.slug, media.url);
+                                  setActiveMediaField(null);
+                                }}
+                                disabled={isPending}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {error && (
                       <p className={ADMIN_ERROR_TEXT}>
