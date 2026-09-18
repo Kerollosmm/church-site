@@ -316,3 +316,75 @@ rg -n "content.*(create|insert|update|publish)|uploadMediaAction|createClient" a
 rg -n "from ['\"]@supabase/" apps/admin/src
 ```
 
+---
+
+## 14. Phase 4: Parish Videos (External URL Embeds) — Architectural Context
+
+Phase 4 replaced the cancelled "Video Studio" (automated MP4 rendering via external paid render APIs) with a secure, lightweight **Parish Videos Manager**. The church leadership directed that the parish already broadcasts services on YouTube and Facebook, and simply required a way for staff to register and display these existing videos on the public portal (the `/about` page under "فيديوهات الكنيسة").
+
+### Core Invariants Enforced:
+1. **INV-01 (Zero-Auth Public Isolation)**: `apps/web` requires zero authentication, zero environment variables to build, and queries data strictly through public-filtered repository interfaces.
+2. **Security Gate Integrity (`getTrustedEmbedUrl`)**: Every public video embed MUST pass through `getTrustedEmbedUrl()`. No raw `<iframe src>` is ever rendered.
+3. **Zero External Image Wildcards**: `images.remotePatterns` in `apps/web/next.config.ts` contains strictly zero wildcard domains.
+4. **Zero Rendering Overhead / Paid APIs**: No ffmpeg, no cloud render services, no external video SDKs.
+
+---
+
+## 15. Phase 4 Per-Commit Audit Table
+
+| Commit | Step | Description | Verification Gates Run | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| `0c79601` | Step 2 | `feat(domain): parish videos model and capability` — ParishVideo types, capabilities, audit | `pnpm --filter @church-site/domain typecheck` | **GREEN** |
+| `2a7a385` | Step 3 | `chore(db): parish videos schema and rls` — Migration 14 (`20260916140000_parish_videos.sql`) | Migration sequence check, README 14 rows | **GREEN** |
+| `181d0e0` | Step 4 | `feat(data-access): parish videos repository and URL normalization` — Normalizer, drivers, tags | `pnpm --filter @church-site/data-access typecheck` | **GREEN** |
+| `4453e4a` | Step 5 | `feat(admin): parish videos manager` — `/admin/videos` table, modal, server actions | `pnpm --filter admin typecheck`, `pnpm --filter admin build` | **GREEN** |
+| `b2fb703` | Step 6 | `feat(web): church videos section` — `/about` videos section, lazy embed players | `pnpm --filter web typecheck`, `pnpm --filter web build` (53/53 static) | **GREEN** |
+| `c2447bd` | Step 7 | `test: cover parish videos` — 5 comprehensive test suites (+46 tests) | `pnpm test` (408/408 passed across 26 files) | **GREEN** |
+
+---
+
+## 16. Phase 4 Final Verification Gates Table (G1–G10)
+
+All ten verification gates for Phase 4 have been empirically executed and saved under `.scratch/phase4-gates/`:
+
+| Gate | Check | Pass Condition | Result | Evidence File |
+| :--- | :--- | :--- | :--- | :--- |
+| **G1** | Web TypeScript Validation | `tsc --noEmit` on `apps/web` with 0 errors | **PASS (0 errors)** | `.scratch/phase4-gates/g1-web-tsc.txt` |
+| **G2** | Admin TypeScript Validation | `tsc --noEmit` on `apps/admin` with 0 errors | **PASS (0 errors)** | `.scratch/phase4-gates/g2-admin-tsc.txt` |
+| **G3** | Monorepo Linting | `eslint .` across monorepo with 0 errors | **PASS (0 errors)** | `.scratch/phase4-gates/g3-lint.txt` |
+| **G4** | Test Suite (Vitest) | 100% tests passing across 26 test files (408/408 tests green; +46 net new tests) | **PASS (408/408 green)** | `.scratch/phase4-gates/g4-tests.txt` |
+| **G5** | Web Production Build | `pnpm --filter web build` succeeds with 0 env vars, generating 53/53 static pages | **PASS (53/53 static pages)** | `.scratch/phase4-gates/g5-web-build.txt` |
+| **G6** | E2E Video Proof | Full lifecycle: normalization, store persistence, public projection, toggle, embed gating | **PASS (Verified on file-store engine)** | `.scratch/phase4-gates/g6-e2e-proof.txt` |
+| **G7** | Admin Production Build | `pnpm --filter admin build` compiles dynamic `/videos` management route cleanly | **PASS (Clean dynamic build)** | `.scratch/phase4-gates/g7-admin-build.txt` |
+| **G8** | Migration 14 Integrity | Migration `20260916140000_parish_videos.sql` exists; exactly 14 migrations; strict RLS | **PASS (Validated Migration)** | `.scratch/phase4-gates/g8-migrations.txt` |
+| **G9** | Live Smoke Test | Verification of zero wildcards, migration presence, and security functions | **PASS (All 4 checks passed)** | `.scratch/phase4-gates/g9-smoke.txt`<br/>`.scratch/phase4-gates/live-videos-smoke.sh` |
+| **G10** | CSP & Security Invariants | Zero wildcards in `images.remotePatterns`, CSP `frame-src` allowlist derived from trusted hosts | **PASS (Zero wildcards, strict CSP)** | `.scratch/phase4-gates/g10-csp.txt` |
+
+---
+
+## 17. Reviewer Can Re-Verify Phase 4 With:
+
+```bash
+# 1. Typecheck both applications
+pnpm --filter web typecheck
+pnpm --filter admin typecheck
+
+# 2. Lint entire monorepo
+pnpm lint
+
+# 3. Run full Vitest suite (408 tests across 26 files)
+pnpm test
+
+# 4. Zero-env build of public portal (asserting 53/53 static pages)
+pnpm --filter web build
+
+# 5. Build admin dashboard
+pnpm --filter admin build
+
+# 6. Run Phase 4 smoke script
+bash .scratch/phase4-gates/live-videos-smoke.sh
+# or on Windows PowerShell:
+powershell -ExecutionPolicy Bypass -File .scratch/phase4-gates/live-videos-smoke.ps1
+```
+
+

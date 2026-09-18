@@ -1,6 +1,31 @@
 # Active Context — الحالة الحالية
 
-## أين نحن (2026-09-17)
+## أين نحن (2026-09-18)
+- **اكتملت بالكامل واعتُمدت (Phase 4 Parish Videos — Verified & Complete)**:
+  * **سلسلة التزامات المرحلة الرابعة (`0c79601`..`[HEAD]`)**:
+    1. `0c79601` `feat(domain): parish videos model and capability`
+    2. `2a7a385` `chore(db): parish videos schema and rls`
+    3. `181d0e0` `feat(data-access): parish videos repository and URL normalization`
+    4. `4453e4a` `feat(admin): parish videos manager`
+    5. `b2fb703` `feat(web): church videos section`
+    6. `c2447bd` `test: cover parish videos`
+  * **إحصائيات الاختبارات المحدثة**: 26 ملف اختبار، **408/408 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest بعد إضافة 5 أجنحة اختبارات شاملة (+46 فحصاً جديداً).
+  * **بوابات التحقق الصلبة للمرحلة الرابعة (G1–G10 All Passed & Verified)**:
+    - G1: فحص الأنواع لتطبيق الويب = 0 أخطاء (`.scratch/phase4-gates/g1-web-tsc.txt`).
+    - G2: فحص الأنواع لتطبيق الإدارة = 0 أخطاء (`.scratch/phase4-gates/g2-admin-tsc.txt`).
+    - G3: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase4-gates/g3-lint.txt`).
+    - G4: اختبارات الوحدات = 26 ملفاً، 408 فحوصات ناجحة (`.scratch/phase4-gates/g4-tests.txt`).
+    - G5: بناء الويب بصفر متغيرات بيئة = 53/53 مساراً ثابتاً (`.scratch/phase4-gates/g5-web-build.txt`).
+    - G6: اختبار دورة حياة الفيديوهات بالكامل (E2E) = 100% نجاح على محرك مخزن الملفات (`.scratch/phase4-gates/g6-e2e-proof.txt`).
+    - G7: بناء تطبيق الإدارة وتوليد مسار `/videos` بنجاح كامل (`.scratch/phase4-gates/g7-admin-build.txt`).
+    - G8: هجرة قاعدة البيانات 14 (`20260916140000_parish_videos.sql`) مؤكدة بدقة مع 14 ملف هجرة وسياسات RLS صلبة (`.scratch/phase4-gates/g8-migrations.txt`).
+    - G9: فحص الدخان الحي `live-videos-smoke.sh` و`live-videos-smoke.ps1` اجتاز كافة الفحوصات بنجاح (`.scratch/phase4-gates/g9-smoke.txt`).
+    - G10: فحص CSP وثوابت الأمان: صفر نطاقات خارجية عامة (Zero Wildcards) في `images.remotePatterns`، وتطبيق صارم لبوابة `getTrustedEmbedUrl()` على كافة مشغلات الـ `iframe` (`.scratch/phase4-gates/g10-csp.txt`).
+  * **تسليم التوثيق**:
+    - دليل طاقم الكنيسة بالعربية `docs/videos-guide.md`.
+    - وثيقة المعمارية التقنية `docs/phase4-parish-videos.md`.
+    - سجل القرار المعماري `docs/adr/0004-parish-videos-url-embeds.md`.
+    - تقرير المراجعة `REVIEW.md`: إضافة أقسام المرحلة الرابعة 14 إلى 17.
 - **اكتملت بالكامل واعتُمدت (Phase 3 Content Types Engine — Verified & Complete)**:
   * **سلسلة التزامات المرحلة الثالثة (`563acf5`..`[HEAD]`)**:
     1. `563acf5` `feat(domain): content types model and capabilities`

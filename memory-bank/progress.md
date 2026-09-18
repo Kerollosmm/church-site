@@ -1,5 +1,40 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 4 Parish Videos — 100% Complete & Verified)
+- [x] **إتمام إدارة وعرض فيديوهات الكنيسة عبر الروابط الخارجية الآمنة (Parish Videos)**:
+  - **حزمة النطاق `@church-site/domain`**:
+    * نماذج `ParishVideo` و`VideoProvider` و`CreateParishVideoInput` و`UpdateParishVideoInput` والنموذج العام المعزول `PublicParishVideo`.
+    * الصلاحيات الإدارية: `videos:read` (لجميع الخدام)، `videos:write` (للسكرتارية والمشرفين)، `videos:delete` (حصراً للمشرف العام/Owner).
+    * كيان التدقيق الجديد `video` في `AuditEntityType` مع التسميات العربية.
+    * الالتزام: `0c79601 feat(domain): parish videos model and capability`.
+  - **قاعدة البيانات وهجرات Supabase**:
+    * إضافة الهجرة 14 `supabase/migrations/20260916140000_parish_videos.sql` لإنشاء جدول `parish_videos` ونوع `video_provider_enum`.
+    * فهرس الفرز والعرض العام `idx_parish_videos_public_active` وسياسات RLS المحكمة.
+    * تحديث توثيق جدول الهجرات في `supabase/README.md` (14 صفاً).
+    * الالتزام: `2a7a385 chore(db): parish videos schema and rls`.
+  - **حزمة الوصول للبيانات `@church-site/data-access`**:
+    * محرك التحقق وتوحيد الروابط `normalizeVideoUrl()` المحمي ببوابة `TRUSTED_EMBED_HOSTS`.
+    * عقد المستودع `ParishVideoRepository` ومحول مخزن الملفات `JsonParishVideoRepository` ومحول `SupabaseParishVideoRepository`.
+    * ترقية مخزن الملفات إلى الإصدار 4 بإضافة مصفوفة `parishVideos`.
+    * وسم إعادة التحقق `REVALIDATION_TAGS.parishVideos` ودالة `revalidateVideoSurfaces()`.
+    * دالة القراءة العامة المعزولة `getPublicParishVideos()`.
+    * الالتزام: `181d0e0 feat(data-access): parish videos repository and URL normalization`.
+  - **تطبيق الإدارة `apps/admin`**:
+    * صفحة الإدارة الرئيسية `/admin/videos`، وجدول الفيديوهات `AdminVideosTable` مع تبديل النشر والتفعيل الفوري.
+    * نافذة الإضافة والتعديل `AdminVideoModal` مع فحص الروابط الحي ومعاينة المشغل المباشرة.
+    * إجراءات الخادم `admin-video-actions.ts` مع فحص دقيق للصلاحيات والتسجيل في سجل التدقيق.
+    * إضافة الرابط إلى القائمة الجانبية مع أيقونة الفيديو.
+    * الالتزام: `4453e4a feat(admin): parish videos manager`.
+  - **تطبيق الموقع العام `apps/web`**:
+    * مكون قسم الفيديوهات `ChurchVideosSection.tsx` المحمي ببوابة `getTrustedEmbedUrl()`.
+    * دمج القسم في صفحة "عن الكنيسة" `/about` مع المحافظة التامة على ثوابت INV-01 وبناء الويب بصفر متغيرات بيئة (53/53 مساراً ثابتاً).
+    * معالجة أنيقة لحالة خلو الفيديوهات "لا توجد فيديوهات منشورة بعد".
+    * الالتزام: `b2fb703 feat(web): church videos section`.
+  - **أجنحة الاختبارات وبوابات التحقق**:
+    * 26 ملف اختبار و**408/408 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest (+46 فحصاً جديداً).
+    * الالتزام: `c2447bd test: cover parish videos`.
+    * اجتياز كامل لبوابات التحقق العشر G1–G10 وحفظ الأدلة في `.scratch/phase4-gates/`.
+
 ## يعمل الآن (Phase 3 Content Types Engine — 100% Complete & Verified)
 - [x] **إتمام محرك أنواع المحتوى المخصص ونظام التوليد الديناميكي (CMS Engine)**:
   - **حزمة النطاق `@church-site/domain`**:
