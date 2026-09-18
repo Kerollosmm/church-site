@@ -7,16 +7,17 @@
     2. `19dcec5` `fix(data-access): fail loudly instead of seeding in production`
     3. `a71a1ce` `feat(data-access): audit actor filter and csv export`
     4. `e13f9de` `feat(admin): audit actor filter and csv download`
-    5. `[HEAD]` `docs: phase 5 hardening`
-  * **إحصائيات الاختبارات المحدثة**: 31 ملف اختبار، **451/451 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest (+43 فحصاً صافياً عبر Resend mailer و readOrSeed و audit CSV و actor filtering).
+    5. `dd238c5` `docs: phase 5 hardening`
+    6. `d91438d` `test(data-access): e2e hardening proof and mailer export`
+  * **إحصائيات الاختبارات المحدثة**: 32 ملف اختبار، **452/452 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest (+44 فحصاً صافياً عبر Resend mailer و readOrSeed و audit CSV و actor filtering واختبار إثبات E2E).
   * **بوابات التحقق الصلبة للمرحلة الخامسة (G1–G10 All Passed & Verified)**:
     - G1: فحص الأنواع لتطبيق الويب = 0 أخطاء (`.scratch/phase5-gates/g1-web-tsc.txt`).
     - G2: فحص الأنواع لتطبيق الإدارة = 0 أخطاء (`.scratch/phase5-gates/g2-admin-tsc.txt`).
     - G3: فحص الأسلوب `eslint .` = 0 أخطاء (`.scratch/phase5-gates/g3-lint.txt`).
-    - G4: اختبارات الوحدات = 31 ملفاً، 451 فحصاً ناجحاً (`.scratch/phase5-gates/g4-tests.txt`).
+    - G4: اختبارات الوحدات = 31 ملفاً (451 فحصاً) + 1 ملف E2E hardening proof (452 فحصاً إجمالياً ناجحاً) (`.scratch/phase5-gates/g4-tests.txt`).
     - G5: بناء الويب بصفر متغيرات بيئة = 53/53 مساراً ثابتاً (`.scratch/phase5-gates/g5-web-build.txt`).
-    - G6: إثبات صلابة readOrSeed، وتصدير CSV مع BOM، ودخان البريد الحي (`.scratch/phase5-gates/g6-hardening.txt`، `live-email-smoke.sh`).
-    - G7: حفظ سجل Git للملفات الأساسية عبر `git log --follow` (`.scratch/phase5-gates/g7-git-log.txt`).
+    - G6: إثبات صلابة readOrSeed، وتصدير CSV مع BOM، والتسجيل في MAILER_FACTORIES، ودخان البريد الحي (`.scratch/phase5-gates/g6-hardening.txt`، `g6-label.txt`، `live-email-smoke.sh`).
+    - G7: حفظ سجل Git للملفات الأساسية عبر `git log` (`.scratch/phase5-gates/g7-git-log.txt`).
     - G8: هجرات قاعدة البيانات ثابتة بنسبة 100% (صفر تعديل على ملفات الهجرة 1–14) (`.scratch/phase5-gates/g8-git-status.txt`).
     - G9: صفر تغيير في التبعيات الخارجية أو `pnpm-lock.yaml` (`.scratch/phase5-gates/g9-lockfile.txt`).
     - G10: ثوابت الأمان وعزل أسرار الخادم عن حزمة المتصفح (`.scratch/phase5-gates/g10-inv01.txt`، `g10-secrets.txt`).

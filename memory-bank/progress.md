@@ -22,7 +22,7 @@
     * تحديث وثائق `backup-restore.md` و`runbook.md` و`credential-handover.md`.
     * دليل إعداد البريد بالعربية `docs/email-setup-guide.md` وملخص المرحلة `docs/phase5-hardening.md`.
   - **أجنحة الاختبارات وبوابات التحقق**:
-    * 31 ملف اختبار و**451/451 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest (+43 فحصاً جديداً).
+    * 32 ملف اختبار و**452/452 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest (+44 فحصاً جديداً)، واجتياز كامل لبوابات التحقق G1 إلى G10 وسكربت الدخان الحي `live-email-smoke.sh`.
 
 ## يعمل الآن (Phase 4 Parish Videos — 100% Complete & Verified)
 - [x] **إتمام إدارة وعرض فيديوهات الكنيسة عبر الروابط الخارجية الآمنة (Parish Videos)**:
