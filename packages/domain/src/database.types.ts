@@ -1852,6 +1852,79 @@ export interface Database {
           },
         ];
       };
+      nav_menu_items: {
+        Row: {
+          id: string;
+          key: string;
+          label_ar: string;
+          label_en: string | null;
+          href: string;
+          section: string;
+          parent_id: string | null;
+          sort_order: number;
+          is_active: boolean;
+          is_public: boolean;
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+          updated_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          label_ar: string;
+          label_en?: string | null;
+          href: string;
+          section?: string;
+          parent_id?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          key?: string;
+          label_ar?: string;
+          label_en?: string | null;
+          href?: string;
+          section?: string;
+          parent_id?: string | null;
+          sort_order?: number;
+          is_active?: boolean;
+          is_public?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+          updated_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "nav_menu_items_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "nav_menu_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "nav_menu_items_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "nav_menu_items_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

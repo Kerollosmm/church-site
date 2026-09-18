@@ -13,7 +13,7 @@ describe("Migration 14 (20260916140000_parish_videos.sql) Sanity", () => {
   it("verifies migration 14 file exists in sequence as the 14th migration", async () => {
     const files = await readdir(migrationsDir);
     const sqlFiles = files.filter((f) => f.endsWith(".sql")).sort();
-    expect(sqlFiles).toHaveLength(14);
+    expect(sqlFiles.length).toBeGreaterThanOrEqual(14);
     expect(sqlFiles[13]).toBe("20260916140000_parish_videos.sql");
   });
 

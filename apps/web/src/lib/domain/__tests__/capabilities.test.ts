@@ -263,6 +263,8 @@ describe("resolveAdminCapabilities — the set a screen renders with", () => {
     expect(capabilities.read).toBe(true);
     expect(capabilities.auditRead).toBe(true);
     expect(capabilities.subscribersRead).toBe(true);
+    expect(capabilities.servicesRead).toBe(true);
+    expect(capabilities.navigationRead).toBe(true);
     expect(capabilities.create).toBe(false);
     expect(capabilities.update).toBe(false);
     expect(capabilities.publish).toBe(false);
@@ -274,6 +276,9 @@ describe("resolveAdminCapabilities — the set a screen renders with", () => {
     expect(capabilities.mediaDelete).toBe(false);
     expect(capabilities.republish).toBe(false);
     expect(capabilities.subscribersWrite).toBe(false);
+    expect(capabilities.servicesWrite).toBe(false);
+    expect(capabilities.servicesDelete).toBe(false);
+    expect(capabilities.navigationWrite).toBe(false);
   });
 
   it("an editor gets the authoring surface but no deletion", () => {
@@ -285,8 +290,13 @@ describe("resolveAdminCapabilities — the set a screen renders with", () => {
     expect(capabilities.mediaWrite).toBe(true);
     expect(capabilities.subscribersWrite).toBe(true);
     expect(capabilities.republish).toBe(true);
+    expect(capabilities.servicesRead).toBe(true);
+    expect(capabilities.servicesWrite).toBe(true);
+    expect(capabilities.navigationRead).toBe(true);
+    expect(capabilities.navigationWrite).toBe(true);
     expect(capabilities.delete).toBe(false);
     expect(capabilities.mediaDelete).toBe(false);
+    expect(capabilities.servicesDelete).toBe(false);
   });
 
   it("an owner gets everything", () => {
