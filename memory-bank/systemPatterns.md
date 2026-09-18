@@ -253,3 +253,24 @@
 - **إفصاح الأمانة المعمارية لمسار الإدارة والكتابة (Architectural Honesty Disclosure)**:
   * تطبيق الإدارة `apps/admin` يفشل مغلقاً عند غياب جلسة Supabase الحية ويحول الزوار إلى `/login` حماية لثابت INV-01 وحظر أي ثغرات تجاوز مصطنعة.
   * إثبات مسار الكتابة والإدارة بنسبة 100% عبر أجنحة اختبارات التكامل وإجراءات الخادم (Server Actions) واختبارات دورة المحتوى والفيديوهات الشاملة على محرك المخزن الملفي.
+
+## 38. معمارية إدارة الخدمات وشريط التنقل CMS (Phase 7.2 Services & Navigation CMS Architecture)
+- **ترقية وثيقة مخزن الملفات إلى الإصدار الخامس (`STORE_SCHEMA_VERSION = 5`)**:
+  * دعم مصفوفة المرافق والخدمات الكنسية `facilities: ParishFacility[]`.
+  * دعم مصفوفة عناصر شريط وقوائم التنقل `navItems: NavigationMenuItem[]`.
+  * ترقية تلقائية سلسة للمستندات ذات الإصدارات السابقة (1، 2، 3، 4) دون أي فقدان للبيانات.
+- **معمارية المستودعات الثنائية للمرافق والتنقل (Dual-Driver Repositories)**:
+  * **عقد مستودع المرافق `ParishFacilityRepository`**:
+    - محول الملفات `JsonParishFacilityRepository`: يدير بيانات الملف المحلي، ويبذر تلقائياً 8 مرافق أساسية.
+    - محول قاعدة البيانات `SupabaseParishFacilityRepository`: يدير استعلامات جدول `public.public_services` مع توثيق كافة التعديلات في جدول `public.audit_log`.
+  * **عقد مستودع شريط التنقل `ParishNavigationRepository`**:
+    - محول الملفات `JsonParishNavigationRepository`: يبذر 17 عنصراً أساسياً، ويبني هيكل القوائم الشجري، ويفك ارتباط العناصر التابعة بأمان (Safe Reparenting) عند حذف العنصر الأب.
+    - محول قاعدة البيانات `SupabaseParishNavigationRepository`: يدير جدول `public.nav_menu_items` مع سياسات RLS المحكمة.
+- **تجريد البيانات وحفظ ثابت عدم المصادقة (INV-01 Data Projection Stripping)**:
+  * دوال القراءة العامة `getPublicServices()` و`getPublicNavigation()` تجرد كلياً حقول التتبع الداخلي (`createdBy`, `updatedBy`, `createdAt`, `updatedAt`, `isActive`) وتحولها إلى النماذج العامة الموجهة للجمهور `PublicParishFacility` و`PublicNavItem`.
+  * تقتصر القراءة العامة على السجلات المفعلة والعامة فقط (`is_active = true AND is_public = true`).
+- **التكامل الديناميكي للترويسة مع التراجع الصادق للبذرة (Dynamic Header & Seed Fallback)**:
+  * مكون الخادم `Header.tsx` يستعلم `getPublicNavigation()` و`getPublicFacilities()` ويمرر البيانات كخصائص مسلسلة إلى مكون العميل `HeaderClient.tsx`.
+  * عند غياب قاعدة البيانات أو أثناء البناء بصفر متغيرات بيئة، يتراجع النظام صراحة للبذرة المعتمدة `SEED_PUBLIC_NAVIGATION` و`SEED_PUBLIC_FACILITIES` لضمان استقرار البناء الثابت 100%.
+  * دعم متقدم للقوائم المنسدلة (Dropdowns) والدرج الجانبي للهواتف مع الحفاظ على متطلبات الوصولية والاتجاه الكامل من اليمين لليسار (RTL).
+

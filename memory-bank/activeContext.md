@@ -1,19 +1,46 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-18)
-- **المرحلة السابعة 7.2 (Phase 7.2 Services & Navigation CMS — Domain Layer Complete & Verified)**:
-  * **حزمة النطاق `@church-site/domain`**:
-    - إضافة قدرات: `services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`.
-    - تحديث `READ_ONLY_CAPABILITIES`, `EDITOR_CAPABILITIES`, `OWNER_ONLY_CAPABILITIES`, و`ROLE_CAPABILITIES`.
-    - إضافة التسميات العربية `CAPABILITY_LABELS_AR` وربط كيانات التدقيق `CAPABILITY_AUDIT_ENTITY` (`service`, `navigation`).
-    - توسيع واجهة `AdminCapabilities` ودالة `resolveAdminCapabilities(role)` بالحقول الخمسة.
-    - تحديث `AuditEntityType` وتسمياتها العربية `AUDIT_ENTITY_TYPE_LABELS_AR`.
-    - إضافة نماذج `ParishFacility`, `PublicParishFacility`, `CreateParishFacilityInput`, `UpdateParishFacilityInput`, `NavSection`, `NavigationMenuItem`, `PublicNavItem`, `CreateNavItemInput`, `UpdateNavItemInput`, `ReorderNavItemsInput`.
-    - تحديث `Database["public"]["Tables"]` بجدول `nav_menu_items` والأعمدة التراكمية لـ `public_services`.
-  * **الاختبارات وبوابات التحقق**:
-    - تحديث `apps/web/src/lib/domain/__tests__/capabilities.test.ts` (162 فحصاً بنسبة 100% نجاح).
-    - نجاح كامل لفحص الأنواع: `pnpm --filter @church-site/domain typecheck` و`pnpm typecheck` (كافة حزم وتطبيقات مساحة العمل: packages/domain, packages/data-access, packages/ui, apps/admin, apps/web) = 0 أخطاء.
-    - نجاح كامل لاختبارات مساحة العمل: `pnpm test` = 33 ملف اختبار (471/471 فحصاً أخضر بنسبة 100%).
+- **المرحلة السابعة 7.2 (Phase 7.2 Services & Navigation CMS — 100% Complete & Verified)**:
+  * **اكتمال كافة طبقات منظومة إدارة الخدمات وقوائم التنقل (Full Stack Delivery)**:
+    1. **قاعدة البيانات وهجرة Supabase 15 (`20260916150000_services_navigation.sql`)**:
+       - إنشاء جدول `nav_menu_items` وسياسات RLS المحكمة (قراءة عامة للنشط/العام، وإدارة كاملة للطاقم).
+       - توسيع جدول `public_services` بحقول الترجمة والتحديث والتتبع (`name_en`, `description_en`, `updated_at`, `created_by`, `updated_by`).
+    2. **طبقة النطاق `@church-site/domain`**:
+       - قدرات RBAC: `services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`.
+       - مصفوفة الصلاحيات (Viewer/Editor/Owner) وربط كيانات التدقيق `service` و`navigation`.
+       - نماذج `ParishFacility`, `PublicParishFacility`, `NavigationMenuItem`, `PublicNavItem`, ومخططات المدخلات Zod.
+    3. **حزمة الوصول إلى البيانات `@church-site/data-access`**:
+       - مستودعات ثنائية المحرك: `ParishFacilityRepository` (`JsonParishFacilityRepository`, `SupabaseParishFacilityRepository`) و`ParishNavigationRepository` (`JsonParishNavigationRepository`, `SupabaseParishNavigationRepository`).
+       - ترقية وثيقة مخزن الملفات إلى الإصدار الخامس (`STORE_SCHEMA_VERSION = 5`) بإضافة مصفوفتي `facilities` و`navItems`.
+       - بذر تلقائي لـ 8 مرافق و17 عنصر تنقل أساسي.
+       - وسوم إعادة التحقق: `REVALIDATION_TAGS.facilities` و`REVALIDATION_TAGS.navigation` ودوال `revalidateFacilitySurfaces()` و`revalidateNavigationSurfaces()`.
+    4. **شاشات وإجراءات الإدارة `apps/admin`**:
+       - شاشة إدارة الخدمات `/admin/services` (`AdminServicesTable`, `AdminServiceModal`).
+       - شاشة إدارة شريط التنقل `/admin/navigation` (`AdminNavigationTable`, `AdminNavModal`).
+       - إجراءات الخادم المؤمنة: `admin-facility-actions.ts` و`admin-navigation-actions.ts`.
+       - ربط الروابط في القائمة الجانبية للشاشات المحمية وحصر الحذف بـ Owner.
+    5. **الموقع العام والقوائم الديناميكية `apps/web`**:
+       - تكامل مكون الترويسة `Header.tsx` (RSC) مع `HeaderClient.tsx` (RCC).
+       - دعم القوائم المنسدلة الديناميكية (Dropdowns) والدرج المتجاوب للهواتف مع التراجع الصادق للبذرة.
+    6. **أجنحة الاختبارات وبوابات الجودة (G1–G6 All Green)**:
+       - 39 ملف اختبار في مساحة العمل، **498/498 فحصاً أخضر بنسبة 100% (Green)** في Vitest.
+       - اختبار E2E الشامل `e2e-services-navigation-proof.test.ts` يثبت دورة الحياة الكاملة وعزل INV-01 والتجريد وسجل التدقيق.
+       - فحص الأنواع لكامل مساحة العمل: 0 أخطاء (`pnpm typecheck`).
+       - فحص الأسلوب: 0 أخطاء (`pnpm lint`).
+       - بناء موقع الويب بصفر متغيرات بيئة: 52/52 مساراً ثابتاً بنجاح (`pnpm --filter web build`).
+       - بناء تطبيق الإدارة: نجاح كامل لجميع المسارات بما فيها `/services` و`/navigation` (`pnpm --filter admin build`).
+  * **سلسلة التزامات المرحلة 7.2 (`bae5788`..`HEAD`)**:
+    1. `bae5788` `feat(domain): services and navigation capabilities`
+    2. `aa5f080` `chore(db): services and navigation schema and rls`
+    3. `7c89c0b` `feat(data-access): services and navigation repositories`
+    4. `1eb8ce2` `feat(admin): services and navigation managers`
+    5. `81a0db0` `feat(web): data-driven services and navigation`
+    6. `4b9c44e` `test(e2e): services and navigation full proof`
+  * **تسليم التوثيق**:
+    - المعمارية التقنية `docs/phase7-services-navigation.md`.
+    - دليل طاقم الكنيسة بالعربية `docs/services-nav-guide.md`.
+    - تحديث تقرير المراجعة `REVIEW.md` (القسم 20) وتزامن بنك الذاكرة بالكامل.
 - **المرحلة السادسة (Phase 6 Final Documentation & Playwright E2E — 100% Complete & Verified)**:
   * **اكتملت خارطة طريق الإصدار الثاني بالكامل (V2 Roadmap 100% Complete & Closed)**:
     - كافة المراحل الست (Phase 1 Monorepo Split، Phase 2 Media Storage، Phase 3 Content Types Engine، Phase 4 Parish Videos، Phase 5 Hardening، Phase 6 Playwright E2E & Final Handover Docs) **مكتملة ومُحققة بالكامل 100%**.

@@ -1,19 +1,37 @@
 # Progress — سجل الإنجاز
 
-## يعمل الآن (Phase 7.2 Services & Navigation CMS — Domain Layer Complete & Verified)
-- [x] **إتمام طبقة النطاق لمنظومة الخدمات وشريط التنقل CMS (Phase 7.2 Domain Layer)**:
-  * **حزمة النطاق `@church-site/domain`**:
-    - القدرات الأمنية: `services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`.
-    - مصفوفة الصلاحيات: إضافة القراءة لـ `READ_ONLY_CAPABILITIES`، والكتابة لـ `EDITOR_CAPABILITIES`، والحذف لـ `OWNER_ONLY_CAPABILITIES`.
-    - معجم التدقيق: إضافة التسميات العربية `CAPABILITY_LABELS_AR`، وإضافة `service` و`navigation` إلى `AuditEntityType` و`AUDIT_ENTITY_TYPE_LABELS_AR`.
-    - واجهة الشاشات: إضافة الحقول الخمسة إلى `AdminCapabilities` وحسابها بـ `can()` في `resolveAdminCapabilities`.
+## يعمل الآن (Phase 7.2 Services & Navigation CMS — 100% Complete & Verified)
+- [x] **إتمام منظومة إدارة الخدمات الكنسية وشريط وقوائم التنقل (Services & Navigation CMS)**:
+  * **قاعدة البيانات وهجرة Supabase 15 (`20260916150000_services_navigation.sql`)**:
+    - إنشاء جدول `public.nav_menu_items` وسياسات أمان الصفوف RLS (قراءة عامة للنشط/العام، وإدارة كاملة للطاقم).
+    - توسيع جدول `public.public_services` بحقول الترجمة والتحديث والتتبع (`name_en`, `description_en`, `updated_at`, `created_by`, `updated_by`).
+  * **طبقة النطاق `@church-site/domain`**:
+    - قدرات RBAC: `services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`.
+    - ربط كيانات التدقيق `service` و`navigation` في `AuditEntityType` وتسمياتها العربية.
     - نماذج النطاق والمدخلات: `ParishFacility`, `PublicParishFacility`, `CreateParishFacilityInput`, `UpdateParishFacilityInput`, `NavSection`, `NavigationMenuItem`, `PublicNavItem`, `CreateNavItemInput`, `UpdateNavItemInput`, `ReorderNavItemsInput`.
-    - مخطط قاعدة البيانات: إضافة جدول `nav_menu_items` بجميع أعمدته وعلاقاته، والأعمدة التراكمية لـ `public_services` في `database.types.ts`.
-  * **بوابات التحقق**:
-    - `apps/web/src/lib/domain/__tests__/capabilities.test.ts` (162/162 فحصاً أخضر).
-    - `pnpm --filter @church-site/domain typecheck` = 0 أخطاء.
-    - `pnpm typecheck` = 0 أخطاء لكامل الـ Monorepo.
-    - `pnpm test` = 33 ملف اختبار (471/471 فحصاً أخضر بنسبة 100%).
+  * **طبقة الوصول للبيانات `@church-site/data-access`**:
+    - مستودعات ثنائية المحرك: `ParishFacilityRepository` (`JsonParishFacilityRepository`, `SupabaseParishFacilityRepository`) و`ParishNavigationRepository` (`JsonParishNavigationRepository`, `SupabaseParishNavigationRepository`).
+    - ترقية وثيقة مخزن الملفات إلى الإصدار الخامس (`STORE_SCHEMA_VERSION = 5`) بإضافة `facilities` و`navItems` مع الحفاظ على التوافق الخلفي.
+    - بذر تلقائي لـ 8 مرافق و17 عنصر تنقل أساسي.
+    - دوال إعادة التحقق الفوري: `revalidateFacilitySurfaces()` و`revalidateNavigationSurfaces()`.
+  * **شاشات وإجراءات لوحة الإدارة `apps/admin`**:
+    - شاشة إدارة الخدمات `/admin/services` (`AdminServicesTable`, `AdminServiceModal`) مع تصفية وبحث وحصر الحذف بـ Owner.
+    - شاشة إدارة شريط التنقل `/admin/navigation` (`AdminNavigationTable`, `AdminNavModal`) مع دعم إعادة الترتيب وحماية تفكيك الأبناء (Reparenting).
+    - إجراءات الخادم المؤمنة: `admin-facility-actions.ts` و`admin-navigation-actions.ts` مع تسجيل التدقيق الكامل.
+    - إضافة الروابط في القائمة الجانبية للشاشات المحمية.
+  * **الموقع العام وتكامل الترويسة الديناميكية `apps/web`**:
+    - تكامل مكون الترويسة `Header.tsx` (RSC) مع `HeaderClient.tsx` (RCC) لعرض القوائم المنسدلة والدرج المتجاوب للهواتف مع التراجع الصادق للبذرة.
+  * **بوابات التحقق الصلبة للمرحلة 7.2 (G1–G6 All Passed & Verified)**:
+    - G1: فحص الأنواع لكامل مساحة العمل = 0 أخطاء (`pnpm typecheck`).
+    - G2: فحص الأسلوب `eslint .` = 0 أخطاء (`pnpm lint`).
+    - G3: اختبارات الوحدات والتكامل = 39 ملفاً، **498/498 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest.
+    - G4: بناء الويب بصفر متغيرات بيئة = **52/52 مساراً ثابتاً** بنجاح (`pnpm --filter web build`).
+    - G5: بناء الإدارة = جميع مسارات `/services` و`/navigation` بنجاح كامل (`pnpm --filter admin build`).
+    - G6: إثبات دورة حياة الخدمات والتنقل الشاملة (E2E Proof) على محرك مخزن الملفات = 100% نجاح (`e2e-services-navigation-proof.test.ts`).
+  * **تسليم التوثيق**:
+    - وثيقة المعمارية التقنية `docs/phase7-services-navigation.md`.
+    - دليل طاقم الكنيسة بالعربية `docs/services-nav-guide.md`.
+    - تحديث `REVIEW.md` (القسم 20) وبنك الذاكرة بالكامل.
 
 ## يعمل الآن (Phase 6 Final Documentation & Playwright E2E — 100% Complete & Verified)
 - [x] **إتمام المرحلة السادسة بالكامل وخاتمة خارطة طريق الإصدار الثاني (All 6 Phases 100% Complete & Verified)**:

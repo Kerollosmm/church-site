@@ -517,6 +517,63 @@ git diff dee191f -- supabase/migrations/
 git diff dee191f -- pnpm-lock.yaml package.json
 ```
 
+## 20. Phase 7.2: Services & Navigation CMS — Verification & Review
+
+### 20.1 Scope & Architecture Overview
+Phase 7.2 delivers a dynamic, full-lifecycle Content Management System (CMS) for **Parish Facilities (Public Services)** and **Navigation Menu Items (Dynamic Navbar & Drawers)**:
+1. **Database & Supabase Schema (Migration 15)**: Authored `supabase/migrations/20260916150000_services_navigation.sql` introducing `public.nav_menu_items` with hierarchical foreign keys (`parent_id`) and expanding `public.public_services` with bilingual English columns and tracking timestamps. Hardened Row Level Security (RLS) policies enforce public read for active/public records and staff-only mutations.
+2. **Domain Capabilities & Models (`@church-site/domain`)**: Configured 5 granular RBAC capabilities (`services:read`, `services:write`, `services:delete`, `navigation:read`, `navigation:write`). Mapped audit entities `service` and `navigation` with Arabic localized labels. Defined domain entities and Zod input schemas.
+3. **Dual-Driver Repositories (`@church-site/data-access`)**: Implemented `ParishFacilityRepository` and `ParishNavigationRepository` with dual drivers (`json` file-backed store for offline/SSG/test resilience and `supabase` PostgreSQL for production). Upgraded store document to Schema Version 5 (`STORE_SCHEMA_VERSION = 5`) with baseline seeding (8 facilities, 17 nav items) and instant cache revalidation tags.
+4. **Administrative CMS Surfaces (`apps/admin`)**: Built complete management screens at `/admin/services` and `/admin/navigation` with filtering, active toggling, batch reordering, modal editing, and audit logging. Destructive deletions are strictly restricted to the `owner` role.
+5. **Dynamic Public Navigation (`apps/web`)**: Refactored `Header.tsx` (RSC) and `HeaderClient.tsx` (RCC) to dynamically render nested navigation dropdowns and mobile drawers while ensuring zero-auth isolation (INV-01) and seamless fallback to seed navigation during static builds.
+
+### 20.2 Per-Commit Audit Table for Phase 7.2
+
+| Commit | Step | Description | Verification Gates Run | Result |
+| :--- | :--- | :--- | :--- | :--- |
+| `bae5788` | Step 1 | `feat(domain): services and navigation capabilities` — Capabilities, types, Zod schemas | `pnpm --filter @church-site/domain typecheck`, `pnpm test` (162 capabilities tests) | **GREEN** |
+| `aa5f080` | Step 2 | `chore(db): services and navigation schema and rls` — Migration 15, DDL & RLS policies | Vitest migration SQL unit tests, typecheck | **GREEN** |
+| `7c89c0b` | Step 3 | `feat(data-access): services and navigation repositories` — Dual drivers, Schema v5 upgrade | Repository test suites, schema v5 upgrade validation | **GREEN** |
+| `1eb8ce2` | Step 4 | `feat(admin): services and navigation managers` — `/admin/services`, `/admin/navigation` | `pnpm --filter admin typecheck`, server actions unit tests | **GREEN** |
+| `81a0db0` | Step 5 | `feat(web): data-driven services and navigation` — Dynamic `Header.tsx` & `HeaderClient.tsx` | `pnpm --filter web typecheck`, `HeaderClient.test.tsx` | **GREEN** |
+| `4b9c44e` | Step 6 | `test(e2e): services and navigation full proof` — Full lifecycle file store E2E test | Vitest E2E proof (CRUD, reparenting, audit, INV-01) | **GREEN** |
+
+### 20.3 Final Verification Gates Table (G1–G6)
+
+All six quality gates were executed directly on the codebase with 100% success rate:
+
+| Gate | Check | Pass Condition | Result | Proof Details |
+| :--- | :--- | :--- | :--- | :--- |
+| **G1** | Monorepo Typecheck | `pnpm typecheck` across all 5 workspace projects (0 errors) | **PASS (0 errors)** | `packages/domain`, `packages/ui`, `packages/data-access`, `apps/admin`, `apps/web` |
+| **G2** | Monorepo Lint | `pnpm lint` across workspace with 0 errors | **PASS (0 errors)** | `eslint .` clean |
+| **G3** | Test Suite (Vitest) | 100% tests green across 39 test files | **PASS (498/498 green)** | 498 tests passed in 46.06s |
+| **G4** | Web Production Build | `pnpm --filter web build` with zero env vars (52 static routes) | **PASS (52/52 static pages)** | Prerendered `/services` & `/services/[slug]` cleanly |
+| **G5** | Admin Production Build | `pnpm --filter admin build` succeeds cleanly | **PASS (Clean build)** | Successfully compiled `/services` (6.93 kB) and `/navigation` (6.5 kB) |
+| **G6** | E2E Proof & Invariants | Complete lifecycle, audit logging, INV-01 projection stripping | **PASS (100% Verified)** | `e2e-services-navigation-proof.test.ts` passed |
+
+### 20.4 Reviewer Can Re-Verify Phase 7.2 With:
+
+```bash
+# 1. Typecheck all applications and packages
+pnpm typecheck
+
+# 2. Lint entire monorepo
+pnpm lint
+
+# 3. Run full Vitest test suite (498 tests across 39 files)
+pnpm test
+
+# 4. Zero-env build of public portal (generating 52 static routes)
+pnpm --filter web build
+
+# 5. Build staff admin dashboard (compiling /services and /navigation)
+pnpm --filter admin build
+
+# 6. Run isolated E2E proof test for Services & Navigation CMS
+pnpm --filter @church-site/data-access test src/store/__tests__/e2e-services-navigation-proof.test.ts
+```
+
+
 
 
 
