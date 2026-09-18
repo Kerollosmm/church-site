@@ -10,6 +10,7 @@ import { TRUSTED_EMBED_HOSTS } from "./trusted-embeds";
 export interface NormalizedVideoUrl {
   provider: VideoProvider;
   embedUrl: string;
+  thumbnailUrl?: string;
 }
 
 // Regex matching standard YouTube 11-char video IDs (alphanumeric, -, _)
@@ -24,9 +25,9 @@ const YOUTUBE_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
  * - Must resolve to an approved host in TRUSTED_EMBED_HOSTS (or *.supabase.co for direct media).
  * - Extracts and normalizes YouTube videos (watch, shorts, embed, youtu.be) into privacy-enhanced youtube-nocookie embed URLs.
  * - Wraps Facebook videos into Facebook's official video plugin embed URL.
- * - Validates direct streams/mp4s on approved hosts.
+ * - Validates direct streams/mp4s on approved hosts (*.supabase.co).
  *
- * Returns `{ provider, embedUrl }` if valid, or `null` if rejected.
+ * Returns `{ provider, embedUrl, thumbnailUrl? }` if valid, or `null` if rejected.
  */
 export function normalizeVideoUrl(raw: string | null | undefined): NormalizedVideoUrl | null {
   if (typeof raw !== "string") return null;
@@ -100,6 +101,7 @@ export function normalizeVideoUrl(raw: string | null | undefined): NormalizedVid
     return {
       provider: "youtube",
       embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
     };
   }
 
@@ -108,7 +110,8 @@ export function normalizeVideoUrl(raw: string | null | undefined): NormalizedVid
     host === "facebook.com" ||
     host === "www.facebook.com" ||
     host === "web.facebook.com" ||
-    host === "m.facebook.com"
+    host === "m.facebook.com" ||
+    host === "fb.watch"
   ) {
     // Must have a meaningful path
     if (parsed.pathname.length <= 1) {
@@ -122,7 +125,7 @@ export function normalizeVideoUrl(raw: string | null | undefined): NormalizedVid
     };
   }
 
-  // 3. Direct stream / media URL
+  // 3. Direct stream / media URL on approved hosts (*.supabase.co)
   if (
     host.endsWith(".supabase.co") ||
     parsed.pathname.endsWith(".mp4") ||

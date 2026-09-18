@@ -29,6 +29,7 @@ export const TRUSTED_EMBED_HOSTS: readonly string[] = [
   "www.facebook.com",
   "web.facebook.com",
   "m.facebook.com",
+  "fb.watch",
 ];
 
 /** `https://` origins derived from {@link TRUSTED_EMBED_HOSTS} — used verbatim in CSP `frame-src`. */

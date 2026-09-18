@@ -1,12 +1,9 @@
-// src/lib/store/revalidate.ts
-// Cache invalidation for every events surface â€” the "no rebuild required" half of the design.
+// packages/data-access/src/store/revalidate.ts
+// Cache invalidation for every events, content, and video surface.
 //
 // Kept OUT of the drivers on purpose: this module imports `next/cache`, which only works inside a
 // request/action scope. A plain script (or the verification test) can therefore import the
 // repository without pulling Next's request machinery in.
-//
-// Tag names come from `src/lib/tags.ts` â€” the repository's tag registry â€” never from a literal
-// written here (see systemPatterns Â§1).
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { REVALIDATION_TAGS } from "../tags";
@@ -20,22 +17,25 @@ export const EVENT_SURFACE_TAGS = [
 ] as const;
 
 /**
- * Public paths that render events. The home page, the events list/calendar, the event detail route
- * and the ministries index are all live; `/events/[slug]` is listed as the dynamic-route PATTERN,
- * which is what `revalidatePath(path, "page")` expands over every generated slug. A new public
- * surface must be added HERE, which is what keeps a mutation from forgetting one.
+ * Public paths that render events.
  */
 export const EVENT_SURFACE_PATHS = ["/", "/events", "/events/[slug]", "/ministries"] as const;
 
 /** Invalidates the events tags (and any extra paths); returns what was invalidated. */
 export function revalidateEventSurfaces(paths: readonly string[] = EVENT_SURFACE_PATHS): string[] {
   for (const tag of EVENT_SURFACE_TAGS) {
-    revalidateTag(tag);
+    try {
+      revalidateTag(tag);
+    } catch {
+      // Safe fallback outside Next.js request lifecycle
+    }
   }
   for (const path of paths) {
-    // The `"page"` type is what invalidates a whole dynamic route pattern such as `/events/[slug]`;
-    // it is equally valid (and equivalent) for the plain paths alongside it.
-    revalidatePath(path, "page");
+    try {
+      revalidatePath(path, "page");
+    } catch {
+      // Safe fallback outside Next.js request lifecycle
+    }
   }
   return [...EVENT_SURFACE_TAGS, ...paths];
 }
@@ -52,7 +52,7 @@ export interface RepublishResult {
 
 /**
  * Manual cache clear: asks the repository for its status (the driver's no-op hook) and then drops
- * every events cache entry, so the public pages pick up the store's current content immediately.
+ * every events cache entry.
  */
 export async function republishEventSurfaces(paths: readonly string[] = EVENT_SURFACE_PATHS): Promise<RepublishResult> {
   const repository = getEventRepository();
@@ -70,7 +70,11 @@ export async function republishEventSurfaces(paths: readonly string[] = EVENT_SU
 
 /** Invalidate cache tags and routes for dynamic content types */
 export function revalidateContentSurfaces(typeSlug?: string, entrySlug?: string): string[] {
-  revalidateTag(REVALIDATION_TAGS.content);
+  try {
+    revalidateTag(REVALIDATION_TAGS.content);
+  } catch {
+    // Safe fallback outside Next.js request lifecycle
+  }
   const paths: string[] = ["/content"];
   if (typeSlug) {
     paths.push(`/content/${typeSlug}`);
@@ -82,7 +86,7 @@ export function revalidateContentSurfaces(typeSlug?: string, entrySlug?: string)
     try {
       revalidatePath(path, "page");
     } catch {
-      // Safe fallback when executed outside Next.js request lifecycle
+      // Safe fallback outside Next.js request lifecycle
     }
   }
   return [REVALIDATION_TAGS.content, ...paths];
@@ -90,7 +94,11 @@ export function revalidateContentSurfaces(typeSlug?: string, entrySlug?: string)
 
 /** Invalidate cache tags and routes for parish videos */
 export function revalidateVideoSurfaces(): string[] {
-  revalidateTag(REVALIDATION_TAGS.parishVideos);
+  try {
+    revalidateTag(REVALIDATION_TAGS.parishVideos);
+  } catch {
+    // Safe fallback outside Next.js request lifecycle
+  }
   const paths: string[] = ["/about", "/"];
   for (const path of paths) {
     try {
