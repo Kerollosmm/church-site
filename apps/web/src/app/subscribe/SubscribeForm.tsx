@@ -51,9 +51,10 @@ type Feedback =
 export interface SubscribeFormProps {
   locale: Locale;
   groups: SubscribableTopicGroup[];
+  emailDeliveryEnabled?: boolean;
 }
 
-export function SubscribeForm({ locale, groups }: SubscribeFormProps): React.ReactElement {
+export function SubscribeForm({ locale, groups, emailDeliveryEnabled = false }: SubscribeFormProps): React.ReactElement {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
@@ -111,12 +112,21 @@ export function SubscribeForm({ locale, groups }: SubscribeFormProps): React.Rea
 
       {/* SAID BEFORE THE FORM, not only after a submit: the visitor must know what they are signing
           up for BEFORE typing an address. The same sentence is repeated on success. */}
-      <p
-        data-subscribe-delivery="off"
-        className="mt-3 rounded-2xl border border-amber-300 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-900"
-      >
-        {t(locale, "subscribe.deliveryOff")}
-      </p>
+      {emailDeliveryEnabled ? (
+        <p
+          data-subscribe-delivery="on"
+          className="mt-3 rounded-2xl border border-emerald-300 bg-emerald-50 p-3 text-[11px] leading-relaxed text-emerald-950"
+        >
+          {t(locale, "subscribe.deliveryOn")}
+        </p>
+      ) : (
+        <p
+          data-subscribe-delivery="off"
+          className="mt-3 rounded-2xl border border-amber-300 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-900"
+        >
+          {t(locale, "subscribe.deliveryOff")}
+        </p>
+      )}
 
       {feedback ? (
         <div
@@ -136,10 +146,16 @@ export function SubscribeForm({ locale, groups }: SubscribeFormProps): React.Rea
           )}
           <div className="space-y-1.5">
             <p>{wordFor(feedback)}</p>
-            {feedback.tone === "success" && !feedback.emailDeliveryEnabled ? (
-              <p className="rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-amber-900">
-                {t(locale, "subscribe.deliveryOff")}
-              </p>
+            {feedback.tone === "success" ? (
+              feedback.emailDeliveryEnabled ? (
+                <p className="rounded-xl border border-emerald-300 bg-emerald-50 p-2.5 text-emerald-950">
+                  {t(locale, "subscribe.deliveryOnSuccess")}
+                </p>
+              ) : (
+                <p className="rounded-xl border border-amber-300 bg-amber-50 p-2.5 text-amber-900">
+                  {t(locale, "subscribe.deliveryOff")}
+                </p>
+              )
             ) : null}
           </div>
         </div>

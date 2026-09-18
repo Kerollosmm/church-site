@@ -62,15 +62,36 @@ export interface Mailer {
   send(message: MailMessage): Promise<MailSendResult>;
 }
 
+export const RESEND_API_KEY_ENV_VAR = "RESEND_API_KEY";
+export const RESEND_FROM_EMAIL_ENV_VAR = "RESEND_FROM_EMAIL";
+
 /**
  * The registry of mail implementations.
  *
- * `noop` is deliberately the only entry: adding a real provider means adding a factory here, and the
- * comment above says exactly what that takes. A name that is absent — including a typo — falls back
+ * `noop` is the zero-config fallback. Real providers register factories here.
+ * A name that is absent — including a typo or misconfiguration — falls back
  * to the no-op, and `getMailer()` logs that fallback loudly rather than pretending to send.
  */
-const MAILER_FACTORIES: Record<string, () => Mailer> = {
-  // TODO(provider): "resend": () => new ResendMailer(...) — see the header of this file.
+const MAILER_FACTORIES: Record<string, () => Promise<Mailer>> = {
+  resend: async () => {
+    const apiKey = process.env[RESEND_API_KEY_ENV_VAR]?.trim();
+    const fromEmail = process.env[RESEND_FROM_EMAIL_ENV_VAR]?.trim();
+
+    if (!apiKey || !fromEmail) {
+      console.error(
+        `[notify] MAIL_PROVIDER=resend requested, but ${!apiKey ? RESEND_API_KEY_ENV_VAR : RESEND_FROM_EMAIL_ENV_VAR} is missing or empty. Refusing to pretend mail was sent; falling back to noop.`,
+        {
+          hasApiKey: Boolean(apiKey && apiKey.length > 0),
+          hasFromEmail: Boolean(fromEmail && fromEmail.length > 0),
+        }
+      );
+      const { noopMailer } = await import("./noop-mailer");
+      return noopMailer;
+    }
+
+    const { ResendMailer } = await import("./resend-mailer");
+    return new ResendMailer({ apiKey, fromEmail });
+  },
 };
 
 /** The provider name a deployment asked for, or "noop". */
@@ -99,11 +120,11 @@ export async function getMailer(): Promise<Mailer> {
   if (!factory) {
     console.error("[notify] MAIL_PROVIDER names no implemented mailer; NOTHING will be sent", {
       requested,
-      implemented: ["noop"],
+      implemented: ["noop", ...Object.keys(MAILER_FACTORIES)],
     });
     const { noopMailer } = await import("./noop-mailer");
     return noopMailer;
   }
 
-  return factory();
+  return await factory();
 }

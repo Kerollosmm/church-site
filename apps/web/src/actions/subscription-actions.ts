@@ -28,8 +28,7 @@ import {
   resolveSubscriberTopics,
 } from "@/lib/domain/subscribers";
 import { getLocale } from "@/lib/i18n/server";
-import { getEventRepository, isStoreError } from "@/lib/store";
-import { notifyNewSubscription } from "@/lib/notify";
+import { getEventRepository, isStoreError, notifyNewSubscription } from "@church-site/data-access";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {
   PUBLIC_FORM_LIMIT,

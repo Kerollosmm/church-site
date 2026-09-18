@@ -15,17 +15,21 @@ import type { Locale } from "../i18n/locales";
 import type { SubscriberRecord } from "@church-site/domain";
 import { getMailer, type MailMessage, type MailSendResult } from "./mailer";
 import { recordWouldSendNote } from "./noop-mailer";
+import { recordDeliveryAuditNote } from "./resend-mailer";
 
 export * from "./mailer";
+export * from "./noop-mailer";
+export * from "./resend-mailer";
 
 export type NotificationOutcome = MailSendResult;
 
 /**
- * The welcome message's text. Arabic or English by the visitor's locale, and — deliberately — it does
- * not promise a delivery: with no provider, the message is only ever recorded.
+ * The welcome message's text. Arabic or English by the visitor's locale.
+ * Honestly adapts based on whether the mailer delivers real email or records would-send entries.
  */
 export function buildSubscriptionWelcomeMessage(
-  subscriber: Pick<SubscriberRecord, "email" | "name" | "locale">
+  subscriber: Pick<SubscriberRecord, "email" | "name" | "locale">,
+  deliverEmails = false
 ): MailMessage {
   const locale: Locale = subscriber.locale;
   const greetingAr = subscriber.name ? `أهلاً ${subscriber.name}،` : "أهلاً بك،";
@@ -36,8 +40,13 @@ export function buildSubscriptionWelcomeMessage(
     locale,
     kind: "subscription-welcome",
     subject: locale === "ar" ? "تسجيل الاشتراك في تنبيهات فعاليات الكنيسة" : "Your parish events subscription",
-    bodyText:
-      locale === "ar"
+    bodyText: deliverEmails
+      ? locale === "ar"
+        ? `${greetingAr}\nتم تسجيل بريدك في قائمة تنبيهات فعاليات الكنيسة بنجاح.\nستصلك إشعارات بمواعيد الفعاليات والأنشطة القادمة.`
+        : `Hello${subscriber.name ? ` ${subscriber.name}` : ""},\n` +
+          `Your address has been added to the parish events notification list.\n` +
+          `You will receive notifications about upcoming parish events.`
+      : locale === "ar"
         ? `${greetingAr}\nتم تسجيل بريدك في قائمة تنبيهات فعاليات الكنيسة.\n` +
           `ملاحظة مهمة: إرسال البريد الإلكتروني غير مفعّل على هذا الموقع حالياً، فهذه الرسالة مسجَّلة في سجل الكنيسة ولم تُرسل فعلياً.`
         : `Hello${subscriber.name ? ` ${subscriber.name}` : ""},\n` +
@@ -55,16 +64,25 @@ export function buildSubscriptionWelcomeMessage(
 export async function notifyNewSubscription(
   subscriber: Pick<SubscriberRecord, "id" | "email" | "name" | "locale">
 ): Promise<{ message: MailMessage; result: NotificationOutcome; notificationLogged: boolean }> {
-  const message = buildSubscriptionWelcomeMessage(subscriber);
   const mailer = await getMailer();
+  const message = buildSubscriptionWelcomeMessage(subscriber, mailer.deliverEmails);
   const result = await mailer.send(message);
 
-  const notificationLogged = mailer.deliverEmails ? false : await recordWouldSendNote(subscriber, message);
+  const notificationLogged = mailer.deliverEmails
+    ? await recordDeliveryAuditNote(subscriber, result)
+    : await recordWouldSendNote(subscriber, message);
 
   if (!mailer.deliverEmails) {
     console.warn("[notify] subscription stored, NO e-mail sent", {
       subscriberId: subscriber.id,
       provider: mailer.provider,
+      notificationLogged,
+    });
+  } else {
+    console.info("[notify] subscription notification processed", {
+      subscriberId: subscriber.id,
+      provider: mailer.provider,
+      delivered: result.delivered,
       notificationLogged,
     });
   }

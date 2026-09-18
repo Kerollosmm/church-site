@@ -26,6 +26,7 @@ import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locale
 import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 import { getFeedTaxonomy } from "@/lib/events/feed";
+import { getMailer } from "@church-site/data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,8 @@ export default async function SubscribePage(): Promise<React.ReactElement> {
   }
 
   const enabled = isEventSubscriptionsEnabled();
+  const mailer = await getMailer();
+  const emailDeliveryEnabled = mailer.deliverEmails;
 
   return (
     <div dir={LOCALE_DIRECTION[locale]} lang={locale} data-subscribe-locale={locale} className="min-h-screen bg-alabasterBg pb-16">
@@ -102,7 +105,7 @@ export default async function SubscribePage(): Promise<React.ReactElement> {
             </Link>
           </section>
         ) : (
-          <SubscribeForm locale={locale} groups={groups} />
+          <SubscribeForm locale={locale} groups={groups} emailDeliveryEnabled={emailDeliveryEnabled} />
         )}
 
         <p className="text-center text-xs leading-relaxed text-slateText-secondary">

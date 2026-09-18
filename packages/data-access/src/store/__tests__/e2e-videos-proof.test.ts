@@ -31,17 +31,18 @@ describe("E2E Parish Videos Proof (Gate G6)", () => {
   it("executes complete lifecycle: creation, normalization, public projection, toggle, and trusted embed gating", async () => {
     // 1. Staff adds YouTube video
     const ytNormalized = normalizeVideoUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-    expect(ytNormalized.provider).toBe("youtube");
-    expect(ytNormalized.embedUrl).toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(ytNormalized).not.toBeNull();
+    expect(ytNormalized!.provider).toBe("youtube");
+    expect(ytNormalized!.embedUrl).toBe("https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
 
     const video1 = await repo.createVideo(
       {
         titleAr: "بث مباشر - قداس الأحد",
         titleEn: "Sunday Liturgy Live",
-        provider: ytNormalized.provider,
+        provider: ytNormalized!.provider,
         sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        embedUrl: ytNormalized.embedUrl,
-        thumbnailUrl: ytNormalized.thumbnailUrl,
+        embedUrl: ytNormalized!.embedUrl,
+        thumbnailUrl: ytNormalized!.thumbnailUrl,
         sortOrder: 1,
         isPublic: true,
         isActive: true,
@@ -52,15 +53,16 @@ describe("E2E Parish Videos Proof (Gate G6)", () => {
     // 2. Staff adds Facebook video
     const fbRaw = "https://www.facebook.com/church.portal/videos/987654321098765/";
     const fbNormalized = normalizeVideoUrl(fbRaw);
-    expect(fbNormalized.provider).toBe("facebook");
+    expect(fbNormalized).not.toBeNull();
+    expect(fbNormalized!.provider).toBe("facebook");
 
     const video2 = await repo.createVideo(
       {
         titleAr: "عظة عشية القديسين",
         titleEn: "Saints Eve Sermon",
-        provider: fbNormalized.provider,
+        provider: fbNormalized!.provider,
         sourceUrl: fbRaw,
-        embedUrl: fbNormalized.embedUrl,
+        embedUrl: fbNormalized!.embedUrl,
         sortOrder: 2,
         isPublic: true,
         isActive: true,
@@ -90,9 +92,9 @@ describe("E2E Parish Videos Proof (Gate G6)", () => {
     const video4 = await repo.createVideo(
       {
         titleAr: "فيديو مؤرشف قديم",
-        provider: ytNormalized.provider,
+        provider: ytNormalized!.provider,
         sourceUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        embedUrl: ytNormalized.embedUrl,
+        embedUrl: ytNormalized!.embedUrl,
         sortOrder: 4,
         isPublic: true,
         isActive: false,

@@ -106,6 +106,10 @@ const AR_MESSAGES = {
   "subscribe.submitting": "جارٍ التسجيل…",
   "subscribe.deliveryOff":
     "ملاحظة مهمة: إرسال البريد الإلكتروني غير مفعّل على هذا الموقع بعد، لذلك لن تصلك رسالة الآن. اشتراكك محفوظ في سجل الكنيسة وسيُستخدم عند تشغيل التنبيهات.",
+  "subscribe.deliveryOn":
+    "خدمة إرسال البريد الإلكتروني مفعّلة: سيصلك بريد ترحيبي لتأكيد تسجيلك في قائمة التنبيهات.",
+  "subscribe.deliveryOnSuccess":
+    "تم إرسال بريد ترحيبي لتأكيد اشتراكك بنجاح. يرجى مراجعة صندوق الوارد.",
   "subscribe.disabledTitle": "خدمة الاشتراك غير مفعّلة حالياً",
   "subscribe.disabledHint":
     "أوقفت كنيسة القديسين خدمة التنبيهات بالبريد الإلكتروني على هذا الموقع مؤقتاً. يمكنك متابعة الفعاليات القادمة من صفحة الفعاليات.",
@@ -286,6 +290,10 @@ const EN_MESSAGES: Record<MessageKey, string> = {
   "subscribe.submitting": "Saving…",
   "subscribe.deliveryOff":
     "Important: e-mail delivery is not enabled on this site yet, so no message will arrive now. Your subscription is stored in the parish log and will be used once notifications are switched on.",
+  "subscribe.deliveryOn":
+    "E-mail delivery is enabled: a welcome message will be sent to your inbox to confirm your subscription.",
+  "subscribe.deliveryOnSuccess":
+    "A welcome e-mail has been sent to your address. Please check your inbox.",
   "subscribe.disabledTitle": "Subscriptions are switched off at the moment",
   "subscribe.disabledHint":
     "The parish has temporarily disabled e-mail notifications on this site. You can still browse the upcoming events.",
