@@ -162,4 +162,44 @@ describe("GalleryPage Component", () => {
 
     consoleSpy.mockRestore();
   });
+
+  it("renders resolved external asset (e.g. YouTube thumbnail) safely", async () => {
+    vi.mocked(feedModule.getPublicGalleryMedia).mockResolvedValue([
+      {
+        id: "media-yt-1",
+        filename: "youtube-thumbnail.jpg",
+        url: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+        mimeType: "image/jpeg",
+        altAr: "صورة يوتيوب",
+        altEn: "YouTube Image",
+      },
+      {
+        id: "media-insecure-1",
+        filename: "insecure.jpg",
+        url: "http://insecure.com/img.jpg",
+        mimeType: "image/jpeg",
+        altAr: "صورة غير آمنة",
+        altEn: "Insecure Image",
+      },
+    ]);
+
+    const page = await GalleryPage();
+    const { container } = render(page);
+
+    // Safe allowlisted image renders <img> tag
+    const ytCard = container.querySelector("[data-gallery-media='media-yt-1']");
+    expect(ytCard).toBeDefined();
+    const ytImg = ytCard?.querySelector("img");
+    expect(ytImg).toBeDefined();
+    expect(ytImg?.getAttribute("src")).toBe("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+
+    // Insecure item does NOT render an <img> tag and renders the file info card fallback
+    const insecureCard = container.querySelector("[data-gallery-media='media-insecure-1']");
+    expect(insecureCard).toBeDefined();
+    const insecureImg = insecureCard?.querySelector("img");
+    expect(insecureImg).toBeNull();
+    expect(insecureCard?.textContent).toContain("insecure.jpg");
+    expect(insecureCard?.textContent).toContain("image/jpeg");
+    expect(insecureCard?.textContent).toContain("الرابط المسجَّل لهذا الملف غير قابل للفتح");
+  });
 });

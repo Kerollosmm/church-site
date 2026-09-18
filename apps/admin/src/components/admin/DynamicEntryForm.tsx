@@ -110,12 +110,26 @@ export function DynamicEntryForm({
       return;
     }
 
+    const sanitizedData = { ...formData };
+    for (const field of fields) {
+      if (field.fieldType === "media") {
+        const val = sanitizedData[field.slug];
+        if (typeof val === "string") {
+          const res = resolveExternalImageUrl(val);
+          if (isResolvedAsset(res)) {
+            sanitizedData[field.slug] = res.resolvedUrl;
+          }
+        }
+      }
+    }
+    setFormData(sanitizedData);
+
     startTransition(async () => {
       if (isEditing && entryId) {
         const res = await updateContentEntryAction(entryId, {
           slug: slug.trim(),
           status: targetStatus,
-          data: formData as Record<string, any>,
+          data: sanitizedData as Record<string, any>,
         });
 
         if (res.success) {
@@ -132,7 +146,7 @@ export function DynamicEntryForm({
         const res = await createContentEntryAction(contentType.id, {
           slug: slug.trim(),
           status: targetStatus,
-          data: formData as Record<string, any>,
+          data: sanitizedData as Record<string, any>,
         });
 
         if (res.success) {

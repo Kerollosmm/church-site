@@ -6,6 +6,7 @@ import React from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import {
   BookOpen,
   Calendar,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
 import { getContentTypeRepository } from "@/lib/store";
+import { getSafeRenderableImageUrl } from "@church-site/data-access";
 
 export const revalidate = 3600;
 
@@ -112,12 +114,16 @@ export default async function ContentTypeListingPage({
               const summary = String(summaryCandidate);
 
               // Cover image
-              let coverUrl: string | null = null;
-              if (entry.data.cover || entry.data.cover_image || entry.data.image) {
-                coverUrl = String(
+              let coverCandidate: string | null = null;
+              const mediaField = fields.find((f) => f.fieldType === "media");
+              if (mediaField && entry.data[mediaField.slug]) {
+                coverCandidate = String(entry.data[mediaField.slug]);
+              } else if (entry.data.cover || entry.data.cover_image || entry.data.image) {
+                coverCandidate = String(
                   entry.data.cover || entry.data.cover_image || entry.data.image
                 );
               }
+              const coverUrl = getSafeRenderableImageUrl(coverCandidate);
 
               return (
                 <article
@@ -127,11 +133,12 @@ export default async function ContentTypeListingPage({
                   <div>
                     {coverUrl ? (
                       <div className="h-48 w-full bg-slate-100 overflow-hidden relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={coverUrl}
                           alt={title}
+                          fill
                           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                       </div>
                     ) : (

@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ASSET_ALLOWED_HOSTS,
+  getSafeRenderableImageUrl,
   isHostAllowed,
   isResolvedAsset,
   resolveExternalImageUrl,
@@ -290,3 +291,78 @@ describe("isResolvedAsset helper", () => {
     expect(isResolvedAsset(badProtocol)).toBe(false);
   });
 });
+
+describe("getSafeRenderableImageUrl", () => {
+  it("allows valid relative parish paths", () => {
+    expect(getSafeRenderableImageUrl("/images/hero.jpg")).toBe("/images/hero.jpg");
+    expect(getSafeRenderableImageUrl("  /assets/logo.png  ")).toBe("/assets/logo.png");
+  });
+
+  it("rejects malicious relative-like paths", () => {
+    expect(getSafeRenderableImageUrl("//attacker.com/evil.jpg")).toBeNull();
+    expect(getSafeRenderableImageUrl("/\\\\evil.com/pic.jpg")).toBeNull();
+  });
+
+  it("allows Supabase storage URLs", () => {
+    const supabaseUrl = "https://xyzcompany.supabase.co/storage/v1/object/public/media/photo.jpg";
+    expect(getSafeRenderableImageUrl(supabaseUrl)).toBe(supabaseUrl);
+    const apexSupabase = "https://supabase.co/storage/v1/pic.jpg";
+    expect(getSafeRenderableImageUrl(apexSupabase)).toBe(apexSupabase);
+  });
+
+  it("resolves raw YouTube watch, shorts, and youtu.be URLs to i.ytimg.com thumbnails", () => {
+    expect(getSafeRenderableImageUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe(
+      "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+    );
+    expect(getSafeRenderableImageUrl("https://youtu.be/dQw4w9WgXcQ")).toBe(
+      "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+    );
+    expect(getSafeRenderableImageUrl("https://www.youtube.com/shorts/dQw4w9WgXcQ")).toBe(
+      "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+    );
+  });
+
+  it("allows already-resolved i.ytimg.com image URLs", () => {
+    const resolvedYt = "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg";
+    expect(getSafeRenderableImageUrl(resolvedYt)).toBe(resolvedYt);
+  });
+
+  it("resolves raw Google Drive links to drive.usercontent.google.com direct download URLs", () => {
+    const driveId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+    const driveLink = `https://drive.google.com/file/d/${driveId}/view?usp=sharing`;
+    expect(getSafeRenderableImageUrl(driveLink)).toBe(
+      `https://drive.usercontent.google.com/download?id=${driveId}&export=view`
+    );
+  });
+
+  it("allows direct allowlisted images on *.googleusercontent.com", () => {
+    const directUrl = "https://lh3.googleusercontent.com/pw/AP1GczNx123456=w800";
+    expect(getSafeRenderableImageUrl(directUrl)).toBe(directUrl);
+  });
+
+  it("rejects unallowlisted or hostile hosts", () => {
+    expect(getSafeRenderableImageUrl("https://evil.com/image.jpg")).toBeNull();
+    expect(getSafeRenderableImageUrl("https://attacker-ytimg.com/pic.png")).toBeNull();
+    expect(getSafeRenderableImageUrl("https://not-allowed.org/avatar.jpg")).toBeNull();
+  });
+
+  it("rejects non-https URLs", () => {
+    expect(getSafeRenderableImageUrl("http://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg")).toBeNull();
+    expect(getSafeRenderableImageUrl("http://xyz.supabase.co/storage/pic.jpg")).toBeNull();
+  });
+
+  it("rejects javascript: and data: URLs", () => {
+    expect(getSafeRenderableImageUrl("javascript:alert(1)")).toBeNull();
+    expect(getSafeRenderableImageUrl("data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==")).toBeNull();
+  });
+
+  it("returns null for empty, null, undefined, or invalid strings", () => {
+    expect(getSafeRenderableImageUrl("")).toBeNull();
+    expect(getSafeRenderableImageUrl("   ")).toBeNull();
+    expect(getSafeRenderableImageUrl(null)).toBeNull();
+    expect(getSafeRenderableImageUrl(undefined)).toBeNull();
+    expect(getSafeRenderableImageUrl("not a valid url")).toBeNull();
+    expect(getSafeRenderableImageUrl(123 as unknown as string)).toBeNull();
+  });
+});
+

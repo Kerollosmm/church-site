@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Calendar,
   User,
@@ -8,7 +9,7 @@ import {
   Share2,
 } from "lucide-react";
 import type { ContentTemplateProps } from "./default";
-import { sanitizeHtml } from "@church-site/data-access";
+import { sanitizeHtml, getSafeRenderableImageUrl } from "@church-site/data-access";
 
 export function ArticleTemplate({
   contentType,
@@ -28,13 +29,14 @@ export function ArticleTemplate({
   const author = entry.data.author || entry.data.speaker || entry.data.writer || null;
 
   // Cover image
-  let coverUrl: string | null = null;
+  let coverCandidate: string | null = null;
   const mediaField = fields.find((f) => f.fieldType === "media");
   if (mediaField && entry.data[mediaField.slug]) {
-    coverUrl = String(entry.data[mediaField.slug]);
+    coverCandidate = String(entry.data[mediaField.slug]);
   } else if (entry.data.cover || entry.data.cover_image || entry.data.image) {
-    coverUrl = String(entry.data.cover || entry.data.cover_image || entry.data.image);
+    coverCandidate = String(entry.data.cover || entry.data.cover_image || entry.data.image);
   }
+  const coverUrl = getSafeRenderableImageUrl(coverCandidate);
 
   // Rich body
   const richField = fields.find((f) => f.fieldType === "richtext");
@@ -84,11 +86,12 @@ export function ArticleTemplate({
       {/* Featured Cover Image */}
       {coverUrl && (
         <div className="relative w-full h-80 sm:h-[420px] rounded-3xl overflow-hidden shadow-md border border-slate-200 bg-slate-100">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={coverUrl}
             alt={title}
+            fill
             className="w-full h-full object-cover"
+            sizes="(max-width: 768px) 100vw, 800px"
           />
         </div>
       )}

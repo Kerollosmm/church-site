@@ -236,3 +236,52 @@ export function isResolvedAsset(
 } {
   return res !== null && res !== undefined && res.kind !== "unsupported";
 }
+
+/**
+ * Returns a secure, renderable URL for public web surfaces.
+ *
+ * Rules:
+ * - Empty/null/undefined -> null
+ * - Relative parish path (starts with "/" and not "//" or "/\\") -> returns trimmed path
+ * - Supabase storage URL (https://*.supabase.co) -> returns string
+ * - External URL -> resolves via resolveExternalImageUrl():
+ *     - If resolved successfully (youtube-thumb, drive, direct-image) -> returns resolvedUrl
+ *     - If invalid, unsupported host, or malicious -> returns null
+ *
+ * Guarantees that raw external source links (e.g. youtube.com/watch?v=...) NEVER reach an <img> tag directly,
+ * only allowlisted resolved endpoints (e.g. i.ytimg.com).
+ */
+export function getSafeRenderableImageUrl(
+  raw: string | null | undefined
+): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  // Parish-relative path
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//") && !trimmed.startsWith("/\\")) {
+    return trimmed;
+  }
+
+  // Check if it's a Supabase storage URL
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === "https:") {
+      const hostname = parsed.hostname.toLowerCase();
+      if (hostname === "supabase.co" || hostname.endsWith(".supabase.co")) {
+        return parsed.toString();
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  // Attempt external resolution against ASSET_ALLOWED_HOSTS
+  const res = resolveExternalImageUrl(trimmed);
+  if (isResolvedAsset(res)) {
+    return res.resolvedUrl;
+  }
+
+  return null;
+}
+

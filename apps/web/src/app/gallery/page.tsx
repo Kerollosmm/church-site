@@ -30,30 +30,10 @@ import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locale
 import { localized } from "@/lib/i18n/localized";
 import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
+import { getSafeRenderableImageUrl } from "@church-site/data-access/client";
 
 export const dynamic = "force-dynamic";
 
-/**
- * The stored link, or null when it must not become an `href` on a public page.
- *
- * Only an `https:` URL or a parish-relative path is allowed through: a stored `javascript:`/`data:`
- * value (or a protocol-relative `//host` one) must never be rendered as a link a visitor can click.
- * `null` makes the card say the link cannot be opened instead of hiding the row.
- *
- * Module-local on purpose: a page module may only export the framework's own surface (`default`,
- * `metadata`, `dynamic`, …), so helpers live here unexported.
- */
-function openableMediaUrl(raw: string): string | null {
-  const value = raw.trim();
-  if (value.startsWith("/") && !value.startsWith("//") && !value.startsWith("/\\")) return value;
-
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : null;
-  } catch {
-    return null;
-  }
-}
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -176,7 +156,7 @@ export default async function GalleryPage(): Promise<React.ReactElement> {
                 const caption = hasAlt
                   ? localized({ ar: item.altAr ?? "", en: item.altEn }, locale)
                   : t(locale, "gallery.noAltText");
-                const href = openableMediaUrl(item.url);
+                const href = getSafeRenderableImageUrl(item.url);
                 const isImage = item.mimeType.startsWith("image/");
                 const isVideo = item.mimeType === "video/mp4";
 
