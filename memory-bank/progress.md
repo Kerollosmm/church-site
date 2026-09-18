@@ -1,5 +1,15 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 6 E2E Journeys & Deliverables — In Progress)
+- [x] **Task 2: Public dynamic content and videos journeys (`ae44e59`)**:
+  * حذف السقالة المؤقتة `apps/web/e2e/scaffold.spec.ts`.
+  * إضافة بيانات العينات في `apps/web/.data/church-store.json` لـ `contentEntries` و`parishVideos`.
+  * أجنحة اختبارات E2E لرحلات المحتوى الديناميكي العام `apps/web/e2e/content.spec.ts` (3 رحلات: الفهرس، التفاصيل، الحالة الفارغة الصادقة).
+  * أجنحة اختبارات E2E لرحلات فيديوهات الكنيسة `apps/web/e2e/videos.spec.ts` (فيديوهات الكنيسة في `/about` والمضمن الآمن).
+  * 4 لقطات شاشة موثقة في `.scratch/phase6-gates/g6-screenshots/`.
+  * 4/4 فحوصات Playwright ناجحة 100% في Chromium موثقة في `.scratch/phase6-gates/g6-e2e-report.txt`.
+  * 452/452 فحص وحدات في Vitest خضراء 100% (32 ملفاً).
+
 ## يعمل الآن (Phase 5 Hardening — 100% Complete & Verified)
 - [x] **إتمام مرحلة التقسية وتأمين بيئة الإنتاج والبريد الفعلي وسجل التدقيق (Phase 5 Hardening)**:
   - **البريد الإلكتروني الفعلي عبر Resend (بدون SDK)**:

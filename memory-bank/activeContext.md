@@ -1,6 +1,15 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-18)
+- **المرحلة السادسة (Phase 6 E2E Journeys & Deliverables — قيد التقدم)**:
+  * **Task 2: Public dynamic content and videos journeys (`ae44e59`)**:
+    - حذف السقالة المؤقتة `apps/web/e2e/scaffold.spec.ts`.
+    - إضافة بيانات العينات في `apps/web/.data/church-store.json` لـ `contentEntries` (كنوز الآباء الأرثوذكسية) و`parishVideos` (صلوات عشية وتسبحة نصف الليل).
+    - إضافة اختبارات `apps/web/e2e/content.spec.ts` تغطي الرحلات الثلاث (عرض القائمة RTL، تفاصيل المقال، والحالة الصادقة لخلو العظات) والتقاط الشاشات.
+    - إضافة اختبارات `apps/web/e2e/videos.spec.ts` تغطي رحلة عرض فيديوهات الكنيسة في صفحة `/about` والمشغل الآمن `youtube-nocookie` والتقاط الشاشة.
+    - تأكيد اجتياز Playwright بـ 4/4 فحوصات خضراء في Chromium وحفظ المخرجات في `.scratch/phase6-gates/g6-e2e-report.txt`.
+    - تأكيد وجود لقطات الشاشة الأربع في `.scratch/phase6-gates/g6-screenshots/`.
+    - تأكيد بقاء كافة اختبارات الوحدات خضراء 100% في Vitest (32 ملفاً، 452/452 فحصاً ناجحاً).
 - **اكتملت بالكامل واعتُمدت (Phase 5 Hardening — Verified & Complete)**:
   * **سلسلة التزامات المرحلة الخامسة (`1b29ec2`..`[HEAD]`)**:
     1. `1b29ec2` `feat(data-access): resend mailer via built-in fetch`
