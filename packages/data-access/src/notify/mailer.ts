@@ -72,7 +72,11 @@ export const RESEND_FROM_EMAIL_ENV_VAR = "RESEND_FROM_EMAIL";
  * A name that is absent — including a typo or misconfiguration — falls back
  * to the no-op, and `getMailer()` logs that fallback loudly rather than pretending to send.
  */
-const MAILER_FACTORIES: Record<string, () => Promise<Mailer>> = {
+export const MAILER_FACTORIES: Record<string, () => Promise<Mailer>> = {
+  noop: async () => {
+    const { noopMailer } = await import("./noop-mailer");
+    return noopMailer;
+  },
   resend: async () => {
     const apiKey = process.env[RESEND_API_KEY_ENV_VAR]?.trim();
     const fromEmail = process.env[RESEND_FROM_EMAIL_ENV_VAR]?.trim();
