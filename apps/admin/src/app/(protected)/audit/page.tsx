@@ -13,7 +13,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { FileClock, FilterX, ShieldAlert } from "lucide-react";
+import { Download, FileClock, FilterX, ShieldAlert } from "lucide-react";
 import { AdminFeedback } from "@/components/admin/AdminFeedback";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { ADMIN_BADGE, ADMIN_BUTTON_SECONDARY, ADMIN_PANEL, ADMIN_TABLE, ADMIN_TD, ADMIN_TH } from "@/components/admin/admin-ui";
@@ -81,14 +81,29 @@ function parseLimit(value: string): number {
 }
 
 /** Builds a filter link, keeping the other filters and dropping the one being cleared. */
-function auditHref(current: { entity?: string; action?: string; limit: number }, patch: Partial<typeof current>): string {
+function auditHref(
+  current: { entity?: string; action?: string; actor?: string; limit: number },
+  patch: Partial<typeof current>
+): string {
   const next = { ...current, ...patch };
   const params = new URLSearchParams();
   if (next.entity) params.set("entity", next.entity);
   if (next.action) params.set("action", next.action);
+  if (next.actor) params.set("actor", next.actor);
   if (next.limit !== DEFAULT_LIMIT) params.set("limit", String(next.limit));
   const query = params.toString();
   return query.length > 0 ? `/audit?${query}` : "/audit";
+}
+
+/** Builds the URL for downloading the current filtered audit log as CSV. */
+function exportHref(current: { entity?: string; action?: string; actor?: string; limit: number }): string {
+  const params = new URLSearchParams();
+  if (current.entity) params.set("entity", current.entity);
+  if (current.action) params.set("action", current.action);
+  if (current.actor) params.set("actor", current.actor);
+  if (current.limit !== DEFAULT_LIMIT) params.set("limit", String(current.limit));
+  const query = params.toString();
+  return query.length > 0 ? `/api/audit/export?${query}` : "/api/audit/export";
 }
 
 const FILTER_CHIP = `${ADMIN_BADGE} transition hover:bg-copticGold-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-copticNavy-500`;
@@ -106,14 +121,15 @@ export default async function AdminAuditPage({
 
   const entity = parseEntity(firstParam(params.entity));
   const action = parseAction(firstParam(params.action));
+  const actor = firstParam(params.actor) || undefined;
   const limit = parseLimit(firstParam(params.limit));
-  const current = { entity, action, limit };
+  const current = { entity, action, actor, limit };
 
   let entries: Awaited<ReturnType<typeof listAdminAudit>> = [];
   let readFailed = false;
 
   try {
-    entries = await listAdminAudit({ entityType: entity, action, limit });
+    entries = await listAdminAudit({ entityType: entity, action, actor, limit });
   } catch (error) {
     // Server-side detail only: the markup below never carries a driver name, code or stack.
     console.error("[admin] audit read failed", {
@@ -122,7 +138,7 @@ export default async function AdminAuditPage({
     readFailed = true;
   }
 
-  const isFiltered = Boolean(entity || action);
+  const isFiltered = Boolean(entity || action || actor);
 
   return (
     <div className="max-w-7xl space-y-6">
@@ -132,9 +148,20 @@ export default async function AdminAuditPage({
         roleLabel={roleLabel}
         readOnly={isReadOnlyRole(capabilities)}
       >
-        <Link href="/events" className={ADMIN_BUTTON_SECONDARY}>
-          إدارة الفعاليات
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={exportHref(current)}
+            download
+            className={`${ADMIN_BUTTON_SECONDARY} text-xs`}
+            title="تصدير السجل بتنسيق CSV"
+          >
+            <Download aria-hidden="true" className="h-3.5 w-3.5" />
+            <span>تصدير CSV</span>
+          </a>
+          <Link href="/events" className={ADMIN_BUTTON_SECONDARY}>
+            إدارة الفعاليات
+          </Link>
+        </div>
       </AdminPageHeader>
 
       <section aria-labelledby="audit-filters-heading" className={ADMIN_PANEL}>
@@ -201,6 +228,33 @@ export default async function AdminAuditPage({
                 </li>
               ))}
             </ul>
+          </div>
+
+          <div>
+            <p className="mb-1.5 font-heading text-[11px] font-bold text-slate-600">المنفّذ (الفاعل)</p>
+            <form method="GET" action="/audit" className="flex flex-wrap items-center gap-2">
+              {entity ? <input type="hidden" name="entity" value={entity} /> : null}
+              {action ? <input type="hidden" name="action" value={action} /> : null}
+              {limit !== DEFAULT_LIMIT ? <input type="hidden" name="limit" value={String(limit)} /> : null}
+              <input
+                type="text"
+                name="actor"
+                defaultValue={actor ?? ""}
+                placeholder="بحث بالاسم أو المعرّف..."
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:border-copticNavy focus:outline-none focus:ring-1 focus:ring-copticNavy min-w-[220px]"
+              />
+              <button type="submit" className={`${ADMIN_BUTTON_SECONDARY} py-1.5 text-xs`}>
+                تصفية
+              </button>
+              {actor ? (
+                <Link
+                  href={auditHref(current, { actor: undefined })}
+                  className="text-xs text-slate-500 hover:text-slate-800 underline mr-1"
+                >
+                  إلغاء المنفّذ
+                </Link>
+              ) : null}
+            </form>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
