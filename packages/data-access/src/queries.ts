@@ -91,13 +91,16 @@ function logQueryEvent(
 }
 
 /**
- * Runs a public read and falls back to the seeded rows when the environment is absent, the query
- * errors, or the table is empty â€” reporting every one of those cases first.
+ * Runs a public read and falls back to the seeded rows when the environment is absent (zero-env build).
  *
- * The seed is returned as a copy so a caller can sort/filter in place without mutating the
- * exported constant.
+ * PRODUCTION INTEGRITY INVARIANT:
+ * When NODE_ENV === "production" AND Supabase is configured (hasSupabaseEnv()), any query error or
+ * empty result THROWS immediately. Serving fake seed data on a live parish site during a DB outage
+ * or misconfiguration is strictly prohibited.
+ *
+ * In dev/test, or when no Supabase environment is configured, seed data is served as fallback.
  */
-async function readOrSeed<T>(
+export async function readOrSeed<T>(
   queryName: string,
   seed: readonly T[],
   read: (supabase: PublicClient) => Promise<QueryOutcome<T>>
@@ -110,6 +113,8 @@ async function readOrSeed<T>(
     return [...seed];
   }
 
+  const isProduction = process.env.NODE_ENV === "production";
+
   try {
     const { data, error } = await read(createPublicSupabaseClient());
 
@@ -118,18 +123,47 @@ async function readOrSeed<T>(
         code: error.code ?? null,
         message: error.message,
       });
+
+      if (isProduction) {
+        throw new Error(
+          `[data-access] ${queryName}: live query failed or returned no rows in production — refusing to serve seed data; check DB connectivity.`
+        );
+      }
+
       return [...seed];
     }
 
     if (!data || data.length === 0) {
-      // Not an error in itself (the table may legitimately be empty), but the seed is served, so
-      // the discrepancy has to be visible rather than implied.
       logQueryEvent("warn", queryName, "empty_result");
+
+      if (isProduction) {
+        throw new Error(
+          `[data-access] ${queryName}: live query failed or returned no rows in production — refusing to serve seed data; check DB connectivity.`
+        );
+      }
+
       return [...seed];
     }
 
     return data;
   } catch (err) {
+    if (isProduction) {
+      if (
+        err instanceof Error &&
+        err.message.startsWith(`[data-access] ${queryName}: live query failed or returned no rows in production`)
+      ) {
+        throw err;
+      }
+
+      logQueryEvent("error", queryName, "unexpected_error", {
+        message: err instanceof Error ? err.message : String(err),
+      });
+
+      throw new Error(
+        `[data-access] ${queryName}: live query failed or returned no rows in production — refusing to serve seed data; check DB connectivity.`
+      );
+    }
+
     logQueryEvent("error", queryName, "unexpected_error", {
       message: err instanceof Error ? err.message : String(err),
     });
