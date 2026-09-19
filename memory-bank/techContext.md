@@ -39,14 +39,14 @@
 - pnpm 10 (تم التحقق على 10.33.0) مع `pnpm-workspace.yaml` و`pnpm-lock.yaml`؛ وسير عمل CI يثبّت Node 22 وpnpm 10.
 - أوامر التشغيل المجمعة في جذر المستودع: `dev:web`, `dev:admin`, `build:web`, `build:admin`, `build`, `typecheck` (`pnpm -r typecheck`), `test` (`vitest run`), `e2e:web` (`pnpm --filter web e2e:web`), `lint`.
 
-## أدوات الجودة والأمن (v1.2 — بعد اكتمال Phase 6 Playwright E2E)
+## أدوات الجودة والأمن (v1.3 — بعد اكتمال Phase 7.4 UI/UX Modernization)
 | البند | الحالة |
 | :--- | :--- |
 | Next.js | `^15.5.25` (مستقل لكل من `apps/web` و`apps/admin`) |
 | postcss | `^8.5.28` كـ devDependency **و** `pnpm.overrides.postcss = "^8.5.28"` |
 | ESLint | `eslint@9.39.5` + `eslint-config-next@15.5.25` إعداد مساحة العمل flat في `eslint.config.mjs` — `pnpm run lint` = 0 أخطاء |
-| Vitest | `vitest@5.0.1` يفحص مساحة العمل بالكامل (`apps/` و`packages/`) — **452/452 فحصاً ناجحاً بنسبة 100% (32 ملفاً)** |
-| Playwright | `@playwright/test@1.63.0` في جذر devDependencies — سكربت `pnpm --filter web e2e:web` — **4/4 رحلات متصفح ناجحة في Chromium (10.3s) مع 4 لقطات شاشة** |
+| Vitest | `vitest@5.0.1` يفحص مساحة العمل بالكامل (`apps/` و`packages/`) — **719/719 فحصاً ناجحاً بنسبة 100% (42 ملفاً)** |
+| Playwright | `@playwright/test@1.63.0` في جذر devDependencies — جناح فحص الانحدار البصري للمرحلة 7.4 (38 لقطة شاشة، 19 زوج مقارنة قبل/بعد عبر شاشات الحاسوب واللوحي والجوال) — اجتياز بنسبة 100% |
 | رؤوس الأمن | CSP مُنفَّذة + HSTS (15552000) + Permissions-Policy في `apps/web/next.config.ts` |
 | CI | `.github/workflows/ci.yml`: بوابات صلدة (`pnpm typecheck` + `pnpm test` + `pnpm --filter web build` بلا بيئة + `pnpm --filter admin build` + `pnpm run lint`) |
 | ثابت البناء | تطبيق `apps/web` **يجب** أن يبني بلا أي متغير بيئة (تُحقّق محلياً وفي CI بخطوة تمنع تسرّب أي متغيرات) |
@@ -55,7 +55,7 @@
 - استهداف الأداء: FCP < 800ms، LCP < 1.2s على شبكات 3G/4G المصرية.
 - إرسال واتساب آلي خارج النطاق — الاشتراكات تُخزن فقط.
 - **مزود البريد الإلكتروني الفعلي (Phase 5 Hardening)**: دعم الإرسال الحقيقي عبر Resend (`MAIL_PROVIDER=resend`) باستخدام `fetch` المدمج في Node.js 20+، مع حفظ متغيرات البيئة السرية `RESEND_API_KEY` و`RESEND_FROM_EMAIL` على الخادم فقط. يتم تسجيل محاولات الإرسال وملاحظات الارتداد في سجل التدقيق. عند غياب المفاتيح أو اختيار `MAIL_PROVIDER=noop` يتراجع النظام صراحة لمحاكي `noopMailer` مع تسجيل تحذير في السجلات.
-- **اختبارات المتصفح الحقيقية (Phase 6 E2E)**: إتمام 4 رحلات متصفح كاملة في Playwright Chromium والتقاط 4 لقطات شاشة في `.scratch/phase6-gates/g6-screenshots/`، مع إفصاح الأمانة المعمارية لـ `apps/admin` واشتراط المصادقة الصارم.
+- **اختبارات المتصفح الحقيقية وجناح الانحدار البصري (Phase 7.4 Visual Regression Suite)**: توثيق 19 زوج لقطات شاشة مقارنة قبل/بعد (38 صورة إجمالاً) في `.scratch/phase7-gates/g6-screens/` تغطي 3 بيئات عرض (1440px حاسوب، 768px لوحي، 390px جوال) لإثبات سلامة تجميع القوائم المنسدلة، ودرج الجوال اللمسي، وتوحيد نظام البطاقات ولوحة الإدارة مع خلو تام من الصفحات البيضاء أو المكسورة، مع استمرار إفصاح الأمانة المعمارية لـ `apps/admin` واشتراط المصادقة الصارم `requireStaff()`.
 - نص الكتاب المقدس (فان دايك + أسفار ثانية) يُحمّل كبيانات بذر ضخمة — خطوة نشر مستقلة.
 - **هجرات Supabase غير منطبقة وبلا اختبار استعادة**: `pg_dump`/`pg_restore` موثّقان في `docs/backup-restore.md` §2 وموسومان «غير مختبَرين» حتى يُجريا مرة على staging.
 

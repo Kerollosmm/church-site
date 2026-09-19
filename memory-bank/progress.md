@@ -1,5 +1,35 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 7.4 UI/UX Modernization — 100% Complete & Verified)
+- [x] **تحديث وتوحيد الواجهات وتجربة المستخدم (UI/UX Modernization & Responsive Architecture)**:
+  * **إعادة هيكلة شريط التنقل وتجميع القوائم (Header Navigation Clustering)**:
+    - اختزال الروابط المسطحة المزدحمة في شريط الحاسوب (11+ رابطاً متزاحماً) إلى 6-7 خانات تنقل أساسية محكمة التوزيع مع قوائم منسدلة (عن الكنيسة، القداسات والفعاليات، خدمات الكنيسة، الوسائط والروحيات).
+    - دعم كامل لمعايير الوصولية WCAG 2.1 AA ولوحة المفاتيح (`Enter`, `Space`, `ArrowDown`, `Escape`) وسمات ARIA (`role="menu"`, `role="menuitem"`, `aria-haspopup="true"`, `aria-expanded`).
+    - مؤشرات تركيز بصرية واضحة (`focus-visible:outline-copticNavy`).
+  * **الدرج الجانبي المتجاوب للهاتف المحمول (Mobile Navigation Drawer)**:
+    - إعادة بناء درج الجوال بقوائم مقسمة على شكل بطاقات واضحة ذات عناوين وأيقونات.
+    - الالتزام التام بأبعاد اللمس المريحة بارتفاع لا يقل عن 44px (`min-h-[44px]`).
+    - تعزيز سمات الحوار (`role="dialog"`, `aria-modal="true"`) وزر إغلاق صريح مع تثبيت زر التبرع السريع.
+  * **نظام البطاقات الموحد في الواجهة العامة (Unified Card System)**:
+    - توحيد لغة التصميم عبر كافة أقسام الصفحة الرئيسية والمحتوى العام: `QuickServiceGrid`, `NewVisitorWelcome`, `PatronSaintsSection`, `SanctuaryAltarsShowcase`, `LatestNewsCarousel`, `WelcomeFromClergy`.
+    - اعتماد زوايا منحنية متناسقة (`rounded-2xl`)، وحدود متدرجة ناعمة (`border-copticGold-200`)، وشارات ذهبية موحدة (`bg-copticGold-50 text-copticGold-800`).
+  * **توحيد لوحة الإدارة والإطار البصري (Unified Admin Dashboard & Chrome)**:
+    - تجديد شاشة الإدارة الرئيسية `apps/admin/src/app/(protected)/page.tsx` بهيكل إحصائي وبطاقات وصول سريع موحدة.
+    - تعميم مكون `AdminPageHeader` مع تتبع مسار التنقل (Breadcrumbs)، ومكون `AdminFeedback` للملاحظات والحالات الفارغة والأخطاء.
+    - مركزة دوال التنسيق والألوان في `apps/admin/src/lib/admin-ui.ts` لضمان اتساق كافة شاشات الإدارة.
+    - صيانة حارس المصادقة الصارم `requireStaff()` والفشل المغلق عند غياب الجلسة نحو صفحة الدخول `/login` التزاماً بثابت INV-01.
+  * **بوابات التحقق الصلبة للمرحلة 7.4 (G1–G10 All Passed & Verified)**:
+    - G1: فحص الأنواع لكامل مساحة العمل = 0 أخطاء (`pnpm -r typecheck`).
+    - G2: فحص الأسلوب والتنسيق = 0 تحذيرات و0 أخطاء (`pnpm run lint`).
+    - G3: اختبارات الوحدات والتكامل = 42 ملفاً، **719/719 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest.
+    - G4: بناء تطبيق الويب بصفر متغيرات بيئة = 57 مساراً ثابتاً بنجاح (`pnpm --filter web build`).
+    - G5: بناء تطبيق الإدارة = جميع المسارات بنجاح كامل (`pnpm --filter admin build`).
+    - G6: فحص الانحدار البصري = 19 زوج لقطات (38 صورة) بدون أي صفحات بيضاء أو أخطاء، وتحقق التجميع ودرج الجوال.
+    - G7: سجل الالتزامات = 4 التزامات ذرية منتظمة (`504d68a`, `50eaebe`, `77d1bda`, `503f8e5`).
+    - G8: نظافة شجرة العمل = شجرة نظيفة بنسبة 100%.
+    - G9: ملف القفل سليم = صفر تعديل في `pnpm-lock.yaml`.
+    - G10: الأمان والوصولية وثوابت INV-01 ومحلل الروابط الآمن محققة بنسبة 100%.
+
 ## يعمل الآن (Phase 7.1 Performance Turbo — 100% Complete & Verified)
 - [x] **تسريع الأداء وتثبيت الخطوط وتقليل الحزم العامة (Performance Turbo — Web Public Surface)**:
   * **الخطوط العربية الأصيلة عبر `next/font` (Fix A)**: تحميل Noto Sans Arabic وNoto Kufi Arabic وAmiri وInter ذاتياً بدون رحلات شبكية خارجية لـ Google CDN.

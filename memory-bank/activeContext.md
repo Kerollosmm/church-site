@@ -1,6 +1,70 @@
 # Active Context — الحالة الحالية
 
 ## أين نحن (2026-09-19)
+- **المرحلة السابعة 7.4 (Phase 7.4 UI/UX Modernization — 100% Complete & Verified)**:
+  * **تحديث وتوحيد الواجهات وتجربة المستخدم (UI/UX Modernization Deliverables)**:
+    1. **إعادة هيكلة شريط التنقل وتجميع القوائم المنسدلة (Header Navigation Clustering)**:
+       - اختزال الروابط المسطحة المزدحمة في شريط الحاسوب (11+ رابطاً متزاحماً) إلى 6-7 خانات تنقل أساسية محكمة التوزيع:
+         * الرئيسية (`/`)
+         * عن الكنيسة (`/about` مع قائمة منسدلة: عن الكنيسة، التاريخ والشفعاء، المذابح والتدشين، الآباء الكهنة)
+         * القداسات والفعاليات (`/masses` مع قائمة منسدلة: مواعيد القداسات، الفعاليات والنهضات، البث المباشر)
+         * خدمات الكنيسة (`/services` مع قائمة منسدلة: المرافق والخدمات، مدارس الأحد، التربية الكنسية، العيادات، العزاء)
+         * الوسائط والروحيات (`/gallery` مع قائمة منسدلة: معرض الصور، قراءات الكتاب المقدس، العظات)
+         * اتصل بنا (`/contact`)
+       - دعم كامل للوصولية (A11y / WCAG 2.1 AA): تفعيل التحكم الكامل بلوحة المفاتيح (`Enter`, `Space`, `ArrowDown`, `Escape`)، وربط سمات ARIA الدقيقة (`aria-haspopup="true"`, `aria-expanded`, `aria-controls`, `role="menu"`, `role="menuitem"`).
+       - مؤشرات تركيز بصرية عالية التباين (`focus-visible:outline-copticNavy`).
+    2. **الدرج الجانبي المتجاوب للهاتف المحمول (Mobile Navigation Drawer)**:
+       - إعادة بناء درج الجوال بقوائم مقسمة على شكل بطاقات واضحة ذات عناوين فرعية وأيقونات معبرة.
+       - الالتزام التام بحدود اللمس المريحة بارتفاع لا يقل عن 44px (`min-h-[44px]`).
+       - تعزيز دور الحوار المودال (`role="dialog"`, `aria-modal="true"`) مع زر إغلاق صريح وتثبيت زر التبرع السريع في أعلى الدرج.
+    3. **نظام البطاقات الموحد في الواجهة العامة (Unified Card System)**:
+       - توحيد لغة التصميم عبر كافة أقسام الصفحة الرئيسية والمحتوى العام: `QuickServiceGrid`, `NewVisitorWelcome`, `PatronSaintsSection`, `SanctuaryAltarsShowcase`, `LatestNewsCarousel`, `WelcomeFromClergy`.
+       - اعتماد زوايا منحنية متناسقة (`rounded-2xl`)، وحدود متدرجة ناعمة (`border-copticGold-200`)، وشارات ذهبية موحدة (`bg-copticGold-50 text-copticGold-800`).
+    4. **توحيد لوحة الإدارة والإطار البصري (Unified Admin Dashboard & Chrome)**:
+       - تجديد شاشة الإدارة الرئيسية `apps/admin/src/app/(protected)/page.tsx` بهيكل إحصائي وبطاقات وصول سريع موحدة.
+       - تعميم مكون `AdminPageHeader` مع تتبع مسار التنقل (Breadcrumbs)، ومكون `AdminFeedback` للملاحظات والحالات الفارغة والأخطاء.
+       - مركزة دوال التنسيق والألوان في `apps/admin/src/lib/admin-ui.ts` لضمان اتساق كافة شاشات الإدارة.
+       - صيانة حارس المصادقة الصارم `requireStaff()` والفشل المغلق عند غياب الجلسة نحو صفحة الدخول `/login` التزاماً بثابت INV-01.
+  * **سلسلة التزامات المرحلة 7.4 (4 Commits)**:
+    1. `504d68a` `chore: record baseline screenshots` — توثيق لقطات الشاشة الأساسية (19 صورة خط أساس) للأجهزة الثلاثة.
+    2. `50eaebe` `feat(web): structured navigation and unified card system` — تجميع القوائم، درج الجوال، وتوحيد البطاقات.
+    3. `77d1bda` `feat(admin): unified dashboard and consistent chrome` — توحيد لوحة الإدارة والترويسات والتنبيهات.
+    4. `503f8e5` `docs(phase7): ui/ux modernization documentation and gate proofs` — وثائق المقارنة البصرية وإثباتات البوابات.
+  * **جدول بوابات الجودة للمرحلة 7.4 (G1–G10 All Green)**:
+    | البوابة | الوصف | النتيجة | الدليل الموثق |
+    | :--- | :--- | :--- | :--- |
+    | **G1** | فحص الأنواع الصارم (`pnpm -r typecheck`) | 0 أخطاء (100% Pass) | `.scratch/phase7-gates/g1-web-tsc.txt`, `g1-admin-tsc.txt` |
+    | **G2** | فحص الأسلوب والتنسيق (`pnpm run lint`) | 0 تحذيرات، 0 أخطاء | `.scratch/phase7-gates/g2-lint.txt` |
+    | **G3** | اختبارات الوحدات والتكامل (`pnpm test` / Vitest) | 42 ملفاً، 719/719 فحصاً ناجحاً (100%) | `.scratch/phase7-gates/g3-tests.txt` |
+    | **G4** | بناء تطبيق الويب بصفر متغيرات بيئة (`pnpm --filter web build`) | نجاح تام (57 مساراً ثابتاً) | `.scratch/phase7-gates/g4-web-build.txt` |
+    | **G5** | بناء تطبيق الإدارة (`pnpm --filter admin build`) | نجاح تام لكافة المسارات | `.scratch/phase7-gates/g5-admin-build.txt` |
+    | **G6** | فحص الانحدار البصري وتحديث الواجهات (Playwright 1440px / 768px / 390px) | 19 زوج لقطات (38 صورة) بأحجام غير صفرية وصفر صفحات بيضاء | `.scratch/phase7-gates/g6-visual-review.txt`, `g6-screens/` |
+    | **G7** | نظافة سجل الالتزامات (Git Log Hygiene) | 4 التزامات ذرية منتظمة وموثقة | `.scratch/phase7-gates/g7-git-log.txt` |
+    | **G8** | نظافة شجرة العمل (Git Status Hygiene) | شجرة نظيفة، وتطابق التعديلات | `.scratch/phase7-gates/g8-git-status.txt` |
+    | **G9** | سلامة ملف القفل (Lockfile Integrity) | صفر تعديل في `pnpm-lock.yaml` | `.scratch/phase7-gates/g9-lockfile.txt` |
+    | **G10** | الامتثال الأمني والوصولية وثوابت النظام (A11y, CSP, INV-01, Resolver, Secrets) | متوافق 100% (WCAG 2.1 AA, CSP, INV-01) | `.scratch/phase7-gates/g10-*.txt` |
+  * **سجل أزواج المقارنة البصرية الـ 19 (19 Before/After Visual Proof Pairs — 38 Screenshots Total)**:
+    | الرقم | الشاشة والمقاس | الأبعاد | ملفات المقارنة (قبل / بعد) | الحالة والملاحظات البصرية |
+    | :--- | :--- | :--- | :--- | :--- |
+    | **Pair 01** | الرئيسية - حاسوب (Desktop Home) | 1440px | `before-home-1440.png` (1.33 MB) / `after-home-1440.png` (1.29 MB) | PASS — قوائم منسدلة هرمية حديثة، وتوحيد شامل لنظام البطاقات |
+    | **Pair 02** | الرئيسية - لوحي (Tablet Home) | 768px | `before-home-768.png` (1.31 MB) / `after-home-768.png` (1.28 MB) | PASS — إعادة تدفق متناسق لشبكة البطاقات وحواف لمسية واسعة |
+    | **Pair 03** | الرئيسية - جوال (Mobile Home) | 390px | `before-home-390.png` (1.17 MB) / `after-home-390.png` (1.13 MB) | PASS — أهداف لمسية لا تقل عن 44px، وبطاقات حديثة وأنيقة |
+    | **Pair 04** | عن الكنيسة - حاسوب (Desktop About) | 1440px | `before-about-1440.png` (324 KB) / `after-about-1440.png` (316 KB) | PASS — تحسين شريط التنقل بالترويسة واستقرار مسارات SSR/ISR |
+    | **Pair 05** | عن الكنيسة - لوحي (Tablet About) | 768px | `before-about-768.png` (312 KB) / `after-about-768.png` (312 KB) | PASS — تدفق لوحي مريح وسلامة أقسام التاريخ والشفعاء والصور |
+    | **Pair 06** | عن الكنيسة - جوال (Mobile About) | 390px | `before-about-390.png` (272 KB) / `after-about-390.png` (272 KB) | PASS — عمود فردي وتبويبات مريحة للمس وتصفح سريع |
+    | **Pair 07** | الخدمات - حاسوب (Desktop Services) | 1440px | `before-services-1440.png` (291 KB) / `after-services-1440.png` (281 KB) | PASS — إبراز قسم الخدمات في القائمة المنسدلة وشبكة بطاقات المرافق |
+    | **Pair 08** | الخدمات - لوحي (Tablet Services) | 768px | `before-services-768.png` (318 KB) / `after-services-768.png` (318 KB) | PASS — شبكة عمودين متناسقة لبطاقات المرافق مع شارات ذهبية مميزة |
+    | **Pair 09** | الخدمات - جوال (Mobile Services) | 390px | `before-services-390.png` (328 KB) / `after-services-390.png` (328 KB) | PASS — بطاقات مدمجة بعمود واحد وأزرار اتصال وتوجيه خرائط مباشرة |
+    | **Pair 10** | المحتوى الديناميكي - حاسوب (Desktop Content) | 1440px | `before-content-1440.png` (133 KB) / `after-content-1440.png` (124 KB) | PASS — مقال آبائي بتيبوغرافيا عربية راقية وإطار علوي نقي |
+    | **Pair 11** | المحتوى الديناميكي - لوحي (Tablet Content) | 768px | `before-content-768.png` (123 KB) / `after-content-768.png` (124 KB) | PASS — هوامش قراءة متوازنة وخطوط واضحة سهلة التصفح |
+    | **Pair 12** | المحتوى الديناميكي - جوال (Mobile Content) | 390px | `before-content-390.png` (116 KB) / `after-content-390.png` (117 KB) | PASS — استجابة كاملة للخطوط وصفر تمرير أفقي غير مرغوب |
+    | **Pair 13** | درج التنقل للجوال (Mobile Nav Drawer) | 390px (مفتوح) | `before-nav-drawer-390.png` (1.19 MB) / `after-nav-drawer-390.png` (1.17 MB) | PASS — تحول من قائمة نصية باهتة إلى بطاقات لمسية أنيقة >= 44px مع زر تبرع وحوار ARIA |
+    | **Pair 14** | لوحة الإدارة - حاسوب (Desktop Admin Dashboard) | 1440px | `before-admin-dashboard-1440.png` (37 KB) / `after-admin-dashboard-1440.png` (37 KB) | PASS — حماية الجلسة تفشل مغلقة وتحوّل لصفحة الدخول `/login` وفق INV-01 |
+    | **Pair 15** | لوحة الإدارة - لوحي (Tablet Admin Dashboard) | 768px | `before-admin-dashboard-768.png` (35 KB) / `after-admin-dashboard-768.png` (35 KB) | PASS — حماية الجلسة تفشل مغلقة وتحوّل لصفحة الدخول `/login` وفق INV-01 |
+    | **Pair 16** | لوحة الإدارة - جوال (Mobile Admin Dashboard) | 390px | `before-admin-dashboard-390.png` (30 KB) / `after-admin-dashboard-390.png` (30 KB) | PASS — حماية الجلسة تفشل مغلقة وتحوّل لصفحة الدخول `/login` وفق INV-01 |
+    | **Pair 17** | فيديوهات الإدارة - حاسوب (Desktop Admin Videos) | 1440px | `before-admin-videos-1440.png` (37 KB) / `after-admin-videos-1440.png` (37 KB) | PASS — حماية الجلسة تفشل مغلقة وتحوّل لصفحة الدخول `/login` وفق INV-01 |
+    | **Pair 18** | فيديوهات الإدارة - لوحي (Tablet Admin Videos) | 768px | `before-admin-videos-768.png` (35 KB) / `after-admin-videos-768.png` (35 KB) | PASS — حماية الجلسة تفشل مغلقة وتحوّل لصفحة الدخول `/login` وفق INV-01 |
+    | **Pair 19** | فيديوهات الإدارة - جوال (Mobile Admin Videos) | 390px | `before-admin-videos-390.png` (30 KB) / `after-admin-videos-390.png` (30 KB) | PASS — حماية الجلسة تفشل مغلقة وتحوّل لصفحة الدخول `/login` وفق INV-01 |
 - **المرحلة السابعة 7.1 (Phase 7.1 Performance Turbo — Web Public Surface — 100% Complete & Verified)**:
   * **علاج جذري لبطء الأداء والخطوط والحزم الكبيرة (Performance Turbo Deliverables)**:
     1. **تضمين الخطوط العربية محلياً عبر `next/font/google` (Fix A)**:
