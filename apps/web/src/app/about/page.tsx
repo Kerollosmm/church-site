@@ -39,7 +39,7 @@ import { localized } from "@/lib/i18n/localized";
 import { t, type MessageKey } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400; // 24h ISR
 
 /** Parish copy in both languages — BOTH fields required, so a missing translation is a build error. */
 interface Bilingual {

@@ -30,7 +30,7 @@ import { localized } from "@/lib/i18n/localized";
 import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400; // 24h ISR
 
 /** Policy copy in both languages — BOTH fields required, so a missing translation fails the build. */
 interface Bilingual {

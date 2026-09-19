@@ -32,7 +32,7 @@ import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 import { getSafeRenderableImageUrl } from "@church-site/data-access/client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // 1h ISR
 
 
 export async function generateMetadata(): Promise<Metadata> {

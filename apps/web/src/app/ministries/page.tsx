@@ -25,7 +25,7 @@ import { localized } from "@/lib/i18n/localized";
 import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // 5m ISR (member of EVENT_SURFACE_PATHS)
 
 /** How many upcoming dates a ministry block lists before it defers to the filtered events page. */
 const MINISTRY_PREVIEW_LIMIT = 3;

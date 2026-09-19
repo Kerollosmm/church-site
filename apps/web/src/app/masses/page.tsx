@@ -11,6 +11,8 @@ export const metadata: Metadata = {
     "مواعيد القداسات الإلهية والعشيات الأسبوعية على مذابح كنيسة القديسين مكسيموس ودوماديوس والأنبا موسى الأسود بالعصافرة.",
 };
 
+export const revalidate = 300; // 5m ISR
+
 /**
  * `/masses` — the schedule and the altar filter come from the typed data layer
  * (`getWeeklyMasses()`, `getAltars()`), which read the database and fall back to the seeded

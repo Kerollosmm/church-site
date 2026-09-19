@@ -30,7 +30,7 @@ import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locale
 import { t, type MessageKey } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400; // 24h ISR
 
 /** The parish surfaces that genuinely carry the word today — every target is a route on disk. */
 const RESOURCES: readonly { href: string; titleKey: MessageKey; hintKey: MessageKey; icon: React.ReactNode }[] = [
