@@ -4,11 +4,7 @@
 
 :root {
   --font-scale: 1;
-  --font-noto-kufi: "Noto Kufi Arabic", system-ui, sans-serif;
   --font-alexandria: "Alexandria", system-ui, sans-serif;
-  --font-noto-sans: "Noto Sans Arabic", system-ui, sans-serif;
-  --font-amiri: "Amiri", "Scheherazade New", serif;
-  --font-inter: "Inter", "Outfit", system-ui, sans-serif;
   
   --color-alabaster: #FAF8F5;
   --color-coptic-navy: #1E2A78;

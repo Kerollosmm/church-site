@@ -1,8 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Noto_Sans_Arabic, Noto_Kufi_Arabic, Amiri, Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { QuickActionBar } from "@/components/layout/QuickActionBar";
+
+const notoSans = Noto_Sans_Arabic({ subsets: ["arabic"], variable: "--font-noto-sans", display: "swap" });
+const notoKufi = Noto_Kufi_Arabic({ subsets: ["arabic"], variable: "--font-noto-kufi", display: "swap" });
+const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"], variable: "--font-amiri", display: "swap" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -42,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className="scroll-smooth">
+    <html lang="ar" dir="rtl" className={`scroll-smooth ${notoSans.variable} ${notoKufi.variable} ${amiri.variable} ${inter.variable}`}>
       <body className="antialiased min-h-screen flex flex-col bg-alabasterBg text-slateText-primary font-body selection:bg-copticGold-200 selection:text-copticNavy-900">
         <Header />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
