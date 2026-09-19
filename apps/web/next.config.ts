@@ -82,6 +82,9 @@ const PERMISSIONS_POLICY = [
 const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   images: {
     remotePatterns: [
       {
