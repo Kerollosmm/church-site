@@ -1,5 +1,13 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (Phase 7.1 Performance Turbo — 100% Complete & Verified)
+- [x] **تسريع الأداء وتثبيت الخطوط وتقليل الحزم العامة (Performance Turbo — Web Public Surface)**:
+  * **الخطوط العربية الأصيلة عبر `next/font` (Fix A)**: تحميل Noto Sans Arabic وNoto Kufi Arabic وAmiri وInter ذاتياً بدون رحلات شبكية خارجية لـ Google CDN.
+  * **تقليص حزم العميل وترويسة الخادم (Fix B)**: تحويل ترويسة الموقع `Header.tsx` إلى Server Component، وتفكيك مكون `/masses` ونقل الأجزاء الثابتة للخادم، وتفعيل تحسين استيراد `lucide-react`.
+  * **تخزين مؤقت غير قابل للتغيير وإعادة تحقق آمنة (Fix C)**: تطبيق `Cache-Control: public, max-age=31536000, immutable` لجميع أصول `/_next/static/*`، وضبط ثوابت ISR لكافة المسارات العامة.
+  * **بوابات الجودة G1–G10**: اجتياز كامل 10/10 وتوثيقها بملفات أدلة في `.scratch/phase7-gates/`.
+  * **الاختبارات**: 42 ملف اختبار و717/717 فحصاً ناجحاً بنسبة 100% في Vitest + 4/4 رحلات متصفح Playwright ناجحة في 12.2 ثانية.
+
 ## يعمل الآن (Phase 7.3 External Assets & Link Resolver — 100% Complete & Verified)
 - [x] **إتمام منظومة معالجة وتضمين الروابط الخارجية للوسائط والصور (AssetResolver & Allowlist)**:
   * **قائمة النطاقات المعتمدة والمصدر الموحد للأمان (`asset-allowlist.ts`)**:

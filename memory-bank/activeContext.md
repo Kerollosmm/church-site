@@ -1,6 +1,36 @@
 # Active Context — الحالة الحالية
 
-## أين نحن (2026-09-18)
+## أين نحن (2026-09-19)
+- **المرحلة السابعة 7.1 (Phase 7.1 Performance Turbo — Web Public Surface — 100% Complete & Verified)**:
+  * **علاج جذري لبطء الأداء والخطوط والحزم الكبيرة (Performance Turbo Deliverables)**:
+    1. **تضمين الخطوط العربية محلياً عبر `next/font/google` (Fix A)**:
+       - تكوين خطوط `Noto_Sans_Arabic`, `Noto_Kufi_Arabic`, `Amiri`, `Inter` محلياً مع ربط متغيرات CSS (`--font-noto-sans`, `--font-noto-kufi`, `--font-amiri`, `--font-inter`) في `apps/web/src/app/layout.tsx`.
+       - تنظيف `apps/web/src/app/globals.css` من التعيينات المكررة في `:root` لضمان عدم التعارض.
+       - توليد 27 قاعدة `@font-face` وسبق تحميل ملفات الخطوط المسبقة `.p.woff2` ذاتياً من خادم التطبيق بدون أي طلب خارجي لـ Google Fonts CDN.
+    2. **تخفيف الحزم البرمجية وتحويل الترويسة لخادم RSC (Fix B)**:
+       - تحويل `apps/web/src/components/layout/Header.tsx` إلى Server Component يقوم بحساب التاريخ القبطي وعرض الشريط العلوي والهوية المؤسسية ويمررها كـ ReactNode slot إلى `HeaderClient.tsx`.
+       - تخفيف `MassesExplorer.tsx` عبر نقل `PageHero` والترويسة القابلة للطباعة إلى `apps/web/src/app/masses/page.tsx` (RSC).
+       - تفعيل `experimental.optimizePackageImports: ["lucide-react"]` في `apps/web/next.config.ts`.
+       - خفض حجم مسار القداسات `/masses` من 5.99 kB إلى 4.51 kB وخفض First Load JS من 131 kB إلى 130 kB.
+    3. **الترويسات التخزينية غير القابلة للتغيير وإعادة التحقق الآمن (Fix C)**:
+       - إضافة ترويسة التخزين المؤقت للأصول الثابتة `/_next/static/:path*` بقيمة `Cache-Control: public, max-age=31536000, immutable` في `apps/web/next.config.ts`.
+       - ضبط فترات إعادة التحقق ISR الصريحة: `/about` (24h), `/gallery` (1h), `/sermons` (24h), `/privacy` (24h), `/ministries` (5m), `/masses` (5m).
+    4. **بوابات التحقق الصلبة للمرحلة 7.1 (G1–G10 All Green)**:
+       - G1: فحص الأنواع لكلا التطبيقين (0 أخطاء).
+       - G2: فحص الأسلوب `eslint .` (0 أخطاء).
+       - G3: اختبارات الوحدات والتكامل (42 ملفاً، 717/717 فحصاً ناجحاً بنسبة 100%).
+       - G4: بناء الويب بصفر متغيرات بيئة (57 مساراً ناجحاً).
+       - G5: قياسات الأداء الأولية والنهائية وتوثيق سبق تحميل الخطوط ومقارنة TTFB وحجم الحزم.
+       - G6: اختبارات المتصفح E2E الحقيقية (Playwright Chromium 4/4 رحلات ناجحة في 12.2 ثانية).
+       - G7: سجل Git موثق بـ 25 التزاماً متواصلاً.
+       - G8: هجرات قاعدة البيانات ثابتة بنسبة 100% (صفر تعديل في `supabase/migrations/`).
+       - G9: قفل التبعيات سليم بنسبة 100% (صفر تعديل في `pnpm-lock.yaml` وحزم `package.json`).
+       - G10: الالتزام الصارم بثابت INV-01 وصفر متغيرات بيئة جديدة وخلو تام من أسرار الخادم.
+  * **سلسلة التزامات المرحلة 7.1 (`a328f65`..`153be99`)**:
+    1. `a328f65` `chore: record baseline performance metrics`
+    2. `ee55a44` `perf(web): real arabic fonts via next/font`
+    3. `6b1f0dc` `perf(web): server-first header and de-weight client bundles`
+    4. `153be99` `perf(web): immutable static assets and safe ISR on public routes`
 - **المرحلة السابعة 7.3 (Phase 7.3 External Assets & Link Resolver — 100% Complete & Verified)**:
   * **اكتمال منظومة معالجة الروابط الخارجية للوسائط (External Assets & Link Resolver)**:
     1. **مصدر الحقيقة الموحد للأمان (`asset-allowlist.ts`)**:
