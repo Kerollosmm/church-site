@@ -39,3 +39,12 @@ export const ADMIN_BADGE = "inline-flex items-center gap-1 rounded-full px-2.5 p
 export const ADMIN_TABLE = "w-full border-collapse text-right text-xs";
 export const ADMIN_TH = "border-b border-slate-200 pb-2 pe-3 font-heading text-[11px] font-bold text-slate-500";
 export const ADMIN_TD = "border-b border-slate-100 py-3 pe-3 align-top text-slate-700";
+
+/** Dashboard overview stat card */
+export const ADMIN_STAT_CARD =
+  "rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:border-copticGold-300 hover:shadow-sm";
+
+/** Dashboard quick navigation card */
+export const ADMIN_QUICK_CARD =
+  "flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-xs transition hover:border-copticGold-400 hover:bg-slate-50/70 hover:shadow-sm group";
+

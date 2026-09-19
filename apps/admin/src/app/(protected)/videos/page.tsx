@@ -1,10 +1,8 @@
-// apps/admin/src/app/(protected)/videos/page.tsx
-// Management surface for Parish Videos (External URL Embeds).
-
 import React from "react";
 import Link from "next/link";
+import { Plus, FileClock } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { ADMIN_BUTTON_SECONDARY } from "@/components/admin/admin-ui";
+import { ADMIN_BUTTON_PRIMARY, ADMIN_BUTTON_SECONDARY } from "@/components/admin/admin-ui";
 import { requireStaff } from "@/lib/auth/require-staff";
 import {
   ADMIN_ROLE_LABELS_AR,
@@ -21,8 +19,17 @@ export const metadata = {
   title: "فيديوهات الكنيسة — لوحة تحكم كنيسة القديسين",
 };
 
-export default async function AdminVideosPage(): Promise<React.ReactElement> {
-  const session = await requireStaff();
+interface AdminVideosPageProps {
+  searchParams?: Promise<{ new?: string }>;
+}
+
+export default async function AdminVideosPage({
+  searchParams,
+}: AdminVideosPageProps): Promise<React.ReactElement> {
+  const [session, resolvedParams] = await Promise.all([
+    requireStaff(),
+    searchParams ? searchParams : Promise.resolve({} as { new?: string }),
+  ]);
   const role = adminRoleFromStaffRole(session.role);
 
   if (!role || !can(role, "videos:read")) {
@@ -36,6 +43,7 @@ export default async function AdminVideosPage(): Promise<React.ReactElement> {
   const roleLabel = role ? ADMIN_ROLE_LABELS_AR[role] : "غير معروف";
   const canWrite = can(role, "videos:write");
   const canDelete = can(role, "videos:delete");
+  const initialOpenCreate = resolvedParams?.new === "true" && canWrite;
 
   let videos: ParishVideo[] = [];
   let readFailed = false;
@@ -58,8 +66,15 @@ export default async function AdminVideosPage(): Promise<React.ReactElement> {
         roleLabel={roleLabel}
         readOnly={!canWrite}
       >
+        {canWrite ? (
+          <Link href="/videos?new=true" className={ADMIN_BUTTON_PRIMARY}>
+            <Plus className="w-4 h-4" />
+            <span>إضافة فيديو جديد</span>
+          </Link>
+        ) : null}
         <Link href="/audit" className={ADMIN_BUTTON_SECONDARY}>
-          سجل التدقيق
+          <FileClock aria-hidden="true" className="h-4 w-4" />
+          <span>سجل التدقيق</span>
         </Link>
       </AdminPageHeader>
 
@@ -72,8 +87,10 @@ export default async function AdminVideosPage(): Promise<React.ReactElement> {
           initialVideos={videos}
           canWrite={canWrite}
           canDelete={canDelete}
+          initialOpenCreate={initialOpenCreate}
         />
       )}
     </div>
   );
 }
+

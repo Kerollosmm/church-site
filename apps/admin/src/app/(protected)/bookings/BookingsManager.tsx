@@ -19,7 +19,9 @@ import {
   rejectCondolenceBooking,
   type AdminBookingActionResult,
 } from "@/actions/admin-booking-actions";
+import { AdminFeedback } from "@/components/admin/AdminFeedback";
 import type { BookingStatusEnum, Tables } from "@church-site/domain";
+
 
 /** Arabic labels for the `booking_status_enum` values (the enum is never displayed). */
 const STATUS_LABELS_AR: Record<BookingStatusEnum, string> = {
@@ -88,14 +90,17 @@ export function BookingsManager({ bookings, loadErrorAr }: BookingsManagerProps)
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-copticNavy">
-            إدارة ومراجعة طلبات حجز قاعة العزاء
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            مراجعة طلبات العزاء الواردة إلكترونياً، والاعتماد أو الاعتذار مع بيان السبب.
+    <div className="space-y-6 max-w-7xl">
+      {/* Control bar: Search, Filter, and Quick Stats */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-slate-600">
+            إجمالي الطلبات: <strong className="text-copticNavy">{bookings.length}</strong>
+            {pendingCount > 0 && (
+              <span className="ms-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-bold text-amber-800">
+                {pendingCount} بانتظار الاعتماد
+              </span>
+            )}
           </p>
         </div>
 
@@ -128,39 +133,21 @@ export function BookingsManager({ bookings, loadErrorAr }: BookingsManagerProps)
         </div>
       </div>
 
-      {/* Read failure (database unreachable) — shown instead of an empty list that would read as
-          "no requests". */}
+      {/* Read failure (database unreachable) */}
       {loadErrorAr && (
-        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl p-4 text-xs text-red-900">
-          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-          <p className="leading-relaxed">{loadErrorAr}</p>
-        </div>
+        <AdminFeedback
+          tone="error"
+          title="تعذر الاتصال بقاعدة البيانات"
+          message={loadErrorAr}
+        />
       )}
 
       {/* Result of the last decision */}
       {feedback && (
-        <div
-          className={`flex items-start gap-3 rounded-2xl p-4 text-xs ${
-            feedback.success
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-900"
-              : "bg-red-50 border border-red-200 text-red-900"
-          }`}
-          role="status"
-        >
-          {feedback.success ? (
-            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
-          ) : (
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-          )}
-          <p className="leading-relaxed">{feedback.message}</p>
-        </div>
-      )}
-
-      {bookings.length > 0 && (
-        <p className="text-xs text-slate-500 px-1">
-          إجمالي الطلبات: <strong className="text-copticNavy">{bookings.length}</strong> — بانتظار
-          الاعتماد: <strong className="text-copticNavy">{pendingCount}</strong>
-        </p>
+        <AdminFeedback
+          tone={feedback.success ? "success" : "error"}
+          message={feedback.message}
+        />
       )}
 
       {/* Bookings List */}

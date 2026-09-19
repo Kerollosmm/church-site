@@ -20,6 +20,7 @@ import {
   deleteMassAction,
   toggleMassStatusAction,
 } from "@/actions/admin-mass-actions";
+import { AdminFeedback } from "@/components/admin/AdminFeedback";
 import { AdminMassModal } from "./AdminMassModal";
 
 export interface AdminMassesTableProps {
@@ -79,6 +80,7 @@ export function AdminMassesTable({
       tone: "success",
       message: editingMass ? "تم حفظ تعديلات القداس بنجاح." : "تم إضافة القداس الجديد بنجاح.",
     });
+    setTimeout(() => setNotification(null), 5000);
   }
 
   async function handleToggleStatus(item: WeeklyMassRow) {
@@ -106,6 +108,7 @@ export function AdminMassesTable({
       setNotification({ tone: "error", message: "تعذّر تغيير حالة القداس." });
     } finally {
       setTogglingId(null);
+      setTimeout(() => setNotification(null), 5000);
     }
   }
 
@@ -135,75 +138,51 @@ export function AdminMassesTable({
       setNotification({ tone: "error", message: "تعذّر حذف القداس." });
     } finally {
       setDeletingId(null);
+      setTimeout(() => setNotification(null), 5000);
     }
   }
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      {/* Header Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-copticNavy">
-            إدارة جداول القداسات الإلهية والعشيات
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            إدارة مواعيد القداسات الأسبوعية وتعيين المذابح والتوقيتات وتفعيل أو تعطيل المواعيد.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
+    <div className="space-y-6 max-w-7xl">
+      {/* Control bar: Altar filter & Add mass button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex items-center gap-3">
+          <label htmlFor="altar-select" className="text-xs font-heading font-bold text-slate-700 whitespace-nowrap">
+            تصفية بالمذبح:
+          </label>
           <select
+            id="altar-select"
             value={selectedAltar}
             onChange={(e) => setSelectedAltar(e.target.value)}
             className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-copticNavy focus:outline-hidden"
           >
-            <option value="all">كافة المذابح</option>
+            <option value="all">كافة المذابح ({massList.length})</option>
             {altars.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name_ar}
               </option>
             ))}
           </select>
-
-          {canCreate && (
-            <button
-              type="button"
-              onClick={handleOpenCreateModal}
-              className="bg-copticGold-500 hover:bg-copticGold-600 text-copticNavy-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>إضافة قداس جديد</span>
-            </button>
-          )}
         </div>
-      </div>
 
-      {/* Notification Toast */}
-      {notification && (
-        <div
-          className={`flex items-center justify-between p-4 rounded-2xl text-xs font-bold transition animate-in fade-in ${
-            notification.tone === "success"
-              ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
-              : "bg-rose-50 text-rose-900 border border-rose-200"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {notification.tone === "success" ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-600" />
-            )}
-            <span>{notification.message}</span>
-          </div>
+        {canCreate && (
           <button
             type="button"
-            onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
-            aria-label="إغلاق التنبيه"
+            onClick={handleOpenCreateModal}
+            className="bg-copticGold-500 hover:bg-copticGold-600 text-copticNavy-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5 transition shadow-xs cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <Plus className="w-4 h-4" />
+            <span>إضافة قداس جديد</span>
           </button>
-        </div>
+        )}
+      </div>
+
+      {/* Notification Feedback */}
+      {notification && (
+        <AdminFeedback
+          tone={notification.tone}
+          message={notification.message}
+        />
       )}
 
       {/* Mass Table Container */}

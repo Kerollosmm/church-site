@@ -1,26 +1,15 @@
 import React from "react";
-import Link from "next/link";
 import {
-  LayoutDashboard,
-  Calendar,
-  HeartHandshake,
   Globe,
   Church,
   LogOut,
   ShieldCheck,
-  CalendarDays,
-  FileClock,
-  Image as ImageIcon,
-  BellRing,
-  Layers,
-  Video,
-  Building2,
-  Compass,
 } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { signOut } from "@/actions/auth-actions";
 import { ROLE_LABELS_AR } from "@/lib/auth/roles";
 import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
+import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
 import { ADMIN_ROLE_LABELS_AR, adminRoleFromStaffRole } from "@church-site/domain";
 import { LOCALE_DIRECTION } from "@church-site/ui";
 import { getLocale } from "@church-site/ui/server";
@@ -43,19 +32,6 @@ export default async function AdminProtectedLayout({
   const staff = await requireStaff();
   const locale = await getLocale();
   const eventRole = adminRoleFromStaffRole(staff.role);
-
-  const adminNav = [
-    { href: "/masses", label: "إدارة القداسات", icon: Calendar },
-    { href: "/events", label: "الفعاليات والمواعيد", icon: CalendarDays },
-    { href: "/videos", label: "فيديوهات الكنيسة", icon: Video },
-    { href: "/services", label: "الخدمات والمرافق", icon: Building2 },
-    { href: "/navigation", label: "شريط التنقل", icon: Compass },
-    { href: "/content-types", label: "نماذج المحتوى (CMS)", icon: Layers },
-    { href: "/bookings", label: "حجوزات العزاء", icon: HeartHandshake },
-    { href: "/media", label: "مكتبة الوسائط", icon: ImageIcon },
-    { href: "/subscribers", label: "المشتركون في التنبيهات", icon: BellRing },
-    { href: "/audit", label: "سجل التدقيق", icon: FileClock },
-  ];
 
   return (
     <div
@@ -83,21 +59,7 @@ export default async function AdminProtectedLayout({
             <LocaleSwitcher locale={locale} />
           </div>
 
-          <nav className="space-y-1.5">
-            {adminNav.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-heading font-bold text-slate-300 hover:text-white hover:bg-copticNavy-800 transition"
-                >
-                  <Icon className="w-4 h-4 text-copticGold-400" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          <AdminSidebarNav />
         </div>
 
         <div className="pt-6 border-t border-copticNavy-800 mt-6 space-y-3">

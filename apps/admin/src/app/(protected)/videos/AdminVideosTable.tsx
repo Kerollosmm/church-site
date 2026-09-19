@@ -25,12 +25,15 @@ import {
   toggleVideoActiveAction,
   toggleVideoPublicAction,
 } from "@/actions/admin-video-actions";
+import { AdminFeedback } from "@/components/admin/AdminFeedback";
+
 import { AdminVideoModal } from "./AdminVideoModal";
 
 export interface AdminVideosTableProps {
   initialVideos: ParishVideo[];
   canWrite: boolean;
   canDelete: boolean;
+  initialOpenCreate?: boolean;
 }
 
 const PROVIDER_BADGES: Record<
@@ -61,9 +64,10 @@ export function AdminVideosTable({
   initialVideos,
   canWrite,
   canDelete,
+  initialOpenCreate = false,
 }: AdminVideosTableProps) {
   const [videos, setVideos] = useState<ParishVideo[]>(initialVideos);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(initialOpenCreate);
   const [editingVideo, setEditingVideo] = useState<ParishVideo | null>(null);
 
   const [togglingActiveId, setTogglingActiveId] = useState<string | null>(null);
@@ -100,6 +104,7 @@ export function AdminVideosTable({
       tone: "success",
       message: editingVideo ? "تم تعديل الفيديو بنجاح." : "تمت إضافة الفيديو بنجاح.",
     });
+    setTimeout(() => setNotification(null), 5000);
   }
 
   async function handleToggleActive(video: ParishVideo) {
@@ -126,6 +131,7 @@ export function AdminVideosTable({
       setNotification({ tone: "error", message: "تعذر تغيير حالة تفعيل الفيديو." });
     } finally {
       setTogglingActiveId(null);
+      setTimeout(() => setNotification(null), 5000);
     }
   }
 
@@ -153,6 +159,7 @@ export function AdminVideosTable({
       setNotification({ tone: "error", message: "تعذر تغيير حالة النشر." });
     } finally {
       setTogglingPublicId(null);
+      setTimeout(() => setNotification(null), 5000);
     }
   }
 
@@ -176,62 +183,35 @@ export function AdminVideosTable({
       setNotification({ tone: "error", message: "حدث خطأ أثناء حذف الفيديو." });
     } finally {
       setDeletingId(null);
+      setTimeout(() => setNotification(null), 5000);
     }
   }
 
   return (
     <div className="space-y-6">
-      {/* Top Bar: Title & Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Video className="w-5 h-5 text-copticGold-600" />
-            <h1 className="font-heading font-bold text-lg text-slate-900">
-              فيديوهات الكنيسة (Parish Videos)
-            </h1>
-          </div>
-          <p className="text-xs text-slate-500">
-            إدارة وتضمين مقاطع الفيديو الخارجية (YouTube / Facebook / مباشر) في صفحة «عن الكنيسة».
+      {/* Action Toolbar */}
+      {canWrite && (
+        <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <p className="text-xs text-slate-600">
+            إجمالي الفيديوهات: <strong className="text-copticNavy">{videos.length}</strong>
           </p>
-        </div>
-
-        {canWrite && (
           <button
             type="button"
             onClick={handleOpenCreate}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-copticGold-500 hover:bg-copticGold-600 text-slate-950 font-heading font-bold text-xs rounded-xl transition shadow-sm"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-copticGold-500 hover:bg-copticGold-600 text-copticNavy-950 font-heading font-bold text-xs rounded-xl transition shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>إضافة فيديو جديد</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Notification banner */}
       {notification && (
-        <div
-          className={`p-4 rounded-xl border flex items-center justify-between text-xs animate-fade-in ${
-            notification.tone === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-red-50 border-red-200 text-red-800"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {notification.tone === "success" ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-red-600" />
-            )}
-            <span>{notification.message}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-slate-600 font-bold"
-          >
-            ✕
-          </button>
-        </div>
+        <AdminFeedback
+          tone={notification.tone}
+          message={notification.message}
+        />
       )}
 
       {/* Videos Table */}
