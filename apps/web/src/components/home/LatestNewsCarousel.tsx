@@ -36,24 +36,23 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
 
   return (
     <div className="py-8 border-t border-copticGold-200">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-copticNavy text-copticGold-300 flex items-center justify-center">
-            <Bell className="w-4 h-4" />
-          </div>
-          <div>
-            <h2 className="font-heading font-bold text-xl text-copticNavy">
-              أحدث الأخبار والبيانات الرسمية
-            </h2>
-            <p className="text-xs text-slateText-secondary">
-              إعلانات النهضات، مواعيد الأعياد، وفعاليات الخدمة
-            </p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
+        <div>
+          <span className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full mb-2">
+            <Sparkles className="w-3.5 h-3.5 text-copticGold-700" />
+            <span>بيانات وإعلانات رسمية</span>
+          </span>
+          <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-copticNavy mt-1">
+            أحدث الأخبار والبيانات الرسمية
+          </h2>
+          <p className="text-slateText-secondary text-xs sm:text-sm">
+            إعلانات النهضات، مواعيد الأعياد، وفعاليات الخدمة
+          </p>
         </div>
 
         <Link
           href="/contact"
-          className="text-xs font-bold text-copticGold-800 hover:text-copticNavy flex items-center gap-1"
+          className="text-xs font-bold text-copticGold-800 hover:text-copticNavy flex items-center gap-1 shrink-0"
         >
           <span>تواصل مع السكرتارية</span>
           <ChevronLeft className="w-3.5 h-3.5" />
@@ -64,7 +63,7 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
         {items.map((item, idx) => (
           <div
             key={idx}
-            className="bg-white rounded-2xl p-5 border border-copticGold-200 hover:border-copticGold-400 transition-all hover:shadow-md flex flex-col justify-between"
+            className="rounded-2xl border border-copticGold-200 bg-white shadow-xs hover:border-copticGold-400 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none flex flex-col justify-between p-5 group"
           >
             <div>
               <div className="flex items-center justify-between text-xs text-copticGold-800 mb-3">
@@ -91,7 +90,7 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
 
             <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-copticNavy font-bold">
               <span>تفاصيل الخبر</span>
-              <ChevronLeft className="w-4 h-4 text-copticGold-700" />
+              <ChevronLeft className="w-4 h-4 text-copticGold-700 transition-transform group-hover:-translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:transform-none" />
             </div>
           </div>
         ))}

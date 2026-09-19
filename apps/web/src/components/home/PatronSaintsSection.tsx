@@ -58,8 +58,8 @@ export function PatronSaintsSection() {
       <div className="relative">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 bg-copticGold-500/20 text-copticGold-300 border border-copticGold-400/40 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold mb-4 animate-gold-glow">
-            <Sparkles className="w-4 h-4 text-copticGold-400" />
+          <div className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-copticGold-700" />
             <span>بركة شفعاء الكنيسة الأطهار</span>
           </div>
 
@@ -70,7 +70,7 @@ export function PatronSaintsSection() {
             شفعاء كنيستنا وحماتها الروحيون
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-medium">
+          <p className="text-slate-200 text-xs sm:text-sm leading-relaxed font-medium">
             تتشرف كنيستنا في الإسكندرية بأن تحمل اسم شفعاء عظام يعلّموننا النسك والتوبة والمحبة الباذلة، وتفيض صلواتهم بالبركة والسلام لرعيتنا.
           </p>
         </div>
@@ -82,7 +82,7 @@ export function PatronSaintsSection() {
             return (
               <div
                 key={idx}
-                className="bg-copticNavy-800/90 hover:bg-copticNavy-800 rounded-2xl p-6 sm:p-8 border border-copticGold-400/30 hover:border-copticGold-400 transition-all duration-300 shadow-md flex flex-col justify-between group relative overflow-hidden"
+                className="bg-copticNavy-800/90 hover:bg-copticNavy-800 rounded-2xl p-6 sm:p-8 border border-copticGold-400/30 hover:border-copticGold-400 transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none shadow-md flex flex-col justify-between group relative overflow-hidden"
               >
                 {/* Subtle card top gradient */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${saint.accentColor} pointer-events-none opacity-50 group-hover:opacity-75 transition-opacity`} />

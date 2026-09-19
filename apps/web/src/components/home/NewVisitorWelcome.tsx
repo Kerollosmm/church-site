@@ -89,8 +89,8 @@ export function NewVisitorWelcome() {
 
       {/* Header banner */}
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center gap-2 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold mb-4 animate-gold-glow">
-          <Sparkles className="w-4 h-4 text-copticGold-700" />
+        <div className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full mb-4">
+          <Sparkles className="w-3.5 h-3.5 text-copticGold-700" />
           <span>أهلاً بك في بيتك الروحي</span>
         </div>
 
@@ -101,7 +101,7 @@ export function NewVisitorWelcome() {
           أول مرة تزور كنيستنا؟
         </h2>
 
-        <p className="text-sm sm:text-base text-slateText-secondary leading-relaxed mb-6 font-medium">
+        <p className="text-slateText-secondary text-xs sm:text-sm leading-relaxed mb-6 font-medium">
           نرحب بك بفرح في بيت الله — دليلك السريع للتعرف على كنيستنا وخدماتها
         </p>
 
@@ -123,11 +123,11 @@ export function NewVisitorWelcome() {
           return (
             <div
               key={idx}
-              className="bg-alabasterBg hover:bg-white rounded-2xl p-5 sm:p-6 border border-copticGold-200 hover:border-copticGold-400 transition duration-200 shadow-xs flex flex-col justify-between group"
+              className="rounded-2xl border border-copticGold-200 bg-white shadow-xs hover:border-copticGold-400 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none flex flex-col justify-between p-5 sm:p-6 group"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 rounded-xl bg-copticNavy text-copticGold-300 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-xl bg-copticNavy text-copticGold-300 flex items-center justify-center group-hover:scale-105 transition-transform motion-reduce:transition-none motion-reduce:group-hover:transform-none">
                     <Icon className="w-6 h-6" />
                   </div>
                   <span className="text-[11px] font-bold text-copticGold-800 bg-copticGold-100 px-2.5 py-1 rounded-full border border-copticGold-300">
@@ -151,7 +151,7 @@ export function NewVisitorWelcome() {
                 className="inline-flex items-center justify-between w-full bg-white group-hover:bg-copticNavy group-hover:text-white border border-copticGold-300 text-copticNavy font-heading font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all"
               >
                 <span>{card.ctaText}</span>
-                <ArrowLeft className="w-4 h-4 text-copticGold-600 group-hover:text-copticGold-300 group-hover:-translate-x-1 transition-all" />
+                <ArrowLeft className="w-4 h-4 text-copticGold-600 group-hover:text-copticGold-300 group-hover:-translate-x-1 transition-all motion-reduce:transition-none motion-reduce:group-hover:transform-none" />
               </Link>
             </div>
           );

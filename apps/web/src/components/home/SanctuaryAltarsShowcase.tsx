@@ -70,8 +70,8 @@ export function SanctuaryAltarsShowcase() {
 
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center gap-2 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold mb-4 animate-gold-glow">
-          <Church className="w-4 h-4 text-copticGold-700" />
+        <div className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full mb-4">
+          <Church className="w-3.5 h-3.5 text-copticGold-700" />
           <span>المذابح المقدسة المدشنة بالميرون</span>
         </div>
 
@@ -82,7 +82,7 @@ export function SanctuaryAltarsShowcase() {
           مذابح كنيستنا الثلاثة
         </h2>
 
-        <p className="text-sm sm:text-base text-slateText-secondary leading-relaxed font-medium">
+        <p className="text-slateText-secondary text-xs sm:text-sm leading-relaxed font-medium">
           ثلاثة هياكل مقدسة مدشنة بمسحة الميرون الغالي لرفع ذبيحة الشكر الإفخارستية والصلوات اليومية عن الكنيسة وسلام العالم
         </p>
       </div>
@@ -92,7 +92,7 @@ export function SanctuaryAltarsShowcase() {
         {altars.map((altar, idx) => (
           <div
             key={idx}
-            className="bg-alabasterBg rounded-2xl p-6 border-2 border-copticGold-200 hover:border-copticNavy transition-all duration-200 shadow-xs flex flex-col justify-between group"
+            className="rounded-2xl border border-copticGold-200 bg-white shadow-xs hover:border-copticGold-400 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none flex flex-col justify-between p-6 group"
           >
             <div>
               {/* Orientation & Consecration Tag */}

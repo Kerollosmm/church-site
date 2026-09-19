@@ -93,14 +93,14 @@ export function QuickServiceGrid() {
     <div className="py-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-2">
         <div>
-          <span className="text-xs font-bold text-copticGold-800 bg-copticGold-100 px-2.5 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full">
             الدليل السريع
           </span>
-          <h2 className="text-2xl font-heading font-bold text-copticNavy mt-2">
+          <h2 className="text-2xl font-heading font-extrabold text-copticNavy mt-2">
             خدمات ومرافق الكنيسة
           </h2>
         </div>
-        <p className="text-xs text-slateText-secondary max-w-md">
+        <p className="text-slateText-secondary text-xs sm:text-sm max-w-md">
           تصفح مباشر لجميع القطاعات الخدمية والرعوية المتاحة مجاناً لشعب الإسكندرية.
         </p>
       </div>
@@ -112,7 +112,7 @@ export function QuickServiceGrid() {
             <Link
               key={srv.title}
               href={srv.href}
-              className="bg-white border border-copticGold-200 hover:border-copticGold-400 rounded-2xl p-4 transition-all hover:shadow-md hover:-translate-y-0.5 group flex flex-col justify-between"
+              className="rounded-2xl border border-copticGold-200 bg-white shadow-xs hover:border-copticGold-400 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none group flex flex-col justify-between p-4"
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -133,7 +133,7 @@ export function QuickServiceGrid() {
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-copticGold-800 font-medium group-hover:text-copticNavy">
                 <span>تصفح المزيد</span>
-                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform motion-reduce:transition-none motion-reduce:group-hover:transform-none" />
               </div>
             </Link>
           );
