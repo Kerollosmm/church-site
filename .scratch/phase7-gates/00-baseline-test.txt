@@ -1,0 +1,295 @@
+﻿
+> church-site@1.1.0 test C:\Church-Site
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.1 [39m[90mC:/Church-Site[39m
+
+[90mstdout[2m | apps/web/src/lib/store/__tests__/json-driver.test.ts[2m > [22m[2mseed on first use[2m > [22m[2mcreates the document in CHURCH_DATA_DIR and reports where it is
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\church-store-CxHi8i\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m apps/web/src/lib/store/__tests__/json-driver.test.ts [2m([22m[2m23 tests[22m[2m)[22m[33m 1156[2mms[22m[39m
+ [32m✓[39m apps/web/src/components/ui/__tests__/Skeleton.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1079[2mms[22m[39m
+   [32m✓[39m Skeleton UI Components (Invariant INV-FEEDBACK-ANIMATION) [2m(7)[22m
+     [32m✓[39m <Skeleton /> base primitive [2m(2)[22m
+       [33m[2m✓[22m[39m renders with role='status' and accessible default aria-label[33m 461[2mms[22m[39m
+ [32m✓[39m apps/web/src/components/home/__tests__/NewVisitorWelcome.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1269[2mms[22m[39m
+   [32m✓[39m NewVisitorWelcome Component [2m(4)[22m
+     [33m[2m✓[22m[39m renders the welcome heading and Arabic welcoming badge[33m 782[2mms[22m[39m
+ [32m✓[39m apps/web/src/components/home/__tests__/SanctuaryAltarsShowcase.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1680[2mms[22m[39m
+   [32m✓[39m SanctuaryAltarsShowcase Component [2m(5)[22m
+     [33m[2m✓[22m[39m renders the showcase title and badge for consecrated altars[33m 807[2mms[22m[39m
+ [32m✓[39m apps/web/src/components/home/__tests__/PatronSaintsSection.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1125[2mms[22m[39m
+   [32m✓[39m PatronSaintsSection Component [2m(4)[22m
+     [33m[2m✓[22m[39m renders the patron saints section title and introductory text[33m 600[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/store/__tests__/content-repository.test.ts[2m > [22m[2mJsonContentTypeRepository (file-backed engine)[2m > [22m[2mseeds built-in content types (article, announcement, sermon) on first list
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\content-store-LYsKuw\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/store/__tests__/content-repository.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 317[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-services-navigation-proof.test.ts[2m > [22m[2mGate G6: E2E Services & Navigation CMS Proof[2m > [22m[2mproves complete Services & Navigation CMS lifecycle on file-store engine
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\phase7-e2e-NPRSjx\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/store/__tests__/e2e-services-navigation-proof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 276[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/store/__tests__/audit-actor-filter.test.ts[2m > [22m[2mAudit actor filter (JsonEventRepository)[2m > [22m[2mfilters audit entries by actor name substring case-insensitively
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\audit-store-WMf3NG\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/store/__tests__/audit-actor-filter.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 338[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/navigation/__tests__/navigation-repository.test.ts[2m > [22m[2mJsonParishNavigationRepository[2m > [22m[2mseeds baseline navigation items preserving parity
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\nav-store-PYq3C5\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/navigation/__tests__/navigation-repository.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m================================================================================
+PHASE 3: END-TO-END CONTENT TYPES NO-CODE ENGINE VERIFICATION
+Engine: File-backed JSON store driver (CHURCH_DATA_DIR throwaway sandbox)
+Label: verified on file-store engine; live-DB run pending credentials
+================================================================================
+
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[INIT] Sandbox initialized at C:\Users\KimoStore\AppData\Local\Temp\g6-content-proof-dlFTtP
+
+[STEP 1] Creating new Content Type: 'g6-bulletin' (نشرة الكنيسة الدورية)...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\g6-content-proof-dlFTtP\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Content Type created with ID: 00e00060-eacc-43f5-9408-526cbd10b649
+          Slug: g6-bulletin, NameAr: نشرة الكنيسة الدورية, Active: true
+
+[STEP 2] Adding 3 schema fields to 'g6-bulletin' without code changes...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m  - Field 1 [text]: slug='headline', label='المانشيت الإخباري', required=true
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m  - Field 2 [media]: slug='cover_photo', label='صورة الغلاف', required=false
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m  - Field 3 [select]: slug='priority_level', label='درجة الأهمية', options=["عادي","هام","عاجل"]
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Registered 3 fields dynamically for type 'g6-bulletin'.
+
+[STEP 3] Creating new entry: slug='issue-101' as DRAFT...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Entry created with ID: 72487ce9-292b-4ebd-92d5-51c76cdfa837, status: draft
+
+[STEP 4] Testing INV-01 public isolation (public getPublishedEntry on draft)...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[PROVEN] Public reader returned NULL for draft entry (Zero-leakage invariant verified).
+
+[STEP 5] Publishing entry: changing status to 'published'...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Entry status updated to 'published' at 2026-09-18T15:33:59.737Z
+
+[STEP 6] Reading published entry through public reader API...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Public reader returned entry:
+          ID: 72487ce9-292b-4ebd-92d5-51c76cdfa837
+          Slug: issue-101
+          Status: published
+          Headline: صدور النشرة الدورية لنهضة السيدة العذراء
+          Cover: /media/2026/09/bulletin-101.jpg
+          Priority: عاجل
+
+[STEP 7] Updating field: editing headline and updating priority...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Updated data: headline='صدور النشرة الدورية لنهضة السيدة العذراء — الطبعة النهائية المحدثة'
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Public reader verified updated data:
+          Updated Headline: صدور النشرة الدورية لنهضة السيدة العذراء — الطبعة النهائية المحدثة
+          Updated Cover: /media/2026/09/bulletin-101-final.jpg
+
+[STEP 8] Performing cleanup...
+
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-content-proof.test.ts[2m > [22m[2mGate G6: End-to-End No-Code Content Engine Verification[2m > [22m[2mdemonstrates complete no-code lifecycle on file-store engine
+[22m[39m[SUCCESS] Throwaway records removed cleanly.
+
+================================================================================
+GATE G6 VERIFICATION RESULT: PASS
+End-to-end no-code CMS flow demonstrated 100% successfully on file-store engine.
+================================================================================
+
+ [32m✓[39m packages/data-access/src/store/__tests__/e2e-content-proof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 256[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m================================================================================
+PHASE 5: END-TO-END HARDENING VERIFICATION (GATE G6)
+Date: 2026-09-18T15:34:01.729Z
+================================================================================
+
+--- 1. Resend Mailer Factory Resolution ---
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] getMailer() returned ResendMailer: true, deliverEmails: true
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] missing key fallback to noop: true
+
+--- 2. readOrSeed Production Integrity Matrix ---
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] prod + DB error throws: true
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] prod + empty rows throws: true
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] dev/test DB error serves seed: true
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] zero-env serves seed without calling read(): true
+
+--- 3. Audit Actor Filter in Repository ---
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\probe-audit-hxLjXJ\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] actor name search returned: مينا بطرس
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] actorId search returned: resend-sys
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m[proof] non-matching search returned 0 rows: true
+
+[90mstdout[2m | packages/data-access/src/__tests__/e2e-hardening-proof.test.ts[2m > [22m[2mE2E Hardening Proof (Gate G6)[2m > [22m[2mexecutes complete hardening lifecycle: mailer factory, readOrSeed matrix, audit actor filter, CSV BOM, seam cleanup
+[22m[39m
+--- 4. Audit CSV Export with UTF-8 BOM ---
+[proof] leading BOM (\uFEFF) present at offset 0: true
+[proof] Arabic headers match spec: true
+[proof] RFC-4180 comma/quote escaping: true
+[proof] denied mapping to 'نعم': true
+
+--- 5. Seam Consolidation Check ---
+[proof] stale directory apps/web/src/lib/notify removed: true
+
+--- 6. MAILER_FACTORIES Registration ---
+[proof] registered factories: ["noop","resend"]
+
+================================================================================
+PASS: all 4 hardening capabilities verified
+================================================================================
+
+ [32m✓[39m packages/data-access/src/__tests__/e2e-hardening-proof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 118[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/store/__tests__/parish-video-repository.test.ts[2m > [22m[2mJsonParishVideoRepository[2m > [22m[2mcreates a new parish video and retrieves it by id
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\video-store-G8jOpL\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/store/__tests__/parish-video-repository.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 258[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/facilities/__tests__/facility-repository.test.ts[2m > [22m[2mJsonParishFacilityRepository[2m > [22m[2mseeds baseline facilities automatically
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\facility-store-btlKQA\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/facilities/__tests__/facility-repository.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 286[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/store/__tests__/e2e-videos-proof.test.ts[2m > [22m[2mE2E Parish Videos Proof (Gate G6)[2m > [22m[2mexecutes complete lifecycle: creation, normalization, public projection, toggle, and trusted embed gating
+[22m[39m[store] seeded the file-backed store {
+  path: [32m'C:\\Users\\KimoStore\\AppData\\Local\\Temp\\video-e2e-gra1tv\\church-store.json'[39m,
+  series: [33m16[39m,
+  events: [33m2[39m,
+  terms: [33m37[39m
+}
+
+ [32m✓[39m packages/data-access/src/store/__tests__/e2e-videos-proof.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 148[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/storage/__tests__/storage.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 112[2mms[22m[39m
+ [32m✓[39m apps/web/src/lib/domain/__tests__/recurrence.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 134[2mms[22m[39m
+ [32m✓[39m apps/web/src/lib/domain/__tests__/capabilities.test.ts [2m([22m[2m162 tests[22m[2m)[22m[32m 109[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/__tests__/read-or-seed.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 87[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/admin-facility-actions.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/audit-actions.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/admin-video-actions.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/validations/__tests__/media-schemas.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/admin-mass-actions.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+[90mstdout[2m | packages/data-access/src/notify/__tests__/resend-mailer.test.ts[2m > [22m[2mResendMailer (built-in fetch implementation)[2m > [22m[2msends POST request to Resend API endpoint with Bearer auth and payload
+[22m[39m[notify] Resend email accepted for delivery {
+  to: [32m'subscriber@example.com'[39m,
+  id: [32m'msg_resend_999'[39m,
+  kind: [32m'subscription-welcome'[39m
+}
+
+[90mstdout[2m | packages/data-access/src/notify/__tests__/resend-mailer.test.ts[2m > [22m[2mResendMailer (built-in fetch implementation)[2m > [22m[2mformats recipient address correctly when toName is absent or null
+[22m[39m[notify] Resend email accepted for delivery {
+  to: [32m'subscriber@example.com'[39m,
+  id: [32m'msg_no_name'[39m,
+  kind: [32m'subscription-welcome'[39m
+}
+
+ [32m✓[39m packages/data-access/src/notify/__tests__/resend-mailer.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m apps/web/src/lib/utils/__tests__/coptic-date.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/media-upload-actions.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/__tests__/migration-14-sql.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m apps/web/src/lib/events/__tests__/filters.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/validations/__tests__/dynamic-validator.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/admin-navigation-actions.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m apps/web/src/lib/events/__tests__/ics.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m apps/admin/src/actions/__tests__/content-actions.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m apps/web/src/lib/domain/__tests__/subscribers.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/videos/__tests__/normalize-video-url.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/__tests__/migration-15-sql.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/events/__tests__/audit-csv.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m packages/data-access/src/__tests__/migration-13-sql.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m apps/web/src/app/gallery/__tests__/gallery.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 686[2mms[22m[39m
+   [32m✓[39m GalleryPage Component [2m(4)[22m
+     [33m[2m✓[22m[39m renders empty placeholder when no items[33m 490[2mms[22m[39m
+ [32m✓[39m apps/web/src/components/layout/__tests__/HeaderClient.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 228[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m39 passed[39m[22m[90m (39)[39m
+[2m      Tests [22m [1m[32m498 passed[39m[22m[90m (498)[39m
+[2m   Start at [22m 18:32:56
+[2m   Duration [22m 113.95s[2m (import 48%, environment 45%, tests 4%, transform 3%)[22m
+
+[2m     Import [22m [33m165 modules were evaluated 1055 times[39m[2m · 143.35s total, 48% of tracked time[22m
+[2m            [22m [2m~33.43s faster with [22m[33misolate: false[39m[2m — shared modules are evaluated once per worker instead of once per file[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-isolation[22m
+

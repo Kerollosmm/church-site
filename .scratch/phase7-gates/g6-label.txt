@@ -1,0 +1,1 @@
+﻿live CSP/next-image behavior verified only on the built app; owner's live domain pending

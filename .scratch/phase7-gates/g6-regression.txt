@@ -1,0 +1,11 @@
+﻿> web@1.1.0 e2e:web C:\Church-Site\apps\web
+> playwright test
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › e2e\content.spec.ts:7:7 › Public Dynamic Content Journeys › Journey 1: /content/article listing displays articles with RTL layout (2.4s)
+  ok 2 [chromium] › e2e\content.spec.ts:26:7 › Public Dynamic Content Journeys › Journey 2: /content/article/orthodox-patristic-treasures detail displays article content with RTL layout (1.2s)
+  ok 3 [chromium] › e2e\content.spec.ts:45:7 › Public Dynamic Content Journeys › Journey 3: /content/sermon empty type shows honest empty state message (1.2s)
+  ok 4 [chromium] › e2e\videos.spec.ts:7:7 › Public Videos Journey › Journey: /about displays parish videos section with youtube-nocookie embed (1.8s)
+
+  4 passed (12.2s)

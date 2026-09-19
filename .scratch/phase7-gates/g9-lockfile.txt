@@ -1,0 +1,4 @@
+﻿=== git diff 9add794 -- pnpm-lock.yaml package.json */package.json ===
+
+
+ZERO_LOCKFILE_DIFF: True

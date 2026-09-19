@@ -1,0 +1,22 @@
+== PHASE 7.3 (external assets) BASELINE ==
+Fri, Sep 18, 2026  3:07:14 PM
+CMD: pnpm typecheck
+
+> church-site@1.1.0 typecheck C:\Church-Site
+> pnpm -r typecheck
+
+Scope: 5 of 6 workspace projects
+packages/domain typecheck$ tsc --noEmit
+packages/domain typecheck: Done
+packages/data-access typecheck$ tsc --noEmit
+packages/ui typecheck$ tsc --noEmit
+packages/ui typecheck: Done
+packages/data-access typecheck: Done
+apps/admin typecheck$ tsc --noEmit
+apps/web typecheck$ tsc --noEmit
+apps/admin typecheck: Failed
+C:\Church-Site\apps\admin:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  admin@1.1.0 typecheck: `tsc --noEmit`
+Exit status 3221225794
+apps/web typecheck: Failed
+ ELIFECYCLE  Command failed with exit code 3221225794.

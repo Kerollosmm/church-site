@@ -1,0 +1,7 @@
+﻿=== git diff 9add794 -- supabase/migrations/ ===
+
+
+=== git status -s supabase/migrations/ ===
+
+
+ZERO_MIGRATIONS_DIFF: True

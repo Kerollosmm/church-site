@@ -1,0 +1,99 @@
+===============================================================================
+GATE G10: ASSET RESOLVER SECURITY & REJECTION TEST EVIDENCE
+Phase 7.3 External Assets Security Proof
+===============================================================================
+
+1. VITEST EXECUTION OUTPUT
+Command: pnpm vitest run packages/data-access/src/assets/__tests__/asset-resolver.test.ts
+Run Directory: C:/Church-Site
+-------------------------------------------------------------------------------
+ RUN  v5.0.1 C:/Church-Site
+
+ ✓ packages/data-access/src/assets/__tests__/asset-resolver.test.ts (43 tests) 29ms
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Duration  586ms
+
+2. SPECIFIC REJECTION VECTORS PROVED BY TEST SUITE
+-------------------------------------------------------------------------------
+
+[VECTOR 1] Rejection of `javascript:...` protocol
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 91-93, 354-357)
+- Test snippet:
+    const jsRes = resolveExternalImageUrl("javascript:alert(1)");
+    expect(jsRes?.kind).toBe("unsupported");
+    expect(getSafeRenderableImageUrl("javascript:alert(1)")).toBeNull();
+- Mechanism: URL parser rejects non-https schemes; returns `kind: "unsupported"` and `getSafeRenderableImageUrl` returns `null`.
+
+[VECTOR 2] Rejection of `data:...` protocol
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 94-96, 354-357)
+- Test snippet:
+    const dataRes = resolveExternalImageUrl("data:image/png;base64,...");
+    expect(dataRes?.kind).toBe("unsupported");
+    expect(getSafeRenderableImageUrl("data:image/png;base64,...")).toBeNull();
+- Mechanism: Non-https schemes are blocked. Prevents arbitrary data-URI execution or unoptimized payload injection.
+
+[VECTOR 3] Rejection of insecure `http://...` protocol
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 86-90, 349-353)
+- Test snippet:
+    const httpRes = resolveExternalImageUrl("http://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(httpRes?.kind).toBe("unsupported");
+    expect(httpRes?.reason).toContain("https://");
+    expect(getSafeRenderableImageUrl("http://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg")).toBeNull();
+- Mechanism: HSTS / TLS invariant requires all external image fetches to use HTTPS. Clear Arabic error advises caller.
+
+[VECTOR 4] Rejection of URLs with `user:pass@host` (userinfo credentials)
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 98-102)
+- Test snippet:
+    const userinfoRes = resolveExternalImageUrl("https://admin:secret@i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(userinfoRes?.kind).toBe("unsupported");
+    expect(userinfoRes?.reason).toContain("userinfo");
+- Mechanism: Parsed `url.username` and `url.password` must be empty. Prevents credential exfiltration / SSRF confusion attacks.
+
+[VECTOR 5] Rejection of Non-Standard Ports (e.g. `:8080`, `:8443`)
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 104-112)
+- Test snippet:
+    const portRes = resolveExternalImageUrl("https://i.ytimg.com:8080/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(portRes?.kind).toBe("unsupported");
+    expect(portRes?.reason).toContain("منافذ");
+    // Standard port 443 is accepted:
+    const stdPortRes = resolveExternalImageUrl("https://i.ytimg.com:443/vi/dQw4w9WgXcQ/hqdefault.jpg");
+    expect(stdPortRes?.kind).toBe("youtube-thumb");
+- Mechanism: Disallows port overrides that could target internal networks or non-HTTP ports. Only standard port 443 (or empty port) permitted.
+
+[VECTOR 6] Rejection of Whitespace and Control Characters
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 54-61, 68-84)
+- Test snippet:
+    resolveExternalImageUrl("https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg "); // trailing space
+    resolveExternalImageUrl(" https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"); // leading space
+    resolveExternalImageUrl("https://i.ytimg.com/vi/foo bar/hqdefault.jpg");       // space in path
+    resolveExternalImageUrl("https://i.ytimg.com/vi/\x00/hqdefault.jpg");           // null byte
+    resolveExternalImageUrl("https://i.ytimg.com/vi/\n/hqdefault.jpg");             // newline
+- Mechanism: Explicit regex check `/\s|[\u0000-\u001F\u007F-\u009F]/` rejects carriage returns, null bytes, and spaces before processing.
+
+[VECTOR 7] Rejection of Hostile / Unallowlisted Hosts (`evil.com`, spoofed domains)
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 35-44, 260-269, 343-347)
+- Test snippet:
+    expect(isHostAllowed("evil.com")).toBe(false);
+    expect(isHostAllowed("attacker-ytimg.com")).toBe(false);
+    expect(isHostAllowed("fakeytimg.com")).toBe(false);
+    expect(isHostAllowed("ytimg.com.attacker.com")).toBe(false);
+    expect(isHostAllowed("googleusercontent.com.attacker.com")).toBe(false);
+    const res = resolveExternalImageUrl("https://malicious-site.example.org/avatar.png");
+    expect(res?.kind).toBe("unsupported");
+    expect(res?.host).toBe("malicious-site.example.org");
+    expect(getSafeRenderableImageUrl("https://evil.com/image.jpg")).toBeNull();
+- Mechanism: Strict host validation against `ASSET_ALLOWED_HOSTS`. Spoofed domains and suffix attacks fail allowlist match.
+
+[VECTOR 8] Google Photos Album Share Links (Honest Arabic Explanation)
+- Tested at: packages/data-access/src/assets/__tests__/asset-resolver.test.ts (lines 221-237)
+- Test snippet:
+    const res = resolveExternalImageUrl("https://photos.app.goo.gl/abcdef123456");
+    expect(res?.kind).toBe("unsupported");
+    expect(res?.reason).toBe(
+      "روابط مشاركة ألبومات صور Google ليست روابط صور مباشرة وتتطلب واجهة برمجة تطبيقات خاصة. يرجى فتح الصورة ونسخ رابط الصورة المباشر."
+    );
+- Mechanism: Specialized detector intercepts `photos.app.goo.gl` and `photos.google.com/share/` and explains honestly in Arabic that dynamic album links are not direct image links, advising the staff member how to copy direct image URLs.
+
+VERDICT: PASS (Gate G10 - All 8 Security Rejection Vectors Fully Proven)

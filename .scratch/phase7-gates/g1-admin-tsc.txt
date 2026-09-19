@@ -1,0 +1,4 @@
+﻿
+> admin@1.1.0 typecheck C:\Church-Site\apps\admin
+> tsc --noEmit
+

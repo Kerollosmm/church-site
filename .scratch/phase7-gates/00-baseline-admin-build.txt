@@ -1,0 +1,51 @@
+﻿
+> admin@1.1.0 build C:\Church-Site\apps\admin
+> next build
+
+   ▲ Next.js 15.5.25
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 14.3s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/6) ...
+   Generating static pages (1/6) 
+   Generating static pages (2/6) 
+   Generating static pages (4/6) 
+ ✓ Generating static pages (6/6)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      127 B         102 kB
+├ ○ /_not-found                            989 B         103 kB
+├ ƒ /api/audit/export                      127 B         102 kB
+├ ƒ /audit                               1.63 kB         125 kB
+├ ƒ /bookings                            4.26 kB         106 kB
+├ ƒ /content-types                       5.43 kB         138 kB
+├ ƒ /content-types/[id]/fields           6.44 kB         139 kB
+├ ƒ /content/[type]                      3.84 kB         118 kB
+├ ƒ /content/[type]/[slug]/edit            138 B         176 kB
+├ ƒ /content/[type]/new                    138 B         176 kB
+├ ƒ /events                              9.83 kB         177 kB
+├ ƒ /events/[id]/edit                      206 B         177 kB
+├ ƒ /events/new                            191 B         177 kB
+├ ƒ /events/series/[id]                  5.92 kB         178 kB
+├ ƒ /events/series/new                   2.49 kB         174 kB
+├ ○ /login                               3.02 kB         131 kB
+├ ƒ /masses                              5.64 kB         139 kB
+├ ƒ /media                               6.11 kB         176 kB
+├ ƒ /navigation                           6.5 kB         121 kB
+├ ƒ /services                            6.93 kB         121 kB
+├ ƒ /subscribers                         3.47 kB         168 kB
+└ ƒ /videos                               6.3 kB         153 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/240-aa3a2fd9f5a60fde.js       45.6 kB
+  ├ chunks/cc94860a-1055dd21999e1abb.js  54.2 kB
+  └ other shared chunks (total)          1.99 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

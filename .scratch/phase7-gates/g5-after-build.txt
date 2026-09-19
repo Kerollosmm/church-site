@@ -1,0 +1,461 @@
+﻿
+> web@1.1.0 build C:\Church-Site\apps\web
+> next build
+
+   ▲ Next.js 15.5.25
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 14.9s
+   Linting and checking validity of types ...
+   Collecting page data ...
+node.exe : [store] session Supabase client unavailable; falling back to service-role {
+At C:\Users\KimoStore\npm-global\pnpm.ps1:24 char:5
++     & "node$exe"  "$basedir/node_modules/pnpm/bin/pnpm.cjs" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([store] session... service-role {:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  reason: '`cookies` was called outside a request scope. Read more: 
+https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: '`cookies` was called outside a request scope. Read more: 
+https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: '`cookies` was called outside a request scope. Read more: 
+https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: '`cookies` was called outside a request scope. Read more: 
+https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'
+}
+   Generating static pages (0/57) ...
+[events] ministries feed failed {
+  reason: "Dynamic server usage: Route /ministries couldn't be rendered statically because it used `cookies`. See more 
+info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[sermons] vocabulary read failed {
+  reason: "Dynamic server usage: Route /sermons couldn't be rendered statically because it used `cookies`. See more 
+info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[privacy] locale read failed {
+  reason: "Dynamic server usage: Route /privacy couldn't be rendered statically because it used `cookies`. See more 
+info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[queries] database read skipped {
+  query: 'getSchoolsAcademies',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getSchoolsAcademies",h.if,async a=>{let{data:b,error:c}=await a.from("schools_
+academies").select("*").eq("is_active",!0).order("created_at");return{data:b,error:c}})-schools-academies-[] Error: 
+[data-access] getSchoolsAcademies: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getSchoolsAcademies',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getSchoolsAcademies",h.if,async a=>{let{data:b,error:c}=await a.from("schools_
+academies").select("*").eq("is_active",!0).order("created_at");return{data:b,error:c}})-schools-academies-[] Error: 
+[data-access] getSchoolsAcademies: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getSchoolsAcademies',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getSchoolsAcademies",h.if,async a=>{let{data:b,error:c}=await a.from("schools_
+academies").select("*").eq("is_active",!0).order("created_at");return{data:b,error:c}})-schools-academies-[] Error: 
+[data-access] getSchoolsAcademies: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getSchoolsAcademies',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getSchoolsAcademies",h.if,async a=>{let{data:b,error:c}=await a.from("schools_
+academies").select("*").eq("is_active",!0).order("created_at");return{data:b,error:c}})-schools-academies-[] Error: 
+[data-access] getSchoolsAcademies: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getSchoolsAcademies',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getSchoolsAcademies",h.if,async a=>{let{data:b,error:c}=await a.from("schools_
+academies").select("*").eq("is_active",!0).order("created_at");return{data:b,error:c}})-schools-academies-[] Error: 
+[data-access] getSchoolsAcademies: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getSchoolsAcademies',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getSchoolsAcademies",h.if,async a=>{let{data:b,error:c}=await a.from("schools_
+academies").select("*").eq("is_active",!0).order("created_at");return{data:b,error:c}})-schools-academies-[] Error: 
+[data-access] getSchoolsAcademies: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[gallery] media read failed {
+  reason: "Dynamic server usage: Route /gallery couldn't be rendered statically because it used `cookies`. See more 
+info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getNewsArticles',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getNewsArticles",h.wD,async a=>{let{data:b,error:c}=await a.from("news_article
+s").select("*").eq("is_published",!0).order("published_at",{ascending:!1});return{data:b,error:c}})-news-articles-[] 
+Error: [data-access] getNewsArticles: live query failed or returned no rows in production — refusing to serve seed 
+data; check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getWeeklyMasses',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getWeeklyMasses",h.UR,async a=>{let{data:b,error:c}=await 
+a.from("mass_schedules").select("*, altar:altars(id, name_ar, name_en), celebrant:clergy(id, clerical_name_ar, 
+rank_title_ar)").eq("is_active",!0).order("day_of_week").order("start_time");return{data:b,error:c}})-weekly-masses-[] 
+Error: [data-access] getWeeklyMasses: live query failed or returned no rows in production — refusing to serve seed 
+data; check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getClergy', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getClergy",h.fL,async a=>{let{data:b,error:c}=await 
+a.from("clergy").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-clergy-[] Error: 
+[data-access] getClergy: live query failed or returned no rows in production — refusing to serve seed data; check DB 
+connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getAltars', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getAltars",h.I5,async a=>{let{data:b,error:c}=await 
+a.from("altars").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-altars-[] Error: 
+[data-access] getAltars: live query failed or returned no rows in production — refusing to serve seed data; check DB 
+connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[about] parish figures failed {
+  reason: "Dynamic server usage: Route /about couldn't be rendered statically because it used `cookies`. See more info 
+here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+   Generating static pages (14/57) 
+[queries] database read skipped { query: 'getAltars', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getAltars",h.I5,async a=>{let{data:b,error:c}=await 
+a.from("altars").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-altars-[] Error: 
+[data-access] getAltars: live query failed or returned no rows in production — refusing to serve seed data; check DB 
+connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getWeeklyMasses',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getWeeklyMasses",h.UR,async a=>{let{data:b,error:c}=await 
+a.from("mass_schedules").select("*, altar:altars(id, name_ar, name_en), celebrant:clergy(id, clerical_name_ar, 
+rank_title_ar)").eq("is_active",!0).order("day_of_week").order("start_time");return{data:b,error:c}})-weekly-masses-[] 
+Error: [data-access] getWeeklyMasses: live query failed or returned no rows in production — refusing to serve seed 
+data; check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getStreamEvents',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getStreamEvents",h.pn,async a=>{let{data:b,error:c}=await 
+a.from("stream_events").select("*").order("starts_at",{ascending:!1});return{data:b,error:c}})-stream-events-[] Error: 
+[data-access] getStreamEvents: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped {
+  query: 'getChurchMeetings',
+  served: 'seed-data',
+  reason: 'empty_result'
+}
+revalidating cache with key: async()=>l("getChurchMeetings",h.VO,async a=>{let{data:b,error:c}=await a.from("church_mee
+tings").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-church-meetings-[] Error: 
+[data-access] getChurchMeetings: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+[queries] database read skipped { query: 'getActivities', served: 'seed-data', reason: 'empty_result' }
+revalidating cache with key: async()=>l("getActivities",h.oj,async a=>{let{data:b,error:c}=await 
+a.from("activities").select("*").eq("is_active",!0).order("display_order");return{data:b,error:c}})-all-activities-[] 
+Error: [data-access] getActivities: live query failed or returned no rows in production — refusing to serve seed data; 
+check DB connectivity.
+    at l (C:\Church-Site\apps\web\.next\server\chunks\6135.js:1:79675)
+   Generating static pages (28/57) 
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type]/[slug] couldn't be rendered statically because it used 
+`cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type]/[slug] couldn't be rendered statically because it used 
+`cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type]/[slug] couldn't be rendered statically because it used 
+`cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type]/[slug] couldn't be rendered statically because it used 
+`cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type] couldn't be rendered statically because it used `cookies`. See 
+more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+[store] session Supabase client unavailable; falling back to service-role {
+  reason: "Dynamic server usage: Route /content/[type]/[slug] couldn't be rendered statically because it used 
+`cookies`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"
+}
+   Generating static pages (42/57) 
+ ✓ Generating static pages (57/57)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                  Size  First Load JS  Revalidate  Expire
+┌ ○ /                                                                      3.1 kB         117 kB          5m      1y
+├ ○ /_not-found                                                             993 B         103 kB          1h      1y
+├ ƒ /about                                                                  218 B         115 kB
+├ ○ /about/altars                                                           218 B         115 kB          1h      1y
+├ ○ /about/clergy                                                           218 B         115 kB          1h      1y
+├ ○ /about/history                                                          218 B         115 kB          1h      1y
+├ ○ /activities                                                             218 B         115 kB          1h      1y
+├ ● /activities/[slug]                                                      218 B         115 kB          1h      1y
+├   ├ /activities/scouts                                                                                  1h      1y
+├   ├ /activities/lending-library                                                                         1h      1y
+├   ├ /activities/printing-center                                                                         1h      1y
+├   └ [+4 more paths]
+├ ○ /bible                                                                3.92 kB         118 kB          1h      1y
+├ ○ /condolence                                                           2.61 kB         155 kB          1h      1y
+├ ƒ /condolence/track                                                      2.8 kB         119 kB
+├ ○ /contact                                                              2.03 kB         155 kB          1h      1y
+├ ● /content/[type]                                                         183 B         120 kB
+├   └ /content/video
+├ ● /content/[type]/[slug]                                                  183 B         120 kB
+├   └ /content/video/https:%2F%2Fwww.youtube.com%2Fwatch%3Fv=s4w9ivqgg8u
+├ ○ /donations                                                            4.29 kB         119 kB          1h      1y
+├ ○ /education                                                              218 B         115 kB          1h      1y
+├ ● /education/[slug]                                                     2.22 kB         155 kB          1h      1y
+├   ├ /education/deacon-school                                                                            1h      1y
+├   ├ /education/adult-bible                                                                              1h      1y
+├   ├ /education/karouz-academy                                                                           1h      1y
+├   └ [+2 more paths]
+├ ƒ /events                                                                 218 B         115 kB
+├ ƒ /events/[slug]                                                          218 B         115 kB
+├ ƒ /events/[slug]/calendar.ics                                             150 B         102 kB
+├ ƒ /gallery                                                                183 B         120 kB
+├ ○ /live                                                                   218 B         115 kB          1m      1y
+├ ○ /masses                                                               4.51 kB         130 kB          5m      1y
+├ ○ /meetings                                                               218 B         115 kB          1h      1y
+├ ● /meetings/[slug]                                                        218 B         115 kB          1h      1y
+├   ├ /meetings/malaeika                                                                                  1h      1y
+├   ├ /meetings/ebtedaey-1-3                                                                              1h      1y
+├   ├ /meetings/ebtedaey-4-6                                                                              1h      1y
+├   └ [+8 more paths]
+├ ƒ /ministries                                                             218 B         115 kB
+├ ƒ /privacy                                                                218 B         115 kB
+├ ○ /robots.txt                                                             150 B         102 kB
+├ ƒ /sermons                                                                218 B         115 kB
+├ ○ /services                                                               218 B         115 kB          1h      1y
+├ ● /services/[slug]                                                        218 B         115 kB          1h      1y
+├   ├ /services/educational-center                                                                        1h      1y
+├   ├ /services/nursery                                                                                   1h      1y
+├   ├ /services/canteens                                                                                  1h      1y
+├   └ [+5 more paths]
+├ ƒ /sitemap.xml                                                            150 B         102 kB
+└ ƒ /subscribe                                                            2.71 kB         163 kB
++ First Load JS shared by all                                              102 kB
+  ├ chunks/7240-b9a3745ac2423343.js                                       45.6 kB
+  ├ chunks/cc94860a-d7dccdd5c930c5bd.js                                   54.2 kB
+  └ other shared chunks (total)                                              2 kB
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

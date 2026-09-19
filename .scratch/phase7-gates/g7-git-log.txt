@@ -1,0 +1,17 @@
+﻿=== HeaderClient.tsx ===
+50eaebe feat(web): structured navigation and unified card system 6b1f0dc perf(web): server-first header and de-weight client bundles 81a0db0 feat(web): data-driven services and navigation a83b139 refactor(web): move app into apps/web 48c743b feat: enhance pastoral identity, masses management, loading skeletons, and test suites
+
+=== QuickServiceGrid.tsx ===
+50eaebe feat(web): structured navigation and unified card system a83b139 refactor(web): move app into apps/web 48c743b feat: enhance pastoral identity, masses management, loading skeletons, and test suites ddc425b chore: drop dead nav components, derive clinic constants, ignore local scratch f0fe90e feat(portal): complete official static-first parish portal implementation
+
+=== NewVisitorWelcome.tsx ===
+50eaebe feat(web): structured navigation and unified card system a83b139 refactor(web): move app into apps/web 48c743b feat: enhance pastoral identity, masses management, loading skeletons, and test suites
+
+=== apps/admin/src/app/(protected)/page.tsx ===
+77d1bda feat(admin): unified dashboard and consistent chrome
+
+=== apps/admin/src/app/(protected)/layout.tsx ===
+77d1bda feat(admin): unified dashboard and consistent chrome 1eb8ce2 feat(admin): services and navigation managers 4453e4a feat(admin): parish videos manager 4427e1f feat(admin): content types manager fdd4bdc feat(admin): scaffold admin app
+
+=== apps/admin/src/components/admin/AdminSidebarNav.tsx ===
+77d1bda feat(admin): unified dashboard and consistent chrome

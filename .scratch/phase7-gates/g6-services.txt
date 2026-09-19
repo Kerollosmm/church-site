@@ -1,0 +1,29 @@
+================================================================================
+GATE G6 PROOF (PART A): SERVICES CMS LIFECYCLE & INV-01 VERIFICATION
+================================================================================
+
+[STEP 1] Read initial public services (Baseline Seeding)
+  ✓ PASS: Found 8 active baseline public facilities.
+  ✓ PASS: First facility: "المركز التعليمي وفصول التقوية" (educational-center)
+[STEP 2] Create facility via facilityRepo.createFacility(...)
+  ✓ PASS: Created facility id=0085b806-9c1a-474c-9a6f-89bbff161852 slug="st-mark-clinic"
+  ✓ PASS: Admin entity contains createdBy="staff-lead-cms", isActive=true
+[STEP 3] Verify presence in getPublicServices() with staff fields stripped (INV-01)
+  ✓ PASS: INV-01 CONFIRMED: Public model is clean projection. All staff/audit fields stripped.
+[STEP 4] Verify getServiceBySlug('st-mark-clinic')
+  ✓ PASS: Lookup succeeded for slug "st-mark-clinic" -> ID: 0085b806-9c1a-474c-9a6f-89bbff161852
+[STEP 5] Update facility (displayOrder=0, extended workingHoursAr)
+  ✓ PASS: Updated facility working hours: "يومياً من 8:00 ص حتى 11:00 م (مواعيد ممتدة)"
+  ✓ PASS: Updated displayOrder: 0
+[STEP 6] Verify reordering in getPublicServices()
+  ✓ PASS: Reordering confirmed: 'st-mark-clinic' is now top of public services list.
+[STEP 7] Toggle inactive -> verify absence from getPublicServices()
+  ✓ PASS: Deactivation confirmed: absent from public feed, preserved in admin store.
+[STEP 8] Delete facility -> verify removal
+  ✓ PASS: Deletion confirmed: purged from both admin store and public view.
+[STEP 9] Verify audit entries for 'service' entity
+  ✓ PASS: Found 4 audit entries for 'service' entity.
+  ✓ PASS: Audit actions verified: create, update (x2), delete.
+  ✓ PASS: Auditing actor confirmed: "مسؤول المحتوى والإشراف" (staff-lead-cms).
+
+SERVICES CMS LIFECYCLE VERIFICATION: ALL CHECKS PASSED (100%)

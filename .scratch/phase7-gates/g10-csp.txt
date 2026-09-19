@@ -1,0 +1,95 @@
+===============================================================================
+GATE G10: CONTENT SECURITY POLICY (CSP) & REMOTE PATTERNS AUDIT
+Phase 7.3 External Assets Security Proof
+===============================================================================
+
+1. EXACT CONTENT OF `ASSET_ALLOWED_HOSTS`
+File: packages/data-access/src/assets/asset-allowlist.ts
+-------------------------------------------------------------------------------
+export const ASSET_ALLOWED_HOSTS = [
+  // YouTube video thumbnail CDN pinned host
+  "i.ytimg.com",
+  // YouTube image CDN regional subdomains (i1.ytimg.com .. i4.ytimg.com)
+  "*.ytimg.com",
+  // YouTube image CDN apex domain
+  "ytimg.com",
+  // YouTube legacy thumbnail domain
+  "img.youtube.com",
+  // Official Google Drive direct download and image render endpoint
+  "drive.usercontent.google.com",
+  // Google user content CDN (direct Google Photos, Drive user content)
+  "*.googleusercontent.com",
+  // Google user content apex domain
+  "googleusercontent.com",
+] as const;
+
+2. SINGLE SHARED SOURCE OF TRUTH IMPORT PROOF
+Both applications import the identical constant from packages/data-access:
+
+apps/web/next.config.ts:
+  Line 3: import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset-allowlist";
+
+apps/admin/next.config.ts:
+  Line 2: import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset-allowlist";
+
+3. CSP `img-src` DIRECTIVE GENERATION IN apps/web/next.config.ts
+-------------------------------------------------------------------------------
+Code (apps/web/next.config.ts, lines 8, 45):
+  const externalImageOrigins = ASSET_ALLOWED_HOSTS.map((host) => `https://${host}`);
+  
+  // In contentSecurityPolicy():
+  `img-src 'self' data: blob: https://*.supabase.co ${externalImageOrigins.join(" ")}`
+
+Evaluated CSP img-src directive string:
+  img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com https://*.ytimg.com https://ytimg.com https://img.youtube.com https://drive.usercontent.google.com https://*.googleusercontent.com https://googleusercontent.com
+
+4. NEXT.JS `images.remotePatterns` CONFIGURATION PROOF
+-------------------------------------------------------------------------------
+apps/web/next.config.ts (lines 86-95):
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+      ...ASSET_ALLOWED_HOSTS.map((host) => ({
+        protocol: "https" as const,
+        hostname: host,
+      })),
+    ],
+  }
+
+apps/admin/next.config.ts (lines 7-18):
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+      },
+      ...ASSET_ALLOWED_HOSTS.map((host) => ({
+        protocol: "https" as const,
+        hostname: host,
+      })),
+    ],
+  }
+
+5. VERIFICATION: NO WILDCARD ABUSE (NO `**`, NO BARE `*`)
+-------------------------------------------------------------------------------
+Audit of all patterns in `remotePatterns`:
+  1. "*.supabase.co"              -> Subdomain wildcard pinned to supabase.co domain
+  2. "i.ytimg.com"                -> Pinned exact host
+  3. "*.ytimg.com"                -> Subdomain wildcard pinned to ytimg.com domain
+  4. "ytimg.com"                  -> Pinned apex host
+  5. "img.youtube.com"            -> Pinned exact host
+  6. "drive.usercontent.google.com" -> Pinned exact host
+  7. "*.googleusercontent.com"    -> Subdomain wildcard pinned to googleusercontent.com domain
+  8. "googleusercontent.com"      -> Pinned apex host
+
+Verification results:
+  - Total patterns: 8
+  - Contains double wildcard `**`: FALSE (0 occurrences)
+  - Contains bare wildcard `*`: FALSE (0 occurrences)
+  - All wildcards are prefixed single-level subdomain wildcards `*.` tied to trusted apex domains.
+  - All protocols are strictly pinned to `https`.
+
+VERDICT: PASS (Gate G10 - CSP and Remote Patterns Verified)

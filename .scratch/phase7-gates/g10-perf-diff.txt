@@ -1,0 +1,50 @@
+================================================================================
+GATE 10: PERFORMANCE DIFF & OPTIMIZATIONS INTEGRITY (PHASE 7.1 VERIFICATION)
+================================================================================
+Timestamp: 2026-09-19
+Target: apps/web/src and apps/web/next.config.ts
+Objective: Ensure all Phase 7.1 performance turbo deliverables remain 100% intact.
+
+--------------------------------------------------------------------------------
+1. LOCAL FONT INTEGRATION (next/font/google)
+--------------------------------------------------------------------------------
+File: apps/web/src/app/layout.tsx
+Verification:
+- Noto_Sans_Arabic: variable "--font-noto-sans", display: "swap", subsets: ["arabic"]
+- Noto_Kufi_Arabic: variable "--font-noto-kufi", display: "swap", subsets: ["arabic"]
+- Amiri:            variable "--font-amiri",     display: "swap", subsets: ["arabic"]
+- Inter:            variable "--font-inter",     display: "swap", subsets: ["latin"]
+Status: 100% INTACT — Self-hosted static font preloading with zero external CDN dependency.
+
+--------------------------------------------------------------------------------
+2. CACHE-CONTROL HEADERS FOR STATIC ASSETS
+--------------------------------------------------------------------------------
+File: apps/web/next.config.ts
+Verification:
+- Source: "/_next/static/:path*"
+- Header: Cache-Control: "public, max-age=31536000, immutable"
+- Experimental: optimizePackageImports: ["lucide-react"]
+Status: 100% INTACT — Immutable caching for bundled assets with 1-year browser retention.
+
+--------------------------------------------------------------------------------
+3. ISR REVALIDATION DIRECTIVES ACROSS PUBLIC ROUTES
+--------------------------------------------------------------------------------
+Verification of export const revalidate across public pages:
+- /about:                    86400s (24h)
+- /about/altars:             86400s (24h)
+- /about/clergy:             86400s (24h)
+- /gallery:                  3600s  (1h)
+- /sermons:                  86400s (24h)
+- /privacy:                  86400s (24h)
+- /services:                 86400s (24h)
+- /services/[slug]:          86400s (24h)
+- /content/[type]:           3600s  (1h)
+- /content/[type]/[slug]:    3600s  (1h)
+- /masses:                   300s   (5m)
+- /ministries:               300s   (5m)
+- /live:                     60s    (1m)
+- /:                         300s   (5m)
+Status: 100% INTACT — Safe Incremental Static Regeneration without cold-start penalties.
+
+STATUS: GATE 10 (PERF-DIFF) 100% VERIFIED AND PASS
+================================================================================

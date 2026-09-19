@@ -1,0 +1,30 @@
+================================================================================
+GATE G6 PROOF (PART B): NAVIGATION CMS LIFECYCLE & DYNAMIC HIERARCHY
+================================================================================
+
+[STEP 1] Read baseline getPublicNavigation()
+  ✓ PASS: Baseline loaded: 14 main items, 3 secondary items.
+  ✓ PASS: Found dropdown "عن الكنيسة" with 4 child items.
+[STEP 2] Create parent navigation item via navRepo.createItem(...)
+  ✓ PASS: Created parent nav item id=38fb394e-2ff1-4b34-aec8-8389b7da9342 key="initiatives" label="المبادرات الرعوية"
+[STEP 3] Create child navigation item with parentId
+  ✓ PASS: Created child nav item id=d712ce14-6d06-4231-9328-2d404bf96574 key="summer-club-initiative" parentId=38fb394e-2ff1-4b34-aec8-8389b7da9342
+[STEP 4] Verify public navigation tree reflects parent & child dropdown (INV-01 check)
+  ✓ PASS: Navigation hierarchy verified: Child correctly nested in dropdown under parent.
+  ✓ PASS: INV-01 CONFIRMED: Nav tree models stripped of internal tracking fields.
+[STEP 5] Reorder items via navRepo.reorderItems (parent moved to sortOrder=0)
+  ✓ PASS: navRepo.reorderItems confirmed: parent sortOrder updated to 0
+[STEP 6] Verify reordering in public navigation
+  ✓ PASS: Reordering confirmed: "المبادرات الرعوية" is now top menu item.
+[STEP 7] Toggle inactive -> verify absent from public nav
+  ✓ PASS: Deactivation confirmed: inactive parent item excluded from public navbar.
+[STEP 8] Delete parent -> verify child reparenting (orphans handled gracefully)
+  ✓ PASS: Safe Reparenting confirmed: Child surviving with parentId=null (no orphaned foreign key dangling).
+[STEP 9] Test empty store fallback: verify fallback to SEED_PUBLIC_NAVIGATION
+  ✓ PASS: Empty store fallback confirmed: cleanly fell back to SEED_PUBLIC_NAVIGATION with 0 runtime errors.
+[STEP 10] Verify audit entries for 'navigation' entity
+  ✓ PASS: Found 5 audit entries for 'navigation' entity.
+  ✓ PASS: Audit actions verified: create parent, create child, batch reorder, update/toggle, delete.
+  ✓ PASS: Auditing actor confirmed: "مسؤول المحتوى والإشراف" (staff-lead-cms).
+
+NAVIGATION CMS LIFECYCLE VERIFICATION: ALL CHECKS PASSED (100%)
