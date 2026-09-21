@@ -214,7 +214,12 @@ export function AdminServicesTable({
           {/* Status selector */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "all" || value === "active" || value === "inactive") {
+                setStatusFilter(value);
+              }
+            }}
             className="text-xs py-2 px-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-copticNavy"
           >
             <option value="all">كل الحالات ({services.length})</option>

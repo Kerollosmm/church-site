@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogIn, Loader2, AlertCircle, CheckCircle2, Mail, KeyRound } from "lucide-react";
-import { signIn } from "@/actions/auth-actions";
+import { signIn, confirmSessionAction } from "@/actions/auth-actions";
 import { StaffSignInSchema } from "@/lib/validations/auth-schema";
 
 export function AdminLoginForm() {
@@ -30,8 +30,12 @@ export function AdminLoginForm() {
         setError(res.message ?? "تعذر تسجيل الدخول، يرجى المحاولة مرة أخرى");
         return;
       }
-      router.replace("/masses");
-      router.refresh();
+      const confirmRes = await confirmSessionAction("/masses");
+      if (!confirmRes.success) {
+        setError(confirmRes.error ?? "تعذر تأكيد الجلسة، يرجى المحاولة مرة أخرى");
+        return;
+      }
+      router.replace(confirmRes.targetUrl);
     } catch {
       setError("تعذر الاتصال بخدمة الدخول حالياً، يرجى المحاولة لاحقاً");
     } finally {

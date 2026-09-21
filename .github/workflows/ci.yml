@@ -69,12 +69,14 @@ jobs:
       - name: Build admin
         run: pnpm --filter admin build
 
+      - name: Lint
+        run: pnpm run lint
+
       # ---- Informational (does not fail the job) ----------------------------
+      # Scope note: ONLY the step(s) below this banner are non-blocking. A new production
+      # advisory is reported but never blocks a merge; see the header comment above.
 
       - name: Audit production dependencies
         run: pnpm audit --prod
         continue-on-error: true
-
-      - name: Lint
-        run: pnpm run lint
 

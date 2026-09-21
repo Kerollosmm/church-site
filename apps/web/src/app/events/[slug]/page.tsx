@@ -57,7 +57,7 @@ import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 import { wallClockToInstant } from "@/lib/utils/zone-time";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** The project-wide visible focus ring — one string, so every events control focuses identically. */
 const FOCUS_RING =

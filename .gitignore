@@ -51,4 +51,6 @@ phase1-split-agent-prompt*.md
 test-results/
 playwright-report/
 blob-report/
+test_result/
+*.log
 

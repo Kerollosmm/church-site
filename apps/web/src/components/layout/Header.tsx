@@ -16,7 +16,7 @@ export async function Header() {
   const copticDate = getCopticDateString();
 
   const brand = (
-    <Link href="/" className="flex items-center gap-3 group focus:outline-hidden">
+    <Link key="header-brand" href="/" className="flex items-center gap-3 group focus:outline-hidden">
       <div className="w-10 h-10 rounded-xl bg-copticNavy-500 border border-copticGold-400 flex items-center justify-center text-copticGold-300 shadow-inner group-hover:scale-105 transition-transform">
         <Church className="w-6 h-6 text-copticGold-300" />
       </div>

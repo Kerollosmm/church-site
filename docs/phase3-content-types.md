@@ -18,7 +18,7 @@ The Content Types Engine converts the parish portal into a high-performance, cus
 
 ## 2. Domain Model (`@church-site/domain`)
 
-The domain model is implemented in `packages/domain/src/types.ts` and runtime validation utilities in `packages/domain/src/validation/dynamic-validator.ts`:
+The domain model is implemented in `packages/domain/src/types.ts` and the runtime validation utilities in `packages/data-access/src/validations/dynamic-validator.ts`:
 
 ### 2.1 Metamodel Schema
 
@@ -250,7 +250,35 @@ The admin interface offers full lifecycle management:
 - When building in zero-env or uncredentialed environments, catches errors gracefully and returns empty parameter arrays, allowing Next.js dynamic routing to serve pages on demand at runtime.
 
 ### 6.4 Client/Server HTML Sanitization
-To prevent XSS without introducing heavy external npm libraries, `packages/data-access/src/client/sanitizer.ts` implements an allowlist HTML sanitizer:
-- Allowed tags: `h1, h2, h3, h4, h5, h6, p, br, hr, b, i, strong, em, u, s, ul, ol, li, blockquote, pre, code, a, img, table, thead, tbody, tr, th, td`.
-- Allowed attributes: `href, src, alt, title, target, rel, class`.
-- Enforces `rel="noopener noreferrer"` on all outbound hyperlinks and strips `javascript:` URI schemes.
+
+To prevent XSS without introducing heavy external npm libraries, `sanitizeHtml()` lives in
+`packages/data-access/src/validations/dynamic-validator.ts` and is re-exported from
+`@church-site/data-access`. It is the ONLY control between staff-authored HTML and every public
+visitor: the rich-text field is sanitized at the server-action boundary (`buildFieldValidator()` →
+`richtext` transform) and again at render time in
+`apps/web/src/app/content/[type]/[slug]/templates/{default,article}.tsx` before it reaches
+`dangerouslySetInnerHTML`.
+
+It is an allowlist, never a denylist:
+
+- **Allowed tags** (`ALLOWED_TAGS`): `h1`–`h6`, `p`, `br`, `hr`, `blockquote`, `pre`, `code`, `b`,
+  `i`, `strong`, `em`, `u`, `s`, `ul`, `ol`, `li`, `a`, `img`, `table`, `thead`, `tbody`, `tr`,
+  `th`, `td`. Anything else is dropped.
+- **Allowed attributes** (`ALLOWED_ATTRIBUTES`): `class` on any tag; `href`, `title`, `target` on
+  `a`; `src`, `alt`, `title` on `img`. `style`, every `on*` handler, `srcset`, `formaction` and any
+  other attribute never survive.
+- **URL schemes** (`ALLOWED_URL_SCHEMES`): `http`, `https`, `mailto`, `tel`, plus scheme-less
+  relative paths and anchors. `img src` is limited to `http`/`https`. `javascript:`, `vbscript:` and
+  `data:` are rejected.
+- **Entity and whitespace decoding before the scheme check**: a candidate URL is decoded
+  (`&#106;`, `&#x6a;`, `&colon;`, …) and stripped of every control character and space *before* its
+  scheme is read, so `&#106;avascript:`, `java\tscript:` and `JaVaScRiPt:` are all rejected.
+- **Content-removing tags**: `script`, `style`, `iframe`, `object`, `embed`, `noscript`,
+  `template`, `svg`, `math`, `form`, `textarea`, `select`, `button`, `title`, `base`, `link`, `meta`
+  are removed together with their content, not just their opening tag.
+- **Tabnabbing guard**: every `target="_blank"` link is emitted with `rel="noopener noreferrer"`,
+  overriding whatever the author wrote.
+
+That contract is asserted by unit tests in
+`packages/data-access/src/validations/__tests__/dynamic-validator.test.ts`, including one test per
+bypass listed above.

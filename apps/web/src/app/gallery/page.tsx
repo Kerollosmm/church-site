@@ -91,6 +91,19 @@ export default async function GalleryPage(): Promise<React.ReactElement> {
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        {/* Staff media upload shortcut */}
+        <div className="flex justify-end">
+          <Link
+            href="/media"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-copticGold-100/70 border border-copticGold-300 text-copticNavy hover:bg-copticGold-200/80 text-xs font-bold transition shadow-2xs"
+            title="إدارة ورفع صور جديدة (لطاقم الخدمة)"
+          >
+            <ImageIcon className="w-4 h-4 text-copticGold-700" />
+            <span>رفع صور جديدة</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+          </Link>
+        </div>
+
         {state === "load-failed" ? (
           <div role="alert" data-gallery-state="load-failed" className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6 text-center">
             <h2 className="font-heading text-lg font-bold text-amber-900">{t(locale, "events.loadFailedTitle")}</h2>

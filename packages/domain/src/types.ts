@@ -102,7 +102,8 @@ export type AuditEntityType =
   | "video"
   | "service"
   | "navigation"
-  | "asset";
+  | "asset"
+  | "booking";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -120,6 +121,7 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   service: "خدمة كنسية",
   navigation: "شريط التنقل",
   asset: "أصل خارجي",
+  booking: "حجز قاعة العزاء",
 };
 
 // ============================================================================
@@ -547,6 +549,75 @@ export interface ContentFieldOption {
   value: string;
 }
 
+/**
+ * A relation field points at ONE content type. The target is stored in the field's `options` JSONB
+ * either as the target slug itself or as `{ targetType }`; both shapes occur in production data,
+ * so both are modelled here rather than cast away at the call site.
+ */
+export interface ContentFieldRelationOptions {
+  targetType: string;
+}
+
+/** The shapes `content_fields.options` may legitimately hold. */
+export type ContentFieldOptions =
+  | string
+  | ContentFieldRelationOptions
+  | ContentFieldOption[]
+  | string[]
+  | null;
+
+/**
+ * Narrows `ContentField.options` to the relation target slug, or null when the field carries no
+ * usable target. PURE — no database, no framework.
+ */
+export function resolveRelationTarget(options: ContentFieldOptions | undefined): string | null {
+  if (!options) return null;
+  if (typeof options === "string") return options.trim() || null;
+  if (Array.isArray(options)) return null;
+  return options.targetType.trim() || null;
+}
+
+/**
+ * Parses a raw JSONB `options` value read from Postgres into the typed union, dropping entries that
+ * match no known shape. Callers get a value the runtime validators can trust instead of an unchecked
+ * cast of an arbitrary JSON blob.
+ */
+export function parseContentFieldOptions(raw: unknown): ContentFieldOptions {
+  if (raw === null || raw === undefined) return null;
+
+  if (typeof raw === "string") return raw;
+
+  if (Array.isArray(raw)) {
+    if (raw.every((entry): entry is string => typeof entry === "string")) return raw;
+
+    const options: ContentFieldOption[] = [];
+    for (const entry of raw) {
+      if (typeof entry === "string") {
+        options.push({ value: entry, labelAr: entry, labelEn: null });
+        continue;
+      }
+      if (typeof entry === "object" && entry !== null) {
+        const record = entry as Record<string, unknown>;
+        if (typeof record.value === "string") {
+          options.push({
+            value: record.value,
+            labelAr: typeof record.labelAr === "string" ? record.labelAr : record.value,
+            labelEn: typeof record.labelEn === "string" ? record.labelEn : null,
+          });
+        }
+      }
+    }
+    return options.length > 0 ? options : null;
+  }
+
+  if (typeof raw === "object") {
+    const targetType = (raw as Record<string, unknown>).targetType;
+    if (typeof targetType === "string") return { targetType };
+  }
+
+  return null;
+}
+
 export interface ContentField {
   id: string;
   contentTypeId: string;
@@ -557,7 +628,7 @@ export interface ContentField {
   isRequired: boolean;
   isTranslatable: boolean;
   validationRules: ContentFieldValidationRules | null;
-  options: ContentFieldOption[] | string[] | null;
+  options: ContentFieldOptions;
   sortOrder: number;
 }
 
@@ -606,7 +677,7 @@ export interface CreateContentFieldInput {
   isRequired?: boolean;
   isTranslatable?: boolean;
   validationRules?: ContentFieldValidationRules | null;
-  options?: ContentFieldOption[] | string[] | null;
+  options?: ContentFieldOptions;
   sortOrder?: number;
 }
 

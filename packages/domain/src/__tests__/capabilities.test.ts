@@ -84,6 +84,7 @@ const MUST_HAVE: Record<AdminRole, Capability[]> = {
     "navigation:write",
     "assets:link",
     "subscribers:write",
+    "bookings:write",
     "cache:republish",
   ],
   owner: [...ALL_CAPABILITIES],

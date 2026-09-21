@@ -10,7 +10,8 @@
     "build": "pnpm -r build",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e:admin": "pnpm --filter admin e2e"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",

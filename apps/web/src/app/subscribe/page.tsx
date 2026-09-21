@@ -28,7 +28,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { getFeedTaxonomy } from "@/lib/events/feed";
 import { getMailer } from "@church-site/data-access";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();

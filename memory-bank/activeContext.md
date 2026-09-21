@@ -1,6 +1,104 @@
 # Active Context — الحالة الحالية
 
-## أين نحن (2026-09-19)
+## أين نحن (2026-09-21)
+- **حزمة معالجة ملاحظات فحص الجودة والأداء (QA Remediation & Performance Sprint — 100% Complete & Verified)**:
+  * **1. تصليب تجربة تسجيل دخول الإدارة (Admin Login UX Hardening)**:
+    - إضافة `confirmSessionAction(targetUrl = '/masses')` في `apps/admin/src/actions/auth-actions.ts` مع إعادة تحقق من الجلسة وتنفيذ `revalidatePath('/', 'layout')`.
+    - تحديث `apps/admin/src/app/login/AdminLoginForm.tsx` لانتظار تأكيد الجلسة واستبدال المسار فوراً نحو الوجهة دون الحاجة للتحديث اليدوي بالمتصفح.
+    - إضافة مؤقت إخفاء تلقائي (6 ثوانٍ) في `apps/admin/src/app/login/SignInNotice.tsx` مع تنظيف بارامتر `reason` من شريط العنوان عبر `window.history.replaceState`.
+    - تحديث `docs/admin-guide.md` وإزالة إجراء "تحديث الصفحة بعد تسجيل الدخول" القديم.
+    - إنشاء مجموعة اختبارات Playwright في `apps/admin/e2e/login.spec.ts` (التحقق: 2/2 نجاح كامل).
+  * **2. تحسين الأداء وإعادة التحقق من المسارات (Performance & Route Revalidation)**:
+    - تحويل المسارات العامة إلى ISR مستقر مع قيم `revalidate` محددة: التعازي (3600 ثانية)، الاشتراك (300 ثانية)، الفعاليات (300 ثانية)، الكتاب المقدس (86400 ثانية)، صفحة التواصل (86400 ثانية).
+    - تغليف `getPublicGalleryMedia()` بـ `unstable_cache` مع وسم `REVALIDATION_TAGS.eventMedia` (`"event-media"`).
+    - إضافة ترويسة الأمان `X-Robots-Tag: noindex, nofollow` لكافة مسارات تطبيق الإدارة عبر `apps/admin/next.config.ts`.
+    - إنشاء نقاط فحص الجاهزية `/api/health` في كل من تطبيقي الويب والإدارة.
+    - إنشاء مجموعة اختبارات ميزانية الأداء في `apps/web/e2e/lighthouse.spec.ts` (الرئيسية < 1200ms، القداسات < 1200ms، الجاهزية < 500ms؛ نجاح 3/3).
+  * **3. تحسينات تجربة المستخدم (UX Improvements)**:
+    - أزرار نسخ كود الحجز بنقرة واحدة في نماذج وتتبع حجوزات قاعات العزاء (`CondolenceBookingForm.tsx` و`ReservationTrackingCard.tsx`).
+    - إضافة رابط سريع للمسؤولين «رفع صور جديدة» يوجه إلى `/media` في صفحة المعرض العام `apps/web/src/app/gallery/page.tsx`.
+    - إضافة مهلة سماح 150ms لمغادرة المؤشر في القوائم المنسدلة للترويسة في `HeaderClient.tsx` لمنع الانغلاق المفاجئ.
+    - تشديد حد الطلبات المتدفقة للكتابة العامة إلى طلب واحد كل 15 ثانية (`PUBLIC_BURST_LIMIT = 1`, `15_000ms`) عبر `checkPublicWriteRateLimit()`.
+  * **4. جناح اختبارات الانحدار (Regression Test Suite)**:
+    - إنشاء `apps/admin/src/actions/__tests__/create-flows.regression.test.ts` (6/6 نجاح تام) لاختبار إجراءات الإضافة `createMassAction` و`createParishVideoAction` (الكتابة الصحيحة، رفض الحمولات غير الصالحة، التحقق من سجل التدقيق `audit_log`، وإحباط SSRF والنطاقات غير الموثوقة).
+  * **5. تنظيف بيانات الاختبار من Supabase الحية**:
+    - حذف المشتركين الاختباريين (`qa+test-qa-2026-09-21@example.com`, `qa+qa-2026-09-21-sub@example.com`).
+    - حذف حجز العزاء الاختباري (`COND-UJDBXH`).
+    - حذف رسالة التواصل التجريبية (`fe8727ef-eeb2-4a4d-ab35-12a7ba5b2fb6`).
+    - حذف نوع المحتوى المشوه «تبا» (`slug: video`) ومدخلاته التابعة.
+    - الحفاظ التام والكامل على جدول التدقيق `audit_log` دون أي مساس (صفر حذف).
+  * **6. علاج انتهاكات شكل وحدات Next.js 15 ("use server" Module-Shape Remediation & Shared Extraction)**:
+    - استخراج المخططات وأنواع الإدخال والنتائج إلى وحدات مشتركة مستقلة خالية من توجيه `"use server"`:
+      * `apps/admin/src/actions/admin-mass-actions.shared.ts` (`WeeklyMassInputSchema`, `CreateMassInput`, `UpdateMassInput`, `AdminMassActionResult`).
+      * `apps/admin/src/actions/admin-video-actions.shared.ts` (`ParishVideoInputSchema`, `ParishVideoFormInput`, `AdminVideoActionResult`).
+      * `apps/admin/src/actions/admin-facility-actions.shared.ts` (`ParishFacilityInputSchema`, `ParishFacilityFormInput`, `AdminFacilityActionResult`).
+      * `apps/admin/src/actions/admin-navigation-actions.shared.ts` (`NavigationItemInputSchema`, `NavigationItemFormInput`, `ReorderNavItemsSchema`, `AdminNavActionResult`).
+    - تنظيف ملفات إجراءات الخادم `admin-mass-actions.ts`، `admin-video-actions.ts`، `admin-facility-actions.ts`، `admin-navigation-actions.ts` لحصر تصديراتها حصرياً في دوال `async` وتجريد أي تصدير `const` لمنع استثناءات مجمّع Next.js 15 وقت التشغيل.
+    - تحديث مكونات الواجهة والمودالات (`AdminMassModal.tsx` و`AdminVideoModal.tsx`) ومجموعات الاختبارات للاستيراد من ملفات `.shared.ts`.
+    - إنشاء جناح اختبارات العقود الدائمة `apps/admin/src/actions/__tests__/use-server-contract.test.ts` (22 فحصاً أخضر بنسبة 100%) لمسح كافة ملفات إجراءات الخادم في مشروعي الويب والإدارة ومنع تصدير أي قيم غير غير-تزامنية.
+    - إضافة تسجيل التدقيق المباشر عند حجز العزاء `apps/web/src/actions/condolence-actions.ts` (`recordAuditLog` لكيان `booking` مع `before: null` واللقطة المرجعية).
+  * **7. التحقق الحي عبر أنفاق كلودفلير وقاعدة بيانات Supabase (Live Acceptance Suite 100% Verified)**:
+    - تشغيل خوادم التطوير المحلية وربط أنفاق Cloudflare Quick Tunnels:
+      * الموقع العام: `https://piano-disclose-cds-dictionaries.trycloudflare.com` (200 OK).
+      * لوحة الإدارة: `https://temp-ontario-grew-fitness.trycloudflare.com` (200 OK).
+    - تنفيذ `admin_probe.py` واجتياز مسح كافة مسارات الإدارة الـ 10 بنجاح HTTP 200.
+    - تنفيذ `e2e_create.py`:
+      * تسجيل دخول الإدارة السلس دون الحاجة للتحديث اليدوي.
+      * إضافة قداس جديد بنجاح وظهوره المباشر في جدول `/masses` (`admin table shows TAG? True`).
+      * إضافة فيديو كنسي جديد بنجاح وظهوره المباشر في جدول `/videos` وعلى صفحة `/about` العامة (`/about shows video TAG? True`).
+      * إرسال حجز عزاء من الموقع العام واستلام كود الحجز المرجعي بنجاح (`COND-JV3XOB`).
+      * تحقق سجل التدقيق الحي في Supabase SQL وتوثيق 4 عمليات `create` موثقة (مشترك، حجز عزاء، فيديو، قداس).
+      * تنظيف كافة بيانات الاختبار المؤقتة مع صيانة `audit_log` بنسبة 100% التزاماً بـ INV-01.
+  * **8. بوابات الجودة المؤكدة (All Quality Gates 100% Green [PROVEN])**:
+    - فحص الأنواع الصارم `pnpm typecheck`: 0 أخطاء عبر كافة مشاريع مساحة العمل الـ 5.
+    - فحص الأسلوب `pnpm run lint`: 0 أخطاء و0 تحذيرات.
+    - اختبارات الوحدات والتكامل `pnpm test`: 47 ملفاً / **781/781 فحصاً ناجحاً بنسبة 100%**.
+    - بناء الويب للإنتاج `pnpm --filter web build`: 57 صفحة ثابتة بنجاح تام وبلا أي متغيرات بيئة إجبارية.
+    - بناء الإدارة للإنتاج `pnpm --filter admin build`: نجاح كامل لكافة المسارات بصفر أخطاء module-shape.
+
+- **جلسة تشغيل خوادم التطوير وربط الأنفاق السحابية (Active Dev Servers & Cloudflare Quick Tunnels Session — Active & Verified)**:
+  * **خوادم التطوير المحلية النشطة**:
+    - تطبيق الموقع العام (`apps/web`): يعمل على المنفذ `http://localhost:3000`.
+    - تطبيق لوحة الإدارة (`apps/admin`): يعمل على المنفذ `http://localhost:3001`.
+  * **روابط نفق كلودفلير السحابي المباشر (Cloudflare Quick Tunnels / `trycloudflare.com`)**:
+    - **الموقع العام**: `https://joshua-enters-hourly-devoted.trycloudflare.com` (تم التحقق: HTTP 200 OK عبر curl).
+    - **لوحة الإدارة**: `https://volt-buildings-advertise-dawn.trycloudflare.com` مع صفحة الدخول المباشرة `/login` (تم التحقق: HTTP 200 OK عبر curl).
+  * **إعدادات توافقية Next.js Server Actions**:
+    - تم تحديث `apps/admin/next.config.ts` و`apps/web/next.config.ts` بإضافة `experimental.serverActions.allowedOrigins: ["*.trycloudflare.com", "localhost:3000", "localhost:3001"]` لتمكين النماذج وإجراءات الخادم عبر أنفاق كلودفلير.
+  * **بيانات حساب الإدارة في Supabase**:
+    - البريد الإلكتروني للمسؤول: `admin@saintsmaximos.org` (الدور `admin`، `is_active: true`).
+
+- **مهارة ربط الخادم المحلي بالسحاب عبر كنس نفق كلودفلير (Cloudflare Tunnel Skill — Created & Active)**:
+  * إنشاء مهارة `.agents/skills/cloudflare-tunnel/SKILL.md` وفق مواصفات `/writing-skills` وأسلوب `/ponytail` فائق البساطة.
+  * توفير حل مباشر بنقرة واحدة لأجهزة Windows لربط `localhost:3000` بالسحاب العام دون تسجيل دخول أو تكوين مسبق عبر `cloudflared tunnel --url http://localhost:3000` (Quick Tunnels / `trycloudflare.com`).
+  * التحقق من تثبيت وجودة `cloudflared` (نسخة `2026.9.1` مثبتة مسبقاً وتعمل بنجاح).
+
+- **تمريرة معالجة نتائج المراجعة الشاملة (Full-Repo Review Remediation — 100% Complete & Verified)**:
+  * **السياق**: مراجعة أمنية شاملة للمستودع كاملاً أبرزت 7 نتائج (1 HIGH + 2 MEDIUM + 4 LOW)، وتمت معالجتها كلها في شجرة العمل الحالية (غير ملتزم بعد) — تنفيذ كامل + اختبارات + بوابات خضراء.
+  * **النتائج المعالجة (Findings 1–7 — All Remediated)**:
+    1. **[HIGH] تضييق أدوار الطاقم في RLS (Staff Role Narrowing)**: هجرة جديدة `supabase/migrations/20260919100000_staff_role_narrowing.sql` (الهجرة 17): `handle_new_user()` ينشئ كل مستخدم جديد **غير نشط** (`is_active = FALSE`، دور `servant`)، و`is_staff()` ضُيّقت إلى `('admin','secretary')` مطابقةً `ADMIN_PORTAL_ROLES` حرفياً، وأُضيفت `is_editor()` كمحمل كتابة صريح، وأُعيد توجيه 26 سياسة كتابة (`Staff manage *`) إليها، مع بقاء قراءتي `audit_log` و`subscribers` على `is_staff()` والجداول 13–15 و`storage.objects` على فحص `role IN (...)` المباشر الصحيح أصلاً. توثيق خطوة التمهيد اليدوية المحدّثة (الآن `role='admin', is_active=TRUE` معاً) في `supabase/README.md`.
+    2. **[MEDIUM] إعادة بناء المطهّر على قائمة سماح (Allowlist Sanitizer)**: `sanitizeHtml()` في `packages/data-access/src/validations/dynamic-validator.ts` أُعيد كتابتها من 8 أسطر regex denylist إلى مطهّر قائمة سماح كامل (~280 سطراً): قائمة وسوم `ALLOWED_TAGS` وخصائص `ALLOWED_ATTRIBUTES`، إزالة المحتوى مع الوسم لـ 17 وسم خطر (`script`, `style`, `iframe`, …)، فك ترميز الكيانات (`&#106;`, `&colon;`, بفاصلة منقوطة أو بدونها) وإزالة كل محارف التحكم قبل فحص المخطط (`isSafeUrl`)، سماح مخططات URL فقط (`http/https/mailto/tel`، والصور http/https فقط)، وحارس tabnabbing يفرض `rel="noopener noreferrer"` على كل `target="_blank"`. التحليل الحي بمسبار على الدالة الحقيقية أثبت إحباط الباسات الأربعة المُبلّغة (A: `&#106;avascript:`، B: `java\tscript:`، C: `rel` المفقود، D: `data:`) وإزالة `<script>` بهيئته.
+    3. **[MEDIUM] توثيق المطهّر الحقيقي**: `docs/phase3-content-types.md` §6.4 أُعيد كتابته ليطابق التطبيق الفعلي (المسار الصحيح، قوائم الوسوم/الخصائص/المخططات، فك الكيانات، حارس tabnabbing) بدل وصف ملف `packages/data-access/src/client/sanitizer.ts` غير الموجود.
+    4. **[LOW] استرداد قيد «صفر `as any`»**: أُزيلت التحولات الأربعة المُبلّغة — `content-supabase-driver.ts` عبر `parseContentFieldOptions()` الجديدة في `@church-site/domain` (تحقق زد وقت التشغيل لاتحاد `ContentFieldOptions` بدل صبّ JSONB الخام)، وصفحتا المحتوى عبر `resolveRelationTarget()`، وجدول الخدمات عبر حارس تضييق صريح. ما تبقى في `src/` سطر تعليق توثيقي واحد.
+    5. **[LOW] عقد المصادقة في إجراءات الحجوزات**: `admin-booking-actions.ts` يستدعي الآن `requireStaff() → can(role, "bookings:write") → zod → repository` كأي إجراء إداري آخر، مع `bookings:write` ممنوحة لـ editor+owner في جدول القدرات.
+    6. **[LOW] تصحيح تعليق CI**: البانر `Informational (does not fail the job)` في `.github/workflows/ci.yml` صار يصف خطوة `pnpm audit --prod` فقط (`continue-on-error: true`)، و`Lint` نُقل إلى قسم البوابات الصلبة الفعلي.
+    7. **[LOW] نظافة الجذر (بند مرجعي)**: ملفات `phase*-agent-prompt*.md` و`reconciliation-plan-v2.md` عشوائية غير متتبعة في الجذر — لا تزال قائمة، القرار (التزام تحت `.scratch/` أو حذف) للمستخدم.
+    7bis. **عقد `bookings:write` مذكور في `BACKEND_AND_DATA_SPEC.md` و`docs/release-readiness.md`** مع خطوة تحقق REST حية جديدة تثبت ضيق ملف 17 خارج التطبيق.
+  * **الاختبارات الجديدة (+31 فحصاً: 719 → 750)**:
+    - `packages/data-access/src/__tests__/migration-17-sql.test.ts` (6 فحوص): ترتيب الهجرة 17، عدم نشاط المستخدم الجديد، ضيق الدالتين إلى الدورين، خلو أي سياسة كتابة من `is_staff()`، إعادة توجيه 24 سياسة `Staff manage`، وتوثيق README.
+    - `packages/domain/src/__tests__/content-options.test.ts`: عقد `parseContentFieldOptions()` و`resolveRelationTarget()` لكل أشكال JSONB المشروعة وغير المشروعة.
+    - توسيع `dynamic-validator.test.ts` بفحص لكل باس من الباسات الأربعة + إزالة `<script>` بهيئته.
+    - تحديث MUST_HAVE في اختبارَي القدرات (domain + web mirror) ليطالبا بـ `bookings:write` للمحرر.
+  * **بوابات التحقق (Re-run Just Now, All Green [PROVEN])**:
+    - G1 Typecheck: `pnpm typecheck` = 0 أخطاء عبر 5 مشاريع.
+    - G2 Lint: `pnpm run lint` = 0 أخطاء.
+    - G3 Tests: `pnpm test` = 44 ملفاً / **750/750** فحصاً ناجحاً (بعد إصلاح اختبار migration-17 الذي كان يُسقط على تعليق SQL في ملف الهجرة — صُحّح ليجرّد أسطر التعليقات قبل المطابقة).
+    - G4 No-env build: `pnpm --filter web build` = نجاح كامل.
+    - مسبار حي على `sanitizeHtml()` الحقيقية: الباسات A–D محبوبة جميعها.
+  * **خطوة التطبيق اليدوية المطلوبة (Human Action Required)**:
+    - تطبيق الهجرة 17 على المشروع الحي (`supabase db push`)، والتحقق من تعطيل تسجيل الاشتراكات العامة في Supabase Auth (لا يمكن قراءته من المستودع) — [HYPOTHESIS] فقط.
+    - تسليم ملفات جذر عشوائية (commit تحت `.scratch/` أو حذف).
+
 - **المرحلة السابعة 7.4 (Phase 7.4 UI/UX Modernization — 100% Complete & Verified)**:
   * **تحديث وتوحيد الواجهات وتجربة المستخدم (UI/UX Modernization Deliverables)**:
     1. **إعادة هيكلة شريط التنقل وتجميع القوائم المنسدلة (Header Navigation Clustering)**:

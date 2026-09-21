@@ -220,10 +220,36 @@ export function buildStructuredNavigation(
 export function HeaderClient({ navigation, brand }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
+
+  const handleDropdownEnter = (id: string) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    setActiveDropdownId(id);
+  };
+
+  const handleDropdownLeave = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+    }
+    leaveTimeoutRef.current = setTimeout(() => {
+      setActiveDropdownId(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (leaveTimeoutRef.current) {
+        clearTimeout(leaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const resolved = readLocaleCookie();
@@ -295,7 +321,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
         className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5"
       >
         <div className="flex items-center justify-between">
-          {brand}
+          <div className="shrink-0">{brand}</div>
 
           {/* Desktop Nav Items (Structured <= 7 Primary Items) */}
           <nav
@@ -317,8 +343,8 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
                   <div
                     key={item.id}
                     className="relative"
-                    onMouseEnter={() => setActiveDropdownId(item.id)}
-                    onMouseLeave={() => setActiveDropdownId(null)}
+                    onMouseEnter={() => handleDropdownEnter(item.id)}
+                    onMouseLeave={handleDropdownLeave}
                   >
                     <button
                       type="button"

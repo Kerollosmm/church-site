@@ -10,6 +10,7 @@ import {
   adminRoleFromStaffRole,
   can,
   resolveAdminCapabilities,
+  resolveRelationTarget,
 } from "@church-site/domain";
 import { getContentTypeRepository } from "@church-site/data-access";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -58,7 +59,7 @@ export default async function NewContentEntryPage({
   const relationOptions: Record<string, Array<{ value: string; label: string }>> = {};
   for (const field of fields) {
     if (field.fieldType === "relation" && field.options) {
-      const targetTypeSlug = typeof field.options === "string" ? field.options : (field.options as any).targetType;
+      const targetTypeSlug = resolveRelationTarget(field.options);
       if (targetTypeSlug) {
         const targetType = await repo.getContentTypeBySlug(targetTypeSlug);
         if (targetType) {

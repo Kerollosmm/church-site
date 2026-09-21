@@ -2,8 +2,8 @@
 // Unit tests for mass actions and input validation schema.
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { WeeklyMassInputSchema } from "../admin-mass-actions.shared";
 import {
-  WeeklyMassInputSchema,
   createMassAction,
   updateMassAction,
   toggleMassStatusAction,

@@ -127,8 +127,12 @@ Then verify the public read/write paths end to end on the live project:
 2. `SELECT * FROM track_condolence_booking('<that-reference>')` works **as `anon`** (the RPC is the
    only public read path for bookings — there is no public `SELECT` policy on the table);
 3. a second booking on the same calendar day is rejected by `uq_condolence_active_date`;
-4. a `secretary` session can approve/reject from `/admin/bookings` (proves `is_staff()` is wired);
-5. editing a seeded row makes the corresponding public page change after the tag is revalidated.
+4. a `secretary` session can approve/reject from `/admin/bookings` (proves `is_editor()` + the
+   `bookings:write` capability are wired);
+5. an authenticated session whose profile is a `servant` or a brand-new (inactive) signup is rejected
+   by REST on `condolence_bookings`, `contact_messages` and `subscribers` (proves the file-17
+   narrowing holds outside the app);
+6. editing a seeded row makes the corresponding public page change after the tag is revalidated.
 
 ---
 

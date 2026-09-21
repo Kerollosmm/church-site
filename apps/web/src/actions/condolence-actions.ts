@@ -13,6 +13,7 @@ import {
   normalizeBookingReference,
 } from "@/lib/domain/booking-reference";
 import { REVALIDATION_TAGS } from "@/lib/tags";
+import { recordAuditLog, snapshot } from "@church-site/data-access";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {
   PUBLIC_FORM_LIMIT,
@@ -20,6 +21,7 @@ import {
   RATE_LIMIT_MESSAGE_AR,
   TRACKING_LIMIT,
   checkRateLimit,
+  checkPublicWriteRateLimit,
   getClientIp,
 } from "@/lib/security/rate-limit";
 
@@ -49,8 +51,8 @@ export async function submitCondolenceBooking(rawInput: unknown) {
   const headerList = await headers();
   const ip = getClientIp(headerList);
 
-  // Best-effort per-instance rate limit — see src/lib/security/rate-limit.ts.
-  if (!checkRateLimit(`condolence:${ip}`, { limit: PUBLIC_FORM_LIMIT, windowMs: PUBLIC_FORM_WINDOW_MS }).allowed) {
+  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
+  if (!checkPublicWriteRateLimit("condolence", ip).allowed) {
     return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
   }
 
@@ -110,6 +112,21 @@ export async function submitCondolenceBooking(rawInput: unknown) {
     }
 
     revalidateTag(REVALIDATION_TAGS.condolenceBookings);
+
+    await recordAuditLog({
+      actor: { id: null, name: `زائر الموقع (نموذج حجز قاعة العزاء) — ${result.data.applicantName}` },
+      action: "create",
+      entityType: "booking",
+      entityId: referenceCode,
+      before: null,
+      summary: `حجز قاعة العزاء للمتنيح «${result.data.deceasedFullName}» في تاريخ ${result.data.eventDate}`,
+      after: snapshot({
+        bookingReferenceCode: referenceCode,
+        deceasedFullName: result.data.deceasedFullName,
+        eventDate: result.data.eventDate,
+        applicantName: result.data.applicantName,
+      }),
+    });
   } catch (err) {
     console.error("Error submitting condolence booking:", err);
     return {

@@ -11,10 +11,8 @@ import {
 import { REVALIDATION_TAGS } from "@/lib/tags";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {
-  PUBLIC_FORM_LIMIT,
-  PUBLIC_FORM_WINDOW_MS,
   RATE_LIMIT_MESSAGE_AR,
-  checkRateLimit,
+  checkPublicWriteRateLimit,
   getClientIp,
 } from "@/lib/security/rate-limit";
 
@@ -22,8 +20,8 @@ export async function submitProgramApplication(rawInput: unknown) {
   const headerList = await headers();
   const ip = getClientIp(headerList);
 
-  // Best-effort per-instance rate limit — see src/lib/security/rate-limit.ts.
-  if (!checkRateLimit(`enrollment:${ip}`, { limit: PUBLIC_FORM_LIMIT, windowMs: PUBLIC_FORM_WINDOW_MS }).allowed) {
+  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
+  if (!checkPublicWriteRateLimit("enrollment", ip).allowed) {
     return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
   }
 
@@ -86,8 +84,8 @@ export async function submitJobApplication(rawInput: unknown) {
   const headerList = await headers();
   const ip = getClientIp(headerList);
 
-  // Best-effort per-instance rate limit — see src/lib/security/rate-limit.ts.
-  if (!checkRateLimit(`job:${ip}`, { limit: PUBLIC_FORM_LIMIT, windowMs: PUBLIC_FORM_WINDOW_MS }).allowed) {
+  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
+  if (!checkPublicWriteRateLimit("job", ip).allowed) {
     return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
   }
 

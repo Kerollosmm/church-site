@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "بيانات الاتصال بكنيسة القديسين مكسيموس ودوماديوس والأنبا موسى الأسود بالعصافرة، هواتف الطوارئ، خريطة الموقع، واستمارة المراسلة.",
 };
 
+export const revalidate = 86400;
+
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-alabasterBg pb-16">
