@@ -27,13 +27,34 @@
     - حذف رسالة التواصل التجريبية (`fe8727ef-eeb2-4a4d-ab35-12a7ba5b2fb6`).
     - حذف نوع المحتوى المشوه «تبا» (`slug: video`) ومدخلاته التابعة.
     - الحفاظ التام والكامل على جدول التدقيق `audit_log` دون أي مساس (صفر حذف).
-  * **6. بوابات الجودة المؤكدة (All Quality Gates 100% Green [PROVEN])**:
+  * **6. علاج انتهاكات شكل وحدات Next.js 15 ("use server" Module-Shape Remediation & Shared Extraction)**:
+    - استخراج المخططات وأنواع الإدخال والنتائج إلى وحدات مشتركة مستقلة خالية من توجيه `"use server"`:
+      * `apps/admin/src/actions/admin-mass-actions.shared.ts` (`WeeklyMassInputSchema`, `CreateMassInput`, `UpdateMassInput`, `AdminMassActionResult`).
+      * `apps/admin/src/actions/admin-video-actions.shared.ts` (`ParishVideoInputSchema`, `ParishVideoFormInput`, `AdminVideoActionResult`).
+      * `apps/admin/src/actions/admin-facility-actions.shared.ts` (`ParishFacilityInputSchema`, `ParishFacilityFormInput`, `AdminFacilityActionResult`).
+      * `apps/admin/src/actions/admin-navigation-actions.shared.ts` (`NavigationItemInputSchema`, `NavigationItemFormInput`, `ReorderNavItemsSchema`, `AdminNavActionResult`).
+    - تنظيف ملفات إجراءات الخادم `admin-mass-actions.ts`، `admin-video-actions.ts`، `admin-facility-actions.ts`، `admin-navigation-actions.ts` لحصر تصديراتها حصرياً في دوال `async` وتجريد أي تصدير `const` لمنع استثناءات مجمّع Next.js 15 وقت التشغيل.
+    - تحديث مكونات الواجهة والمودالات (`AdminMassModal.tsx` و`AdminVideoModal.tsx`) ومجموعات الاختبارات للاستيراد من ملفات `.shared.ts`.
+    - إنشاء جناح اختبارات العقود الدائمة `apps/admin/src/actions/__tests__/use-server-contract.test.ts` (22 فحصاً أخضر بنسبة 100%) لمسح كافة ملفات إجراءات الخادم في مشروعي الويب والإدارة ومنع تصدير أي قيم غير غير-تزامنية.
+    - إضافة تسجيل التدقيق المباشر عند حجز العزاء `apps/web/src/actions/condolence-actions.ts` (`recordAuditLog` لكيان `booking` مع `before: null` واللقطة المرجعية).
+  * **7. التحقق الحي عبر أنفاق كلودفلير وقاعدة بيانات Supabase (Live Acceptance Suite 100% Verified)**:
+    - تشغيل خوادم التطوير المحلية وربط أنفاق Cloudflare Quick Tunnels:
+      * الموقع العام: `https://piano-disclose-cds-dictionaries.trycloudflare.com` (200 OK).
+      * لوحة الإدارة: `https://temp-ontario-grew-fitness.trycloudflare.com` (200 OK).
+    - تنفيذ `admin_probe.py` واجتياز مسح كافة مسارات الإدارة الـ 10 بنجاح HTTP 200.
+    - تنفيذ `e2e_create.py`:
+      * تسجيل دخول الإدارة السلس دون الحاجة للتحديث اليدوي.
+      * إضافة قداس جديد بنجاح وظهوره المباشر في جدول `/masses` (`admin table shows TAG? True`).
+      * إضافة فيديو كنسي جديد بنجاح وظهوره المباشر في جدول `/videos` وعلى صفحة `/about` العامة (`/about shows video TAG? True`).
+      * إرسال حجز عزاء من الموقع العام واستلام كود الحجز المرجعي بنجاح (`COND-JV3XOB`).
+      * تحقق سجل التدقيق الحي في Supabase SQL وتوثيق 4 عمليات `create` موثقة (مشترك، حجز عزاء، فيديو، قداس).
+      * تنظيف كافة بيانات الاختبار المؤقتة مع صيانة `audit_log` بنسبة 100% التزاماً بـ INV-01.
+  * **8. بوابات الجودة المؤكدة (All Quality Gates 100% Green [PROVEN])**:
     - فحص الأنواع الصارم `pnpm typecheck`: 0 أخطاء عبر كافة مشاريع مساحة العمل الـ 5.
     - فحص الأسلوب `pnpm run lint`: 0 أخطاء و0 تحذيرات.
-    - اختبارات الوحدات والتكامل `pnpm test`: 46 ملفاً / **759/759 فحصاً ناجحاً**.
+    - اختبارات الوحدات والتكامل `pnpm test`: 47 ملفاً / **781/781 فحصاً ناجحاً بنسبة 100%**.
     - بناء الويب للإنتاج `pnpm --filter web build`: 57 صفحة ثابتة بنجاح تام وبلا أي متغيرات بيئة إجبارية.
-    - بناء الإدارة للإنتاج `pnpm --filter admin build`: نجاح كامل لكافة المسارات.
-    - اختبارات المتصفح Playwright: لوحة الإدارة (2/2 نجاح)، ميزانية أداء الويب (3/3 نجاح).
+    - بناء الإدارة للإنتاج `pnpm --filter admin build`: نجاح كامل لكافة المسارات بصفر أخطاء module-shape.
 
 - **جلسة تشغيل خوادم التطوير وربط الأنفاق السحابية (Active Dev Servers & Cloudflare Quick Tunnels Session — Active & Verified)**:
   * **خوادم التطوير المحلية النشطة**:

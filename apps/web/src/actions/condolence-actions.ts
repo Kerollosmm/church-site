@@ -13,6 +13,7 @@ import {
   normalizeBookingReference,
 } from "@/lib/domain/booking-reference";
 import { REVALIDATION_TAGS } from "@/lib/tags";
+import { recordAuditLog, snapshot } from "@church-site/data-access";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {
   PUBLIC_FORM_LIMIT,
@@ -111,6 +112,21 @@ export async function submitCondolenceBooking(rawInput: unknown) {
     }
 
     revalidateTag(REVALIDATION_TAGS.condolenceBookings);
+
+    await recordAuditLog({
+      actor: { id: null, name: `زائر الموقع (نموذج حجز قاعة العزاء) — ${result.data.applicantName}` },
+      action: "create",
+      entityType: "booking",
+      entityId: referenceCode,
+      before: null,
+      summary: `حجز قاعة العزاء للمتنيح «${result.data.deceasedFullName}» في تاريخ ${result.data.eventDate}`,
+      after: snapshot({
+        bookingReferenceCode: referenceCode,
+        deceasedFullName: result.data.deceasedFullName,
+        eventDate: result.data.eventDate,
+        applicantName: result.data.applicantName,
+      }),
+    });
   } catch (err) {
     console.error("Error submitting condolence booking:", err);
     return {

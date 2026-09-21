@@ -21,11 +21,27 @@
     - إضافة `apps/admin/src/actions/__tests__/create-flows.regression.test.ts` (6/6 نجاح) لتغطية القداسات والفيديوهات وتدقيق الأمان وSSRF.
   * **تنظيف بيانات الاختبار من Supabase**:
     - حذف السجلات الاختبارية من الجداول الأربعة مع الحفاظ الصارم على `audit_log` دون أي حذف (صفر مساس).
+  * **علاج انتهاكات شكل وحدات Next.js 15 ("use server" Module-Shape Remediation & Shared Extraction)**:
+    - استخراج المخططات وأنواع الإدخال والنتائج إلى وحدات `.shared.ts` مستقلة دون توجيه `"use server"`:
+      * `admin-mass-actions.shared.ts`
+      * `admin-video-actions.shared.ts`
+      * `admin-facility-actions.shared.ts`
+      * `admin-navigation-actions.shared.ts`
+    - حصر تصديرات ملفات إجراءات الخادم `apps/admin/src/actions/*.ts` في دوال `async` لمنع أخطاء مجمّع Next.js 15 وقت التشغيل.
+    - تحديث مكونات الواجهة والمودالات (`AdminMassModal.tsx` و`AdminVideoModal.tsx`) للاستيراد من الوحدات المشتركة.
+    - إضافة تدقيق سجل العمليات المباشر لحجوزات العزاء في `apps/web/src/actions/condolence-actions.ts`.
+    - إنشاء فحص العقود الدائم `apps/admin/src/actions/__tests__/use-server-contract.test.ts` (22 فحصاً أخضر).
+  * **التحقق الحي الشامل عبر أنفاق كلودفلير وقاعدة بيانات Supabase (Live Acceptance Suite)**:
+    - تشغيل خوادم التطوير وأنفاق كلودفلير الحية:
+      * الموقع العام: `https://piano-disclose-cds-dictionaries.trycloudflare.com`
+      * لوحة الإدارة: `https://temp-ontario-grew-fitness.trycloudflare.com`
+    - اجتياز `admin_probe.py` لمسارات الإدارة الـ 10 بنجاح HTTP 200.
+    - اجتياز `e2e_create.py`: هبوط صف القداس الجديد، وهبوط صف الفيديو الكنسي، وظهوره بالواجهة العامة، واستلام كود حجز العزاء `COND-JV3XOB`، وتوثيق كافة العمليات في جدول `audit_log` الحي.
   * **البوابات (All Green [PROVEN])**:
     - `pnpm typecheck`: 0 أخطاء عبر كافة المشاريع.
     - `pnpm run lint`: 0 أخطاء.
-    - `pnpm test`: 46 ملفاً / **759/759 فحصاً ناجحاً**.
-    - بناء الويب والإدارة: نجاح كامل بلا أي أخطاء.
+    - `pnpm test`: 47 ملفاً / **781/781 فحصاً ناجحاً بنسبة 100%**.
+    - بناء الويب والإدارة: نجاح كامل لجميع المسارات.
 
 ## يعمل الآن (Active Dev Servers & Cloudflare Quick Tunnels — 100% Verified & Live)
 - [x] **جلسة تشغيل خوادم التطوير وأنفاق كلودفلير السحابية (Active Dev Servers & Cloudflare Quick Tunnels)**:

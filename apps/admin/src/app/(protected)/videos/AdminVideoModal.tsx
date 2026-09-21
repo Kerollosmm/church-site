@@ -8,6 +8,11 @@ import { X, Video, Loader2, AlertCircle, CheckCircle, ExternalLink } from "lucid
 import type { ParishVideo, VideoProvider } from "@church-site/domain";
 import { normalizeVideoUrl } from "@church-site/data-access/client";
 import { upsertVideoAction } from "@/actions/admin-video-actions";
+import {
+  ParishVideoInputSchema,
+  type ParishVideoFormInput,
+  type AdminVideoActionResult,
+} from "@/actions/admin-video-actions.shared";
 
 export interface AdminVideoModalProps {
   isOpen: boolean;

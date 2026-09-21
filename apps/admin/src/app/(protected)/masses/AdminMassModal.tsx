@@ -8,8 +8,8 @@ import { X, Calendar, Loader2, AlertCircle } from "lucide-react";
 import {
   createMassAction,
   updateMassAction,
-  type CreateMassInput,
 } from "@/actions/admin-mass-actions";
+import type { CreateMassInput } from "@/actions/admin-mass-actions.shared";
 import type { WeeklyMassRow } from "@church-site/data-access/client";
 import { DAY_OF_WEEK_LABELS_AR } from "@church-site/data-access/client";
 import type { DayOfWeekEnum } from "@church-site/domain";

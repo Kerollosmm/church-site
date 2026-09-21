@@ -23,49 +23,14 @@ import {
 
 type MassScheduleUpdate = Database["public"]["Tables"]["mass_schedules"]["Update"];
 
-export const WeeklyMassInputSchema = z.object({
-  day_of_week: z.enum([
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ]),
-  altar_id: z.string().min(1, "يرجى اختيار المذبح"),
-  title_ar: z
-    .string()
-    .trim()
-    .min(3, "عنوان القداس يجب ألا يقل عن 3 أحرف")
-    .max(150, "عنوان القداس لا يتجاوز 150 حرفاً"),
-  start_time: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "توقيت البدء غير صالح (HH:mm)"),
-  end_time: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "توقيت الانتهاء غير صالح (HH:mm)"),
-  target_group_ar: z
-    .string()
-    .trim()
-    .max(150, "الفئة المستهدفة لا تتجاوز 150 حرفاً")
-    .optional()
-    .nullable(),
-  notes_ar: z
-    .string()
-    .trim()
-    .max(500, "الملاحظات لا تتجاوز 500 حرف")
-    .optional()
-    .nullable(),
-  is_active: z.boolean().default(true),
-});
+import {
+  WeeklyMassInputSchema,
+  type CreateMassInput,
+  type UpdateMassInput,
+  type AdminMassActionResult,
+} from "./admin-mass-actions.shared";
 
-export type CreateMassInput = z.infer<typeof WeeklyMassInputSchema>;
-export type UpdateMassInput = Partial<CreateMassInput>;
-
-export type AdminMassActionResult =
-  | { success: true; message: string; data?: unknown }
-  | { success: false; message: string };
+export type { CreateMassInput, UpdateMassInput, AdminMassActionResult };
 
 const IdSchema = z.string().min(1, "معرّف القداس غير صالح");
 

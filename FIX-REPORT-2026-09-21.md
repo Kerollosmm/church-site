@@ -67,28 +67,63 @@ Key accomplishments:
   - Ephemeral test CMS content type: «تبا» (`slug: video`) and child entry
 - `audit_log` table: preserved completely intact with 0 rows deleted.
 
+### F. Next.js 15 "use server" Module-Shape Remediation & Shared Modules
+- Root cause: Next.js 15 compiler throws *«A "use server" file can only export async functions, found object»* when files marked with `"use server"` export non-async values (such as Zod schemas or object constants).
+- Extracted shared modules devoid of `"use server"` directive:
+  * [`apps/admin/src/actions/admin-mass-actions.shared.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-mass-actions.shared.ts): Hosts `WeeklyMassInputSchema`, `CreateMassInput`, `UpdateMassInput`, `AdminMassActionResult`.
+  * [`apps/admin/src/actions/admin-video-actions.shared.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-video-actions.shared.ts): Hosts `ParishVideoInputSchema`, `ParishVideoFormInput`, `AdminVideoActionResult`.
+  * [`apps/admin/src/actions/admin-facility-actions.shared.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-facility-actions.shared.ts): Hosts `ParishFacilityInputSchema`, `ParishFacilityFormInput`, `AdminFacilityActionResult`.
+  * [`apps/admin/src/actions/admin-navigation-actions.shared.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-navigation-actions.shared.ts): Hosts `NavigationItemInputSchema`, `NavigationItemFormInput`, `ReorderNavItemsSchema`, `AdminNavActionResult`.
+- Refactored server action modules to import from `.shared.ts` files:
+  * [`apps/admin/src/actions/admin-mass-actions.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-mass-actions.ts)
+  * [`apps/admin/src/actions/admin-video-actions.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-video-actions.ts)
+  * [`apps/admin/src/actions/admin-facility-actions.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-facility-actions.ts)
+  * [`apps/admin/src/actions/admin-navigation-actions.ts`](file:///c:/Church-Site/apps/admin/src/actions/admin-navigation-actions.ts)
+- Updated consumers, modals, and tests:
+  * [`apps/admin/src/app/(protected)/masses/AdminMassModal.tsx`](file:///c:/Church-Site/apps/admin/src/app/(protected)/masses/AdminMassModal.tsx): Imports `CreateMassInput` from `.shared`.
+  * [`apps/admin/src/app/(protected)/videos/AdminVideoModal.tsx`](file:///c:/Church-Site/apps/admin/src/app/(protected)/videos/AdminVideoModal.tsx): Imports `ParishVideoInputSchema`, `ParishVideoFormInput`, `AdminVideoActionResult` from `.shared`. Confirmed modal remains open with inline error banner on non-success / throw.
+  * [`apps/admin/src/actions/__tests__/admin-mass-actions.test.ts`](file:///c:/Church-Site/apps/admin/src/actions/__tests__/admin-mass-actions.test.ts): Updated imports to point to `.shared`.
+- Permanent AST/File Contract Test:
+  * [`apps/admin/src/actions/__tests__/use-server-contract.test.ts`](file:///c:/Church-Site/apps/admin/src/actions/__tests__/use-server-contract.test.ts): Scans all 21 action files in `apps/admin` and `apps/web`. Asserts any file with `"use server"` exports only async functions (22/22 tests PASS).
+
+### G. Condolence Audit Logging & Submission Confirmation
+- [`apps/web/src/actions/condolence-actions.ts`](file:///c:/Church-Site/apps/web/src/actions/condolence-actions.ts): Added explicit audit logging upon successful reservation insert into `condolence_bookings` (`recordAuditLog` with `action: "create"`, `entityType: "booking"`, `entityId: referenceCode`, `before: null`, and snapshot payload).
+
 ---
 
 ## 3. Verification & Quality Gates
 
-All six verification quality gates have been executed and verified green:
+All verification quality gates have been re-run and verified 100% green:
 
 | Gate | Verification Command | Result | Details |
 | :--- | :--- | :--- | :--- |
 | **G1 Typecheck** | `pnpm typecheck` | **0 errors** | Passed across all 5 workspace projects (`domain`, `data-access`, `ui`, `web`, `admin`). |
 | **G2 Lint** | `pnpm run lint` | **0 errors** | 0 warnings, 0 errors across entire repository. |
-| **G3 Unit / Integration Tests** | `pnpm test` | **759/759 passed** | 46 test files, 100% pass rate in 39.4s. |
+| **G3 Unit / Integration Tests** | `pnpm test` | **781/781 passed** | 47 test files (including new `use-server-contract.test.ts`), 100% pass rate. |
 | **G4 Web Production Build** | `pnpm --filter web build` | **Exit code 0** | 57 static routes compiled; zero mandatory build-time environment variables. |
-| **G5 Admin Production Build** | `pnpm --filter admin build` | **Exit code 0** | All routes compiled and optimized. |
-| **G6 Playwright E2E** | `playwright test` | **5/5 passed** | Admin Login suite (2/2 PASS in 48.9s); Web Lighthouse Performance Budget suite (3/3 PASS in 7.8s). |
-
-### Performance Budget Results (`lighthouse.spec.ts`)
-- Home Page load duration: **< 1200ms** (PASSED)
-- Masses Schedule load duration: **852ms** (budget: 1200ms) (PASSED)
-- Health Probe latency: **91ms** (budget: 500ms) (PASSED)
+| **G5 Admin Production Build** | `pnpm --filter admin build` | **Exit code 0** | All routes compiled and optimized without "use server" module-shape warnings. |
+| **G6 Live E2E Verification Suite** | `python e2e_create.py` & `admin_probe.py` | **100% Verified** | Verified live via Cloudflare Quick Tunnels against Supabase. |
 
 ---
 
-## 4. Conclusion & Invariant Statement
+## 4. Live Verification Suite Evidence
 
-The codebase is fully stabilized, verified, and ready for deployment. Invariant **INV-01** remains strictly enforced across all server actions, client components, and database access layers.
+Executed acceptance tests (`qa-run-2026-09-21b/e2e_create.py` and `admin_probe.py`) over live Cloudflare Quick Tunnels:
+- **Admin login**: Succeeded cleanly without reload workaround (`after-submit URL: .../masses`).
+- **Admin route sweep**: 10/10 admin routes returned HTTP 200 OK (`admin_probe.py`).
+- **Weekly Mass creation**: Modal submitted cleanly; mass row landed in database and rendered in `/masses` table (`admin table shows TAG? True`).
+- **Parish Video creation**: Modal submitted cleanly; video row landed in database and rendered in `/videos` table (`admin table shows TAG? True`) and verified visible on public `/about` (`/about shows video TAG? True`).
+- **Public Condolence booking**: Successfully generated and returned booking reference code (`COND-JV3XOB`).
+- **Audit Log verification (Supabase Live SQL query)**:
+  1. `create` / `subscriber`: `اشتراك جديد في تنبيهات الفعاليات من نموذج الموقع العام.`
+  2. `create` / `booking`: `حجز قاعة العزاء للمتنيح «المرحوم اختبار QA-2026-09-21-c» في تاريخ 2026-10-21` (`COND-JV3XOB`)
+  3. `create` / `video`: `إضافة فيديو: «فيديو اختبار QA-2026-09-21-verified»`
+  4. `create` / `mass`: `إضافة قداس: «قداس اختبار QA-2026-09-21-verified»`
+- **Database Hygiene**: All ephemeral test rows (`mass_schedules`, `parish_videos`, `subscribers`, `condolence_bookings`, `contact_messages`) purged, with `audit_log` left 100% untouched pursuant to invariant **INV-01**.
+
+---
+
+## 5. Conclusion & Invariant Statement
+
+All Next.js 15 `"use server"` module-shape defects and QA report P0 regressions are fully remediated, verified, and sealed with contract tests. Invariant **INV-01** remains strictly preserved. Ready for merge into main.
+
