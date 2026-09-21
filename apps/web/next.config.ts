@@ -84,6 +84,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
     optimizePackageImports: ["lucide-react"],
+    serverActions: {
+      allowedOrigins: ["*.trycloudflare.com", "localhost:3000", "localhost:3001"],
+    },
   },
   images: {
     remotePatterns: [

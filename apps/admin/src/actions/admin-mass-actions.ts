@@ -5,7 +5,7 @@
 
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
-import { requireStaff } from "../lib/auth/require-staff";
+import { getStaffSession, requireStaff, type StaffSession } from "../lib/auth/require-staff";
 import {
   CAPABILITY_DENIED_MESSAGE_AR,
   adminRoleFromStaffRole,
@@ -17,6 +17,8 @@ import {
   hasSupabaseEnv,
   createSupabaseServerClient,
   REVALIDATION_TAGS,
+  recordAuditLog,
+  snapshot,
 } from "@church-site/data-access";
 
 type MassScheduleUpdate = Database["public"]["Tables"]["mass_schedules"]["Update"];
@@ -103,27 +105,64 @@ function safeRevalidateMasses(): void {
  * Allowed for editor and owner roles.
  */
 export async function createMassAction(payload: CreateMassInput): Promise<AdminMassActionResult> {
-  const session = await requireStaff();
-  const role = adminRoleFromStaffRole(session.role);
-
-  if (!can(role, "mass:create")) {
-    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
-  }
-
-  const parsed = WeeklyMassInputSchema.safeParse(payload);
-  if (!parsed.success) {
-    return {
-      success: false,
-      message: parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة",
-    };
-  }
-
-  if (!hasSupabaseEnv()) {
-    safeRevalidateMasses();
-    return { success: true, message: "تم حفظ القداس بنجاح" };
-  }
-
+  let session = null;
   try {
+    try {
+      session = await requireStaff();
+    } catch {
+      session = await getStaffSession();
+    }
+    if (!session) {
+      await recordAuditLog({
+        actor: { id: "anonymous", name: "زائر غير مصرح" },
+        action: "denied",
+        entityType: "mass",
+        entityId: "new",
+        before: null,
+        after: snapshot(payload as Record<string, unknown>),
+        summary: "محاولة إضافة قداس بدون جلسة إدارة نشطة",
+      });
+      return { success: false, message: "انتهت جلسة تسجيل الدخول، يرجى إعادة تسجيل الدخول للمتابعة." };
+    }
+
+    const role = adminRoleFromStaffRole(session.role);
+    if (!role || !can(role, "mass:create")) {
+      await recordAuditLog({
+        actor: { id: session.userId, name: session.fullNameAr },
+        action: "denied",
+        entityType: "mass",
+        entityId: "new",
+        before: null,
+        after: snapshot(payload as Record<string, unknown>),
+        summary: `رفض صلاحية إضافة قداس للحساب «${session.fullNameAr}» (الدور: ${session.role})`,
+      });
+      return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
+    }
+
+    const parsed = WeeklyMassInputSchema.safeParse(payload);
+    if (!parsed.success) {
+      const fieldError = parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة";
+      return {
+        success: false,
+        message: fieldError,
+      };
+    }
+
+    if (!hasSupabaseEnv()) {
+      const generatedId = `m-${Date.now()}`;
+      await recordAuditLog({
+        actor: { id: session.userId, name: session.fullNameAr },
+        action: "create",
+        entityType: "mass",
+        entityId: generatedId,
+        before: null,
+        after: snapshot({ ...parsed.data, id: generatedId }),
+        summary: `إضافة قداس في مخزن الملفات: «${parsed.data.title_ar}»`,
+      });
+      safeRevalidateMasses();
+      return { success: true, message: "تم حفظ القداس بنجاح", data: { id: generatedId, ...parsed.data } };
+    }
+
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("mass_schedules")
@@ -142,19 +181,53 @@ export async function createMassAction(payload: CreateMassInput): Promise<AdminM
 
     if (error) {
       console.error("[admin-mass] create failed", error);
-      if (isDatabaseUnavailable(error)) {
-        safeRevalidateMasses();
-        return { success: true, message: "تم حفظ القداس بنجاح" };
-      }
-      return { success: false, message: "تعذّر إضافة القداس، يرجى مراجعة البيانات المدخلة." };
+      const stack = new Error().stack || "";
+      await recordAuditLog({
+        actor: { id: session.userId, name: session.fullNameAr },
+        action: "denied",
+        entityType: "mass",
+        entityId: "new",
+        before: null,
+        after: snapshot({ payload, error: error.message, code: error.code, stack }),
+        summary: `فشل إدراج القداس في قاعدة البيانات: ${error.message}`,
+      });
+
+      return {
+        success: false,
+        message: `تعذّر حفظ القداس: ${error.message || "خطأ في قاعدة البيانات"}`,
+      };
     }
+
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.fullNameAr },
+      action: "create",
+      entityType: "mass",
+      entityId: (data as { id?: string })?.id || "new",
+      before: null,
+      after: snapshot(data as Record<string, unknown>),
+      summary: `إضافة قداس: «${parsed.data.title_ar}»`,
+    });
 
     safeRevalidateMasses();
     return { success: true, message: "تم حفظ القداس بنجاح", data };
   } catch (err) {
     console.error("[admin-mass] create exception", err);
-    safeRevalidateMasses();
-    return { success: true, message: "تم حفظ القداس بنجاح" };
+    const stack = err instanceof Error ? err.stack || err.message : String(err);
+    if (session) {
+      await recordAuditLog({
+        actor: { id: (session as StaffSession).userId, name: (session as StaffSession).fullNameAr },
+        action: "denied",
+        entityType: "mass",
+        entityId: "new",
+        before: null,
+        after: snapshot({ payload, error: String(err), stack }),
+        summary: `استثناء غير متوقع أثناء إضافة القداس: ${err instanceof Error ? err.message : String(err)}`,
+      }).catch(() => {});
+    }
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : "حدث خطأ غير متوقع أثناء حفظ القداس.",
+    };
   }
 }
 

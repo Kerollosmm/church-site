@@ -7,7 +7,7 @@ import Link from "next/link";
 import { CondolenceBookingSchema, CondolenceBookingInput } from "@/lib/validations/church-schemas";
 import { submitCondolenceBooking } from "@/actions/condolence-actions";
 import { TurnstileWidget } from "@/components/security/TurnstileWidget";
-import { CheckCircle2, AlertCircle, Send, Loader2, Search } from "lucide-react";
+import { CheckCircle2, AlertCircle, Send, Loader2, Search, Copy, Check } from "lucide-react";
 
 export function CondolenceBookingForm() {
   const [result, setResult] = useState<{
@@ -15,6 +15,7 @@ export function CondolenceBookingForm() {
     bookingCode?: string;
     message?: string;
   } | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
   // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
@@ -85,9 +86,35 @@ export function CondolenceBookingForm() {
                   <span className="text-xs text-slateText-secondary block">
                     رمز الحجز المرجعي (احتفظ به للمتابعة):
                   </span>
-                  <span className="font-english text-lg font-bold text-copticNavy tracking-wider">
-                    {result.bookingCode}
-                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-english text-lg font-bold text-copticNavy tracking-wider select-all">
+                      {result.bookingCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (result.bookingCode) {
+                          navigator.clipboard.writeText(result.bookingCode);
+                          setCopiedCode(true);
+                          setTimeout(() => setCopiedCode(false), 2500);
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition"
+                      title="نسخ رمز الحجز"
+                    >
+                      {copiedCode ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>تم النسخ</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>نسخ</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <div className="mt-2">
                     <Link
                       href={`/condolence/track?code=${result.bookingCode}`}

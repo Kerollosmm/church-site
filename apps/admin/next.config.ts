@@ -16,6 +16,24 @@ const nextConfig: NextConfig = {
       })),
     ],
   },
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["*.trycloudflare.com", "localhost:3000", "localhost:3001"],
+    },
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

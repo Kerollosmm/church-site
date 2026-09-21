@@ -22,6 +22,8 @@ import {
   getParishVideoRepository,
   normalizeVideoUrl,
   revalidateVideoSurfaces,
+  recordAuditLog,
+  snapshot,
 } from "@church-site/data-access";
 import { z } from "zod";
 
@@ -65,6 +67,16 @@ export type AdminVideoActionResult<T = unknown> =
   | { success: true; message: string; data?: T }
   | { success: false; message: string; errors?: Record<string, string[]> };
 
+/**
+ * Direct CREATE action for parish videos.
+ * Sentinel function for test harness and modal submission.
+ */
+export async function createParishVideoAction(
+  input: ParishVideoFormInput
+): Promise<AdminVideoActionResult<ParishVideo>> {
+  return upsertVideoAction(input);
+}
+
 export async function upsertVideoAction(
   input: ParishVideoFormInput
 ): Promise<AdminVideoActionResult<ParishVideo>> {
@@ -82,21 +94,36 @@ export async function upsertVideoAction(
   }
 
   const data = parsed.data;
-
-  // Server-side URL validation & provider normalization — never trust client input
-  const normalized = normalizeVideoUrl(data.source_url);
-  if (!normalized) {
-    return {
-      success: false,
-      message:
-        "رابط الفيديو غير معتمد. يقبل النظام فقط روابط موثوقة وآمنة (HTTPS) من يوتيوب أو فيسبوك أو ملفات وسائط مدعومة.",
-    };
-  }
-
   const actor: Actor = {
     id: staff.userId,
     name: staff.fullNameAr,
   };
+
+  // Server-side URL validation & provider normalization — never trust client input
+  const normalized = normalizeVideoUrl(data.source_url);
+  if (!normalized) {
+    let offendingHost = "unknown";
+    try {
+      offendingHost = new URL(data.source_url).hostname || data.source_url;
+    } catch {
+      offendingHost = data.source_url;
+    }
+    const reason = `رفض رابط فيديو غير معتمد أمنياً أو غير موثوق: ${offendingHost}`;
+    await recordAuditLog({
+      actor,
+      action: "denied",
+      entityType: "video",
+      entityId: data.id || "new",
+      before: null,
+      after: snapshot({ source_url: data.source_url, offendingHost }),
+      summary: reason,
+    }).catch(() => {});
+
+    return {
+      success: false,
+      message: `رابط الفيديو غير معتمد أمنياً (${offendingHost}). يقبل النظام فقط روابط HTTPS موثوقة من YouTube أو Facebook.`,
+    };
+  }
 
   const repository = getParishVideoRepository();
 
@@ -115,6 +142,7 @@ export async function upsertVideoAction(
           provider: normalized.provider,
           sourceUrl: data.source_url,
           embedUrl: normalized.embedUrl,
+          thumbnailUrl: normalized.thumbnailUrl,
           sortOrder: data.sort_order,
           isPublic: data.is_public,
           isActive: data.is_active,
@@ -132,6 +160,7 @@ export async function upsertVideoAction(
           provider: normalized.provider,
           sourceUrl: data.source_url,
           embedUrl: normalized.embedUrl,
+          thumbnailUrl: normalized.thumbnailUrl,
           sortOrder: data.sort_order,
           isPublic: data.is_public,
           isActive: data.is_active,
@@ -144,6 +173,17 @@ export async function upsertVideoAction(
     revalidateVideoSurfaces();
     return { success: true, message, data: video };
   } catch (error) {
+    const stack = error instanceof Error ? error.stack || error.message : String(error);
+    await recordAuditLog({
+      actor,
+      action: "denied",
+      entityType: "video",
+      entityId: data.id || "new",
+      before: null,
+      after: snapshot({ ...data, error: error instanceof Error ? error.message : String(error), stack }),
+      summary: `فشل حفظ الفيديو: ${error instanceof Error ? error.message : String(error)}`,
+    }).catch(() => {});
+
     return {
       success: false,
       message: error instanceof Error ? error.message : "حدث خطأ غير متوقع أثناء حفظ الفيديو.",

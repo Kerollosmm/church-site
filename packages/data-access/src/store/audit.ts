@@ -51,11 +51,6 @@ export interface BuildAuditEntryParams {
   entityId: string;
   before: JsonValue | null;
   after: JsonValue | null;
-  /**
-   * Replaces the generated one-liner. Used when the action carries information that has no column
-   * of its own — e.g. the reason for cancelling a WHOLE series (only a single-occurrence deviation
-   * keeps a reason on the row, see `event_exceptions.reasonAr`).
-   */
   summary?: string;
 }
 
@@ -82,4 +77,43 @@ export function buildAuditEntry(params: BuildAuditEntryParams): AuditLogEntry {
     after: params.after,
     summary,
   };
+}
+
+/**
+ * Universal audit logger that persists an audit entry to Supabase (if admin env present)
+ * or to the local file-store document. Never throws — fails safe so business flows continue.
+ */
+export async function recordAuditLog(params: BuildAuditEntryParams): Promise<AuditLogEntry> {
+  const entry = buildAuditEntry(params);
+  try {
+    const { hasSupabaseAdminEnv } = await import("../env");
+    if (hasSupabaseAdminEnv()) {
+      const { createAdminClient } = await import("../supabase/admin");
+      const client = createAdminClient();
+      const { error } = await client.from("audit_log").insert({
+        id: entry.id,
+        at: entry.at,
+        actor_id: entry.actorId === "anonymous" ? null : entry.actorId,
+        actor_name: entry.actorName,
+        action: entry.action,
+        entity_type: entry.entityType,
+        entity_id: entry.entityId,
+        before: entry.before as any,
+        after: entry.after as any,
+        summary: entry.summary,
+      });
+      if (error) {
+        console.error("[audit] failed to insert to supabase audit_log:", error.message);
+      }
+    } else {
+      const { mutateStoreDocument } = await import("./json-store");
+      await mutateStoreDocument("audit.append", (doc) => {
+        if (!doc.audit) doc.audit = [];
+        doc.audit.push(entry);
+      });
+    }
+  } catch (err) {
+    console.error("[audit] recording exception:", err);
+  }
+  return entry;
 }

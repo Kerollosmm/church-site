@@ -20,6 +20,7 @@ import {
   RATE_LIMIT_MESSAGE_AR,
   TRACKING_LIMIT,
   checkRateLimit,
+  checkPublicWriteRateLimit,
   getClientIp,
 } from "@/lib/security/rate-limit";
 
@@ -49,8 +50,8 @@ export async function submitCondolenceBooking(rawInput: unknown) {
   const headerList = await headers();
   const ip = getClientIp(headerList);
 
-  // Best-effort per-instance rate limit — see src/lib/security/rate-limit.ts.
-  if (!checkRateLimit(`condolence:${ip}`, { limit: PUBLIC_FORM_LIMIT, windowMs: PUBLIC_FORM_WINDOW_MS }).allowed) {
+  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
+  if (!checkPublicWriteRateLimit("condolence", ip).allowed) {
     return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
   }
 

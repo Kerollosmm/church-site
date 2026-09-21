@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@church-site/data-access";
 import { StaffSignInSchema } from "@/lib/validations/auth-schema";
 import { isAdminPortalRole } from "@/lib/auth/roles";
@@ -80,4 +81,41 @@ export async function signOut(): Promise<void> {
   }
 
   redirect("/login?reason=signed-out");
+}
+
+/**
+ * Confirms an active staff session on the server side, forces full layout revalidation,
+ * and yields the target destination URL, eliminating manual page refreshes.
+ */
+export async function confirmSessionAction(
+  targetUrl: string = "/masses"
+): Promise<{ success: boolean; targetUrl: string; error?: string }> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return {
+        success: false,
+        targetUrl,
+        error: "تعذر التحقق من جلسة المستخدم",
+      };
+    }
+
+    revalidatePath("/", "layout");
+    return {
+      success: true,
+      targetUrl,
+    };
+  } catch (err) {
+    console.error("Confirm session failed:", err);
+    return {
+      success: false,
+      targetUrl,
+      error: "حدث خطأ أثناء تأكيد الجلسة",
+    };
+  }
 }

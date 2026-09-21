@@ -17,7 +17,7 @@
 // when the whole environment is missing, which is exactly the state in which the area has to be
 // reachable.
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react";
 
@@ -50,8 +50,26 @@ const STYLES: Record<Notice["tone"], string> = {
 export function SignInNotice(): React.ReactElement | null {
   const params = useSearchParams();
   const reason = params.get("reason") ?? "";
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    setDismissed(false);
+    if (!reason) return;
+
+    const timer = setTimeout(() => {
+      setDismissed(true);
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("reason");
+        window.history.replaceState({}, "", url.pathname + (url.search ? url.search : ""));
+      }
+    }, 6000);
+
+    return () => clearTimeout(timer);
+  }, [reason]);
+
   const notice = NOTICES[reason];
-  if (!notice) return null;
+  if (!notice || dismissed) return null;
 
   const Icon = notice.tone === "success" ? CheckCircle2 : notice.tone === "error" ? ShieldAlert : AlertCircle;
 

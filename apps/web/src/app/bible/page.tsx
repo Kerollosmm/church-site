@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     "تصفح أسفار الكتاب المقدس بعهديه القديم (بما فيه الأسفار القانونية الثانية) والعهد الجديد باللغة العربية من بوابة كنيسة القديسين مكسيموس ودوماديوس والأنبا موسى الأسود بالعصافرة.",
 };
 
+export const revalidate = 86400;
+
 /**
  * `/bible` — the canon comes from the typed data layer (`getBibleBooks()`), which reads
  * `bible_books` and falls back to the seeded list. The reader itself is a client component

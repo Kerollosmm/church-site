@@ -61,7 +61,7 @@ import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locale
 import { t } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** The project-wide visible focus ring — one string, so every events control focuses identically. */
 const FOCUS_RING =

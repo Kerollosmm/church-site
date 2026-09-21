@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "خدمة حجز قاعة العزاء المجهزة بكنيسة القديسين بالعصافرة: نظام صوتي وشاشات عرض وتكييف مركزي ومتابعة إلكترونية للحجز.",
 };
 
+export const revalidate = 3600;
+
 export default function CondolencePage() {
   const amenities = [
     { icon: AirVent, label: "تكييف مركزي كامل ونظام تهوية متطور" },

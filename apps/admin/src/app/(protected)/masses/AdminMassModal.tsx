@@ -167,7 +167,7 @@ export function AdminMassModal({
       }
     } catch (err) {
       console.error("[AdminMassModal] submit error", err);
-      setErrorMessage("حدث خطأ غير متوقع أثناء حفظ البيانات.");
+      setErrorMessage(err instanceof Error ? err.message : "حدث خطأ غير متوقع أثناء حفظ البيانات.");
     } finally {
       setIsSubmitting(false);
     }
@@ -219,10 +219,12 @@ export function AdminMassModal({
 
           {/* Title */}
           <div>
-            <label className="block text-xs font-bold text-copticNavy mb-1">
+            <label htmlFor="mass-title-ar" className="block text-xs font-bold text-copticNavy mb-1">
               عنوان أو اسم القداس <span className="text-rose-500">*</span>
             </label>
             <input
+              id="mass-title-ar"
+              name="title_ar"
               type="text"
               value={titleAr}
               onChange={(e) => setTitleAr(e.target.value)}
@@ -235,10 +237,12 @@ export function AdminMassModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Day of Week */}
             <div>
-              <label className="block text-xs font-bold text-copticNavy mb-1">
+              <label htmlFor="mass-day-of-week" className="block text-xs font-bold text-copticNavy mb-1">
                 اليوم <span className="text-rose-500">*</span>
               </label>
               <select
+                id="mass-day-of-week"
+                name="day_of_week"
                 value={dayOfWeek}
                 onChange={(e) => setDayOfWeek(e.target.value as DayOfWeekEnum)}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-copticGold-500 focus:outline-hidden transition"
@@ -253,10 +257,12 @@ export function AdminMassModal({
 
             {/* Altar */}
             <div>
-              <label className="block text-xs font-bold text-copticNavy mb-1">
+              <label htmlFor="mass-altar-id" className="block text-xs font-bold text-copticNavy mb-1">
                 المذبح المخصص <span className="text-rose-500">*</span>
               </label>
               <select
+                id="mass-altar-id"
+                name="altar_id"
                 value={altarId}
                 onChange={(e) => setAltarId(e.target.value)}
                 required
@@ -274,10 +280,12 @@ export function AdminMassModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Start Time */}
             <div>
-              <label className="block text-xs font-bold text-copticNavy mb-1">
+              <label htmlFor="mass-start-time" className="block text-xs font-bold text-copticNavy mb-1">
                 وقت البدء (رفع بخور باكر) <span className="text-rose-500">*</span>
               </label>
               <input
+                id="mass-start-time"
+                name="start_time"
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -289,10 +297,12 @@ export function AdminMassModal({
 
             {/* End Time */}
             <div>
-              <label className="block text-xs font-bold text-copticNavy mb-1">
+              <label htmlFor="mass-end-time" className="block text-xs font-bold text-copticNavy mb-1">
                 وقت الانتهاء (صرف الشعب) <span className="text-rose-500">*</span>
               </label>
               <input
+                id="mass-end-time"
+                name="end_time"
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
@@ -305,10 +315,12 @@ export function AdminMassModal({
 
           {/* Target Group */}
           <div>
-            <label className="block text-xs font-bold text-copticNavy mb-1">
+            <label htmlFor="mass-target-group-ar" className="block text-xs font-bold text-copticNavy mb-1">
               الفئة المستهدفة
             </label>
             <input
+              id="mass-target-group-ar"
+              name="target_group_ar"
               type="text"
               value={targetGroupAr}
               onChange={(e) => setTargetGroupAr(e.target.value)}
@@ -319,10 +331,12 @@ export function AdminMassModal({
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-bold text-copticNavy mb-1">
+            <label htmlFor="mass-notes-ar" className="block text-xs font-bold text-copticNavy mb-1">
               ملاحظات وتنبيهات طقسية
             </label>
             <textarea
+              id="mass-notes-ar"
+              name="notes_ar"
               value={notesAr}
               onChange={(e) => setNotesAr(e.target.value)}
               placeholder="مثال: يسبق القداس تسبحة نصف الليل أو كلمة منفعة روحية..."
@@ -334,13 +348,15 @@ export function AdminMassModal({
           {/* Is Active Toggle */}
           <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
             <div>
-              <p className="text-xs font-bold text-copticNavy">حالة القداس في الجدول الأسبوعي</p>
+              <label htmlFor="mass-is-active" className="text-xs font-bold text-copticNavy cursor-pointer">حالة القداس في الجدول الأسبوعي</label>
               <p className="text-[11px] text-slate-500">
                 {isActive ? "القداس نشط ويظهر للمصلين في الجداول العامة" : "القداس معطّل ومخفي من العرض العام"}
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
+                id="mass-is-active"
+                name="is_active"
                 type="checkbox"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}

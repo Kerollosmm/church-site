@@ -48,8 +48,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`scroll-smooth ${notoSans.variable} ${notoKufi.variable} ${amiri.variable} ${inter.variable}`}>
-      <body className="antialiased min-h-screen flex flex-col bg-alabasterBg text-slateText-primary font-body selection:bg-copticGold-200 selection:text-copticNavy-900">
+    <html lang="ar" dir="rtl" className={`scroll-smooth ${notoSans.variable} ${notoKufi.variable} ${amiri.variable} ${inter.variable}`} suppressHydrationWarning>
+      <body className="antialiased min-h-screen flex flex-col bg-alabasterBg text-slateText-primary font-body selection:bg-copticGold-200 selection:text-copticNavy-900" suppressHydrationWarning>
         <Header />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
         <QuickActionBar />

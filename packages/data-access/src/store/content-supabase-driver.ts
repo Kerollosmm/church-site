@@ -24,6 +24,7 @@ import type {
   UpdateContentFieldInput,
   UpdateContentTypeInput,
 } from "@church-site/domain";
+import { parseContentFieldOptions } from "@church-site/domain";
 import { buildAuditEntry, newId, nowIso, snapshot } from "./audit";
 import { StoreError, type RepositoryDriverName } from "./repository";
 import type { ContentEntryListFilter, ContentTypeRepository } from "./content-repository";
@@ -78,7 +79,7 @@ function toFieldRecord(row: ContentFieldRow): ContentField {
     isRequired: row.is_required,
     isTranslatable: row.is_translatable,
     validationRules: row.validation_rules as Record<string, any> | null,
-    options: row.options as any,
+    options: parseContentFieldOptions(row.options),
     sortOrder: row.sort_order,
   };
 }
