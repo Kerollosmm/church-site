@@ -20,30 +20,41 @@ vi.mock("@church-site/data-access", () => ({
   snapshot: (val: unknown) => val,
 }));
 
-const mockInsert = vi.fn().mockResolvedValue({ error: null });
+const mockRpc = vi.fn().mockResolvedValue({ data: null, error: { message: "RPC not available" } });
+const mockSingle = vi.fn().mockResolvedValue({ data: { id: "test-uuid-msg-123" }, error: null });
+const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
+const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
+    rpc: (...args: unknown[]) => mockRpc(...args),
     from: () => ({
-      insert: mockInsert,
+      insert: (...args: unknown[]) => mockInsert(...args),
     }),
   }),
 }));
 
-describe("submitContactMessage Audit Log", () => {
+describe("submitContactMessage Contact Action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRpc.mockResolvedValue({ data: null, error: { message: "RPC not available" } });
+    mockSingle.mockResolvedValue({ data: { id: "test-uuid-msg-123" }, error: null });
   });
 
-  it("records an audit_log entry upon successful message submission", async () => {
+  const validPayload = {
+    senderName: "يوحنا سامي",
+    senderPhone: "01234567890",
+    senderEmail: "yohanna@example.com",
+    urgency: "normal" as const,
+    messageContent: "رسالة استفسار روحية",
+    turnstileToken: "token-ok",
+  };
+
+  it("successful message + successful audit (entityId matches returned message ID)", async () => {
     const { submitContactMessage } = await import("../contact-actions");
-    const res = await submitContactMessage({
-      senderName: "يوحنا سامي",
-      senderPhone: "01234567890",
-      senderEmail: "yohanna@example.com",
-      urgency: "normal",
-      messageContent: "رسالة استفسار روحية",
-      turnstileToken: "token-ok",
-    });
+    mockSingle.mockResolvedValueOnce({ data: { id: "returned-uuid-777" }, error: null });
+
+    const res = await submitContactMessage(validPayload);
 
     expect(res.success).toBe(true);
     expect(mockAuditLog).toHaveBeenCalledTimes(1);
@@ -51,8 +62,51 @@ describe("submitContactMessage Audit Log", () => {
       expect.objectContaining({
         action: "create",
         entityType: "contact_message",
+        entityId: "returned-uuid-777",
         summary: expect.stringContaining("يوحنا سامي"),
       })
     );
+  });
+
+  it("message insert failure returns success: false", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    mockSingle.mockResolvedValueOnce({ data: null, error: new Error("DB connection failure") });
+
+    const res = await submitContactMessage(validPayload);
+
+    expect(res.success).toBe(false);
+    expect(mockAuditLog).not.toHaveBeenCalled();
+    expect(res.message).toContain("تعذر إرسال الرسالة");
+  });
+
+  it("audit failure after message insert still returns success: true", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    mockSingle.mockResolvedValueOnce({ data: { id: "returned-uuid-888" }, error: null });
+    mockAuditLog.mockRejectedValueOnce(new Error("Audit log storage failure"));
+
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await submitContactMessage(validPayload);
+
+    expect(res.success).toBe(true);
+    expect(mockAuditLog).toHaveBeenCalledTimes(1);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Audit log recording failed"),
+      expect.any(Error)
+    );
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("succeeds when atomic RPC succeeds without falling back to insert", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    mockRpc.mockResolvedValueOnce({ data: "atomic-rpc-uuid-999", error: null });
+
+    const res = await submitContactMessage(validPayload);
+
+    expect(res.success).toBe(true);
+    expect(mockInsert).not.toHaveBeenCalled();
+    // Audit log was already written atomically inside the DB function
+    expect(mockAuditLog).not.toHaveBeenCalled();
   });
 });

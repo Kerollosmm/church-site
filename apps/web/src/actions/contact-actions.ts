@@ -36,38 +36,67 @@ export async function submitContactMessage(rawInput: unknown) {
 
   try {
     const admin = createAdminClient();
-    const { error } = await admin.from("contact_messages").insert({
-      sender_name: result.data.senderName,
-      sender_phone: result.data.senderPhone,
-      sender_email: result.data.senderEmail || null,
-      urgency: result.data.urgency,
-      assigned_priest_id: result.data.assignedPriestId || null,
-      message_content: result.data.messageContent,
+
+    let messageId: string | null = null;
+    const { data: rpcId, error: rpcError } = await admin.rpc("submit_contact_message_atomic", {
+      p_sender_name: result.data.senderName,
+      p_sender_phone: result.data.senderPhone,
+      p_sender_email: result.data.senderEmail || null,
+      p_urgency: result.data.urgency,
+      p_assigned_priest_id: result.data.assignedPriestId || null,
+      p_message_content: result.data.messageContent,
     });
 
-    if (error) {
-      console.error("Supabase insert contact message error:", error);
-      // FAIL CLOSED: a message that was not persisted must never be acknowledged as sent.
-      return {
-        success: false as const,
-        message: "تعذر إرسال الرسالة حالياً، يرجى المحاولة مرة أخرى أو الاتصال هاتفياً بسكرتارية الكنيسة",
-      };
+    if (!rpcError && rpcId) {
+      messageId = rpcId as string;
+    } else {
+      if (rpcError) {
+        console.warn("Atomic contact submission RPC failed/unavailable, falling back to direct insert:", rpcError);
+      }
+      const { data: inserted, error: insertError } = await admin
+        .from("contact_messages")
+        .insert({
+          sender_name: result.data.senderName,
+          sender_phone: result.data.senderPhone,
+          sender_email: result.data.senderEmail || null,
+          urgency: result.data.urgency,
+          assigned_priest_id: result.data.assignedPriestId || null,
+          message_content: result.data.messageContent,
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        console.error("Supabase insert contact message error:", insertError);
+        // FAIL CLOSED: a message that was not persisted must never be acknowledged as sent.
+        return {
+          success: false as const,
+          message: "تعذر إرسال الرسالة حالياً، يرجى المحاولة مرة أخرى أو الاتصال هاتفياً بسكرتارية الكنيسة",
+        };
+      }
+
+      messageId = (inserted as { id: string } | null)?.id ?? `msg-${Date.now()}`;
+
+      // Wrap recordAuditLog in a separate try/catch block so audit failure does not fail the user response
+      try {
+        await recordAuditLog({
+          actor: { id: null, name: `زائر الموقع (نموذج التواصل) — ${result.data.senderName}` },
+          action: "create",
+          entityType: "contact_message",
+          entityId: messageId,
+          before: null,
+          summary: `رسالة تواصل جديدة من «${result.data.senderName}» (الأهمية: ${result.data.urgency})`,
+          after: snapshot({
+            senderName: result.data.senderName,
+            senderPhone: result.data.senderPhone,
+            senderEmail: result.data.senderEmail || null,
+            urgency: result.data.urgency,
+          }),
+        });
+      } catch (auditErr) {
+        console.error("Audit log recording failed for contact message:", auditErr);
+      }
     }
-
-    await recordAuditLog({
-      actor: { id: null, name: `زائر الموقع (نموذج التواصل) — ${result.data.senderName}` },
-      action: "create",
-      entityType: "contact_message",
-      entityId: `msg-${Date.now()}`,
-      before: null,
-      summary: `رسالة تواصل جديدة من «${result.data.senderName}» (الأهمية: ${result.data.urgency})`,
-      after: snapshot({
-        senderName: result.data.senderName,
-        senderPhone: result.data.senderPhone,
-        senderEmail: result.data.senderEmail || null,
-        urgency: result.data.urgency,
-      }),
-    });
   } catch (err) {
     console.error("Error sending contact message:", err);
     return {

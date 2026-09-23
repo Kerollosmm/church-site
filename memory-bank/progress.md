@@ -1,6 +1,33 @@
 # Progress — سجل الإنجاز
 
-## يعمل الآن (تحصين ترطيب النماذج وحفظ الاتصال العكسي ورسالة تعارض المواعيد — Form Hydration Guard, Reverse-Proxy Keep-Alive & Date Collision — 100% Complete & Verified [PROVEN])
+## يعمل الآن (تحصين الأمان والاعتمادية المعمارية — Security & Reliability Remediation — 100% Complete & Verified [PROVEN])
+- [x] **معالجة السر المسرّب وتطهير مستودع الاختبار (P0 Secret Remediation & .gitignore)**:
+  * استبدال كافة الثوابت الحساسة في سكربتات QA (`admin_probe.py`, `e2e_create.py`, `public_sweep.py`) بمتغيرات بيئة مع حارس تحقق عند بدء التشغيل يرفض العمل دون طباعة أي أسرار.
+  * إلغاء تتبع وحذف ملفات بايت كود بايثون `__pycache__/*.pyc`.
+  * إصلاح `.gitignore` وحظر مخلفات تشغيل الاختبارات وملفات zip وscreenshots ومجلدات الأدوات.
+  * إنشاء فاحص أسرار عديم الاعتماديات `scripts/scan-secrets.mjs` وإدراجه في `package.json` وسير عمل CI.
+- [x] **موثوقية نموذج التواصل والتدقيق الذري (Contact Message Atomic Submission & Fallback Resilience)**:
+  * إنشاء هجرة الدالة الذرية `20260924100000_contact_message_atomic_submission.sql` لإدراج الرسالة وسجل التدقيق في معاملة قاعدة بيانات واحدة بالمعرف الحقيقي `id`.
+  * تحصين `apps/web/src/actions/contact-actions.ts`: تجربة RPC الذري أولاً؛ وفي مسار التراجع يتم جلب المعرف الحقيقي وعزل خطوة التدقيق بحيث لا يُبلغ الزائر بفشل رسالة حُفظت فعلاً.
+  * إضافة اختبارات وحدات شاملة في `contact-actions.test.ts` (4/4 فحصاً ناجحاً).
+- [x] **تحصين صلاحيات دوال RPC وسياسات RLS (Supabase RPC Security Hardening)**:
+  * إنشاء هجرة `20260924110000_rpc_security_hardening.sql`: سحب `EXECUTE` على `handle_new_user` من `PUBLIC, anon, authenticated`؛ سحب `is_admin`, `is_editor`, `is_staff` من `anon, PUBLIC`؛ تثبيت `search_path = public, pg_temp`؛ ضبط `normalize_arabic` بمسار `pg_catalog, public, pg_temp`؛ تقييد وتطبيع مدخلات `search_bible` و`track_condolence_booking`.
+- [x] **فهارس التغطية وتحسين أداء RLS (Covering Indexes & RLS InitPlan)**:
+  * إنشاء هجرة `20260924120000_covering_indexes_and_rls_initplan.sql`: إضافة 9 فهارس تغطية للمفاتيح الأجنبية (`mass_schedules`, `mass_exceptions`, `events`, `contact_messages`, `media`, `event_exceptions`).
+  * تحويل استدعاء `auth.uid()` في سياسات RLS ودوال الطاقم إلى نمط `(select auth.uid())` لتحسين خطة التنفيذ ومنع التقييم المتكرر لكل صف.
+- [x] **تنظيف إعدادات Next.js 15 وإمكانية الوصول (Next.js 15 Config & A11y)**:
+  * حذف المفتاح غير المعترف به `keepAliveTimeout: 65000` من `apps/web/next.config.ts` و`apps/admin/next.config.ts` وإلغاء تحذير البناء.
+  * حصر نطاقات `*.trycloudflare.com` في `serverActions.allowedOrigins` ببيئة التطوير فقط (`!isProduction`).
+  * إضافة مستمع مفتاح `Escape` لمودال الفيديو `AdminVideoModal.tsx` لتعزيز إمكانية الوصول من لوحة المفاتيح.
+- [x] **بوابات الجودة التامة (All Quality Gates 100% Green [PROVEN])**:
+  * فحص الأسرار: 0 أسرار مكتشفة (`node scripts/scan-secrets.mjs`).
+  * فحص الأنواع الصارم: 0 أخطاء عبر 5 مشاريع (`pnpm typecheck`).
+  * فحص الأسلوب والتنسيق: 0 أخطاء و0 تحذيرات (`pnpm run lint`).
+  * اختبارات الوحدات والتكامل: 57 ملف اختبار / **798/798 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest.
+  * بناء الويب للإنتاج: 57 مساراً بنجاح تام وبلا أي تحذيرات (`pnpm --filter web build`).
+  * بناء الإدارة للإنتاج: جميع المسارات بنجاح تام وبلا أي تحذيرات (`pnpm --filter admin build`).
+
+
 - [x] **تحصين ترطيب نماذج الموقع العام (Form Hydration Guard)**:
   * إضافة حارس التركيب `isMounted` عبر `useEffect` في `CondolenceBookingForm.tsx`, `ContactForm.tsx`, و`SubscribeForm.tsx`.
   * فرض `disabled={!isMounted || isSubmitting}` مع فئات التنسيق `disabled:opacity-50 disabled:cursor-not-allowed`.

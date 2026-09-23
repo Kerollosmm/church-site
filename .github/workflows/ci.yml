@@ -57,6 +57,9 @@ jobs:
 
       # ---- Hard gates -------------------------------------------------------
 
+      - name: Scan for secrets
+        run: pnpm run check:secrets
+
       - name: Type-check
         run: pnpm typecheck
 

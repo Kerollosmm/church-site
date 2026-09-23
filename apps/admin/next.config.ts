@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset-allowlist";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
-  keepAliveTimeout: 65000,
   images: {
     remotePatterns: [
       {
@@ -19,7 +20,11 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ["*.trycloudflare.com", "localhost:3000", "localhost:3001"],
+      allowedOrigins: [
+        ...(isProduction ? [] : ["*.trycloudflare.com"]),
+        "localhost:3000",
+        "localhost:3001",
+      ],
     },
   },
   async headers() {

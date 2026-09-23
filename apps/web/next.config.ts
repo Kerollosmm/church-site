@@ -82,7 +82,6 @@ const PERMISSIONS_POLICY = [
 const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
-  keepAliveTimeout: 65000,
   /**
    * Dev-only allowlist for the Cloudflare quick tunnels used by live acceptance runs
    * (`pnpm dev:web` behind `cloudflared`). Without it Next 15 warns on every cross-origin
@@ -93,7 +92,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
     serverActions: {
-      allowedOrigins: ["*.trycloudflare.com", "localhost:3000", "localhost:3001"],
+      allowedOrigins: [
+        ...(isProduction ? [] : ["*.trycloudflare.com"]),
+        "localhost:3000",
+        "localhost:3001",
+      ],
     },
   },
   images: {

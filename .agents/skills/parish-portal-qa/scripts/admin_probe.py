@@ -18,10 +18,29 @@ CHROMIUM_PATH = os.environ.get(
     r"C:\Users\KimoStore\AppData\Local\ms-playwright\chromium-1208\chrome-win64\chrome.exe"
 )
 
-BASE = "https://volt-buildings-advertise-dawn.trycloudflare.com"
-PUBLIC = "https://joshua-enters-hourly-devoted.trycloudflare.com"
-EMAIL = "admin@saintsmaximos.org"
-PASSWORD = "Admin@StMaximus2026!"
+ADMIN_PORTAL_URL = os.environ.get("ADMIN_PORTAL_URL")
+PUBLIC_PORTAL_URL = os.environ.get("PUBLIC_PORTAL_URL")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+
+missing = [
+    var_name
+    for var_name, val in [
+        ("ADMIN_PORTAL_URL", ADMIN_PORTAL_URL),
+        ("PUBLIC_PORTAL_URL", PUBLIC_PORTAL_URL),
+        ("ADMIN_EMAIL", ADMIN_EMAIL),
+        ("ADMIN_PASSWORD", ADMIN_PASSWORD),
+    ]
+    if not val
+]
+if missing:
+    sys.stderr.write(f"Error: Missing required environment variable(s): {', '.join(missing)}\n")
+    sys.exit(1)
+
+BASE = ADMIN_PORTAL_URL.rstrip("/")
+PUBLIC = PUBLIC_PORTAL_URL.rstrip("/")
+EMAIL = ADMIN_EMAIL
+PASSWORD = ADMIN_PASSWORD
 
 OUT = Path("/home/user/workspace/test-suite/screenshots")
 OUT.mkdir(parents=True, exist_ok=True)

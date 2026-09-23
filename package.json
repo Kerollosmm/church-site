@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "e2e:admin": "pnpm --filter admin e2e"
+    "e2e:admin": "pnpm --filter admin e2e",
+    "check:secrets": "node scripts/scan-secrets.mjs"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.7",

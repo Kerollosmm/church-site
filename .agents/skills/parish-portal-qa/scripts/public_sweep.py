@@ -22,7 +22,8 @@ CHROMIUM_PATH = os.environ.get(
     r"C:\Users\KimoStore\AppData\Local\ms-playwright\chromium-1208\chrome-win64\chrome.exe"
 )
 
-PUBLIC = "https://joshua-enters-hourly-devoted.trycloudflare.com"
+PUBLIC_PORTAL_URL = os.environ.get("PUBLIC_PORTAL_URL", "http://localhost:3000")
+PUBLIC = PUBLIC_PORTAL_URL.rstrip("/")
 OUT = Path("/home/user/workspace/test-suite/screenshots")
 OUT.mkdir(parents=True, exist_ok=True)
 
