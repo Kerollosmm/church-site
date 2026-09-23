@@ -337,3 +337,19 @@
 - **صيانة حارس المصادقة الصارم وثابت INV-01**:
   * استمرار فرض `requireStaff()` على كافة المسارات المحمية في `(protected)`، مع فشل مغلق حتمي نحو `/login` عند غياب الجلسة، وصفر تسريب لبيانات الإدارة أو الصلاحيات إلى النطاق العام.
 
+## 42. معمارية تحصين الأمان والاعتمادية المعمارية (Security & Reliability Hardening Architecture — Commit 18eeb70)
+- **نمط الإرسال الذري لرسائل التواصل والتدقيق (Atomic Contact Form & Audit Submission Pattern)**:
+  * دالة `submit_contact_message_atomic` تنفذ إدراج رسالة التواصل وسجل التدقيق في معاملة واحدة ذرية (`SECURITY DEFINER`, `SET search_path = public, pg_temp`) وترجع المعرف الحقيقي `id`.
+  * تحصين مسار التراجع (Fallback): في حال تعذر استدعاء RPC، يتم استرجاع المعرف الحقيقي عبر `.select("id").single()` وعزل خطوة تسجيل التدقيق `recordAuditLog` في `try/catch` مستقل حتى لا يُبلغ الزائر بفشل رسالة حُفظت فعلاً في قاعدة البيانات.
+- **ثوابت تحصين دوال RPC وسياسات RLS (RPC & RLS Security Invariants)**:
+  * حظر `EXECUTE` لدوال التريجر مثل `handle_new_user` على `PUBLIC, anon, authenticated`.
+  * حظر `EXECUTE` لدوال الطاقم `is_admin`, `is_editor`, `is_staff` على `anon, PUBLIC` وقصرها على `authenticated`.
+  * تثبيت مسار البحث `SET search_path = public, pg_temp` لكافة الدوال لمنع هجمات انتحال المسار، وضبط `normalize_arabic` بمسار `pg_catalog, public, pg_temp`.
+  * فرض حدود صارمة على وسائط دوال RPC العامة (`search_bible` مقيدة بحد أقصى 100 نتيجة وطول استعلام <= 200).
+- **تحسين أداء سياسات RLS بنمط InitPlan (RLS InitPlan Optimization)**:
+  * استبدال استدعاء `auth.uid()` المتكرر في كل صف بنمط `(select auth.uid())` لتقييمه مرة واحدة كـ InitPlan في `profiles` ودوال فحص الطاقم.
+- **فهارس التغطية للمفاتيح الأجنبية (Covering Indexes for Foreign Keys)**:
+  * إضافة فهارس تغطية لكافة المفاتيح الأجنبية النشطة في الجداول الأكثر استخداماً (`mass_schedules.altar_id`, `contact_messages.assigned_priest_id`, `events.category_id`, `media.uploaded_by`, `mass_exceptions.altar_id`, `event_exceptions.series_id`, إلخ).
+- **تحصين نطاقات إجراءات الخادم (Server Actions Origin Lockdown)**:
+  * حصر نطاقات أنفاق كلودفلير `*.trycloudflare.com` في `serverActions.allowedOrigins` ببيئة التطوير فقط (`!isProduction`) لمنع استغلال الأنفاق في الإنتاج.
+
