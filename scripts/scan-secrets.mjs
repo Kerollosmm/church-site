@@ -4,8 +4,12 @@ import fs from "node:fs";
 
 /**
  * Lightweight zero-dependency secret scanner.
- * Inspects all git-tracked files for potential leaked secrets.
- * NEVER prints secret values; only reports file paths and line numbers.
+ * Inspects current git-tracked files for potential leaked credentials.
+ * NEVER prints secret values; only reports file paths, line numbers, and rule names.
+ *
+ * Scope note:
+ * - Scans current tree (git ls-files).
+ * - Does NOT scan historic git commits (use gitleaks or git-filter-repo for historical audits).
  */
 
 const SECRET_RULES = [
@@ -14,22 +18,47 @@ const SECRET_RULES = [
     pattern: /-----BEGIN (?:[A-Z0-9_-]+ )?PRIVATE KEY/i,
   },
   {
+    name: "GitHub Classic Personal Access Token",
+    pattern: /\bghp_[A-Za-z0-9]{36}\b/,
+  },
+  {
+    name: "GitHub Fine-Grained Personal Access Token",
+    pattern: /\bgithub_pat_[A-Za-z0-9_]{82}\b/,
+  },
+  {
+    name: "GitHub OAuth / App Token",
+    pattern: /\b(?:gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b/,
+  },
+  {
+    name: "AWS Access Key ID",
+    pattern: /\b(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}\b/,
+  },
+  {
     name: "JWT Token",
-    pattern: /eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/,
+    pattern: /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/,
+    ignore: (line) => {
+      // Allow documentation examples and obvious placeholders with ellipsis
+      if (line.includes("...") || /placeholder|dummy|example|your-token/i.test(line)) return true;
+      return false;
+    },
   },
   {
-    name: "AWS Access Key",
-    pattern: /\bAKIA[0-9A-Z]{16}\b/,
-  },
-  {
-    name: "Hardcoded Password Assignment",
-    pattern: /(?:password|passwd|pwd|secret)\s*[:=]\s*["'][^"'\n]{8,}["']/i,
+    name: "Supabase Service Role Key Assignment",
+    pattern: /(?:SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY)\s*[:=]\s*["'][A-Za-z0-9_.-]{20,}["']/i,
     ignore: (line, file) => {
-      // Allow benign test fixtures and documentation
-      if (file.endsWith(".spec.ts") || file.endsWith(".test.ts")) return true;
-      if (file.endsWith(".example") || file.endsWith(".md")) return true;
+      if (/your-service-role-key|placeholder|dummy|CHANGE_ME|example/i.test(line)) return true;
+      if (file.endsWith(".example")) return true;
+      return false;
+    },
+  },
+  {
+    name: "Hardcoded Password / Secret Assignment",
+    pattern: /(?:password|passwd|pwd|secret_key|api_secret)\s*[:=]\s*["'][^"'\n]{8,}["']/i,
+    ignore: (line, file) => {
+      // Narrow exemptions: ignore the scanner itself and explicit benign dummy placeholders
       if (file === "scripts/scan-secrets.mjs") return true;
-      if (/InvalidPassword/i.test(line)) return true;
+      if (file.endsWith(".example")) return true;
+      if (/dummy|placeholder|CHANGE_ME|fake|mock|test-password|secret-value|your-secret|sample-password|InvalidPassword/i.test(line)) return true;
       return false;
     },
   },
@@ -99,7 +128,7 @@ function run() {
     process.exit(1);
   }
 
-  console.log("Secret scan passed: 0 secrets detected.");
+  console.log("Current-tree secret scan passed: 0 secrets detected.");
   process.exit(0);
 }
 

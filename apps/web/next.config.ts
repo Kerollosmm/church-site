@@ -92,11 +92,13 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
     serverActions: {
-      allowedOrigins: [
-        ...(isProduction ? [] : ["*.trycloudflare.com"]),
-        "localhost:3000",
-        "localhost:3001",
-      ],
+      allowedOrigins: isProduction
+        ? []
+        : [
+            "*.trycloudflare.com",
+            "localhost:3000",
+            "localhost:3001",
+          ],
     },
   },
   images: {

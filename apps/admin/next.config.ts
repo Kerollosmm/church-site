@@ -20,11 +20,13 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: [
-        ...(isProduction ? [] : ["*.trycloudflare.com"]),
-        "localhost:3000",
-        "localhost:3001",
-      ],
+      allowedOrigins: isProduction
+        ? []
+        : [
+            "*.trycloudflare.com",
+            "localhost:3000",
+            "localhost:3001",
+          ],
     },
   },
   async headers() {

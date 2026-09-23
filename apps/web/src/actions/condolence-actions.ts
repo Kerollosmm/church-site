@@ -152,6 +152,14 @@ export async function trackBooking(referenceCode: string) {
     return { success: false as const, message: "يرجى إدخال رمز الحجز المرجعي" };
   }
 
+  // Bounds and format validation: max 20 chars, alphanumeric with underscore and hyphen
+  if (normalizedCode.length > 20 || !/^[A-Za-z0-9_-]+$/.test(normalizedCode)) {
+    return {
+      success: false as const,
+      message: "لم يتم العثور على حجز بهذا الرمز، تأكد من الرمز أو اتصل بسكرتارية الكنيسة",
+    };
+  }
+
   const headerList = await headers();
   const ip = getClientIp(headerList);
 

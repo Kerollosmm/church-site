@@ -349,7 +349,7 @@
 - **تحسين أداء سياسات RLS بنمط InitPlan (RLS InitPlan Optimization)**:
   * استبدال استدعاء `auth.uid()` المتكرر في كل صف بنمط `(select auth.uid())` لتقييمه مرة واحدة كـ InitPlan في `profiles` ودوال فحص الطاقم.
 - **فهارس التغطية للمفاتيح الأجنبية (Covering Indexes for Foreign Keys)**:
-  * إضافة فهارس تغطية لكافة المفاتيح الأجنبية النشطة في الجداول الأكثر استخداماً (`mass_schedules.altar_id`, `contact_messages.assigned_priest_id`, `events.category_id`, `media.uploaded_by`, `mass_exceptions.altar_id`, `event_exceptions.series_id`, إلخ).
+  * إضافة فهارس تغطية لكافة المفاتيح الأجنبية النشطة في الجداول الأكثر استخداماً (`mass_schedules.altar_id`, `contact_messages.assigned_priest_id`, `events.venue_id`, `events.created_by`, `events.updated_by`, `media.uploaded_by`, `mass_exceptions.original_schedule_id`, `event_exceptions.series_id`, إلخ). (ملاحظة: جدول `public.events` لا يحتوي على `category_id`).
 - **تحصين نطاقات إجراءات الخادم (Server Actions Origin Lockdown)**:
   * حصر نطاقات أنفاق كلودفلير `*.trycloudflare.com` في `serverActions.allowedOrigins` ببيئة التطوير فقط (`!isProduction`) لمنع استغلال الأنفاق في الإنتاج.
 

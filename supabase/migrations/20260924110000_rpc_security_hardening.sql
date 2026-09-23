@@ -37,7 +37,30 @@ $$;
 GRANT EXECUTE ON FUNCTION public.search_bible(text, int) TO anon, authenticated;
 
 -- 4. track_condolence_booking(p_ref text)
-ALTER FUNCTION public.track_condolence_booking(text) SET search_path = public, pg_temp;
+-- Hardens reference code validation (bounds check: length 1-20, safe character set: alphanumeric, hyphen, underscore).
+-- Rejects null, blank, whitespace-only, malformed, and overlong inputs without error.
+-- Excludes all sensitive PII (applicant_name, applicant_phone, national_id, special_requests, staff notes).
+CREATE OR REPLACE FUNCTION public.track_condolence_booking(p_ref text)
+RETURNS TABLE (
+    booking_reference_code VARCHAR,
+    event_date DATE,
+    slot_time VARCHAR,
+    hall_name VARCHAR,
+    status booking_status_enum,
+    rejection_reason TEXT
+)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, pg_temp AS $$
+  SELECT cb.booking_reference_code, cb.event_date, cb.slot_time, cb.hall_name, cb.status, cb.rejection_reason
+  FROM condolence_bookings cb
+  WHERE p_ref IS NOT NULL
+    AND length(btrim(p_ref)) > 0
+    AND length(btrim(p_ref)) <= 20
+    AND btrim(p_ref) ~ '^[A-Za-z0-9_-]+$'
+    AND cb.booking_reference_code = upper(btrim(p_ref))
+  LIMIT 1;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.track_condolence_booking(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.track_condolence_booking(text) TO anon, authenticated;
 
 -- 5. normalize_arabic(txt text)

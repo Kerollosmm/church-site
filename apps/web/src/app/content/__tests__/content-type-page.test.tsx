@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import ContentTypeListingPage, { dynamicParams } from "../[type]/page";
 
 vi.mock("next/navigation", () => ({
   notFound: vi.fn().mockImplementation(() => {
@@ -15,7 +16,6 @@ vi.mock("@/lib/store", () => ({
 
 describe("ContentTypeListingPage route", () => {
   it("invokes notFound() immediately when content type does not exist", async () => {
-    const { default: ContentTypeListingPage, dynamicParams } = await import("../[type]/page");
     expect(dynamicParams).toBe(false);
 
     await expect(
