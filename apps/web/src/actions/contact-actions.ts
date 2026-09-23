@@ -10,6 +10,7 @@ import {
   checkPublicWriteRateLimit,
   getClientIp,
 } from "@/lib/security/rate-limit";
+import { recordAuditLog, snapshot } from "@church-site/data-access";
 
 export async function submitContactMessage(rawInput: unknown) {
   const headerList = await headers();
@@ -52,6 +53,21 @@ export async function submitContactMessage(rawInput: unknown) {
         message: "تعذر إرسال الرسالة حالياً، يرجى المحاولة مرة أخرى أو الاتصال هاتفياً بسكرتارية الكنيسة",
       };
     }
+
+    await recordAuditLog({
+      actor: { id: null, name: `زائر الموقع (نموذج التواصل) — ${result.data.senderName}` },
+      action: "create",
+      entityType: "contact_message",
+      entityId: `msg-${Date.now()}`,
+      before: null,
+      summary: `رسالة تواصل جديدة من «${result.data.senderName}» (الأهمية: ${result.data.urgency})`,
+      after: snapshot({
+        senderName: result.data.senderName,
+        senderPhone: result.data.senderPhone,
+        senderEmail: result.data.senderEmail || null,
+        urgency: result.data.urgency,
+      }),
+    });
   } catch (err) {
     console.error("Error sending contact message:", err);
     return {

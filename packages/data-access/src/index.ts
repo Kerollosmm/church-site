@@ -39,3 +39,4 @@ export * from "./videos/public-videos";
 export * from "./facilities/index";
 export * from "./navigation/index";
 export * from "./assets/index";
+export * from "./mass-admin";

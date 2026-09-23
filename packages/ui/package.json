@@ -10,6 +10,7 @@
     "./*": "./src/*"
   },
   "scripts": {
+    "test": "vitest run --root ../..",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

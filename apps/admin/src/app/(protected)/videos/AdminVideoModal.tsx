@@ -132,7 +132,12 @@ export function AdminVideoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="video-modal-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden animate-fade-in">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
@@ -141,7 +146,10 @@ export function AdminVideoModal({
               <Video className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-heading font-bold text-base text-slate-900">
+              <h3
+                id="video-modal-title"
+                className="font-heading font-bold text-base text-slate-900"
+              >
                 {isEditing ? "تعديل فيديو كنسي" : "إضافة فيديو كنسي جديد"}
               </h3>
               <p className="text-xs text-slate-500">
@@ -152,6 +160,7 @@ export function AdminVideoModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="إغلاق"
             className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />

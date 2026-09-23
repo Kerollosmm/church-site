@@ -92,7 +92,7 @@ export async function submitCondolenceBooking(rawInput: unknown) {
       if (isUniqueViolation(error, DATE_UNIQUENESS_CONSTRAINT)) {
         return {
           success: false as const,
-          message: "التاريخ المطلوب محجوز مسبقاً، يرجى اختيار تاريخ آخر أو الاتصال المباشر بالسكرتارية",
+          message: "هذا الموعد محجوز مسبقاً، يرجى اختيار موعد آخر أو التواصل هاتفياً",
         };
       }
 

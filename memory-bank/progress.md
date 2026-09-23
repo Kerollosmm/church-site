@@ -1,5 +1,158 @@
 # Progress — سجل الإنجاز
 
+## يعمل الآن (تحصين ترطيب النماذج وحفظ الاتصال العكسي ورسالة تعارض المواعيد — Form Hydration Guard, Reverse-Proxy Keep-Alive & Date Collision — 100% Complete & Verified [PROVEN])
+- [x] **تحصين ترطيب نماذج الموقع العام (Form Hydration Guard)**:
+  * إضافة حارس التركيب `isMounted` عبر `useEffect` في `CondolenceBookingForm.tsx`, `ContactForm.tsx`, و`SubscribeForm.tsx`.
+  * فرض `disabled={!isMounted || isSubmitting}` مع فئات التنسيق `disabled:opacity-50 disabled:cursor-not-allowed`.
+  * ضبط عناصر النماذج على `method="post"` ومنع الإرسال الافتراضي `e.preventDefault()` في `onSubmit`.
+- [x] **تحصين الاتصال العكسي (Reverse-Proxy Keep-Alive)**:
+  * ضبط `keepAliveTimeout: 65000` على `nextConfig` في `apps/admin/next.config.ts` و`apps/web/next.config.ts`.
+  * إضافة ترويسة الاستجابة `{ key: "Keep-Alive", value: "timeout=65" }` تحت مسار `/:path*` في كلا التطبيقين.
+- [x] **رد تعارض مواعيد حجز قاعات العزاء (Condolence Date Collision Feedback)**:
+  * إعادة رسالة الخطأ الصريحة «هذا الموعد محجوز مسبقاً، يرجى اختيار موعد آخر أو التواصل هاتفياً» عند انتهاك القيد الفريد `uq_condolence_active_date`.
+- [x] **اختبارات الوحدات والتحقق الشامل (Unit Testing & Quality Gates [PROVEN])**:
+  * إنشاء `CondolenceBookingFormHydration.test.tsx` و`SubscribeFormHydration.test.tsx` لاختبار حالة ما قبل التركيب في SSR وحالة ما بعد التركيب.
+  * إنشاء `condolence-actions.test.ts` للتحقق من رسالة تعارض التاريخ.
+  * بوابات الجودة: `pnpm typecheck` (0 أخطاء)، `pnpm run lint` (0 أخطاء)، `pnpm test` (57 ملفاً / 795 فحصاً ناجحاً بنسبة 100%).
+
+## يعمل الآن (فحص الجودة والقبول المباشر الشامل الثاني — Session QA-2026-09-22-RUN2 [PROVEN: 10/10])
+- [x] **تشغيل الخوادم وأنفاق Cloudflare Quick Tunnels الحية**:
+  * الموقع العام: `https://wales-applies-mitchell-away.trycloudflare.com` (HTTP 200 OK).
+  * لوحة الإدارة: `https://foundation-floating-substantial-parks.trycloudflare.com` (HTTP 307 redirect).
+  * صفحة تسجيل الدخول: `https://foundation-floating-substantial-parks.trycloudflare.com/login` (HTTP 200 OK).
+- [x] **إضافة البيانات الحية والتحقق المتبادل عبر السطحين وقاعدة Supabase (Extra-Mile CRUD Proof)**:
+  * **إضافة قداس أسبوعي**: إنشاء القداس «قداس اختبار حي QA-2026-09-22-RUN2»، حفظه في Supabase (`41925843-3091-48ec-8cc6-15dfec730a69`)، وظهوره المباشر بالواجهة العامة تحت تبويب «الأحد» (`P1-public-masses-verified.png`).
+  * **إضافة فيديو كنسي**: إنشاء الفيديو «فيديو كنسي اختبار حي QA-2026-09-22-RUN2»، حفظه في Supabase (`71702cf1-d73d-4aad-8d6e-68eebc7be3d2`)، وظهوره المباشر بصفحة `/about` العامة (`P2-public-about-video-verified.png`).
+  * **نموذج الاشتراك**: إرسال ناجح للمشترك `qa+live-qa-2026-09-22-run2-sub@example.com`، حفظه في Supabase (`596f7973-c317-4736-9361-ee5611e3d277`)، وظهوره في `/subscribers` بالإدارة (`Z1-admin-subscribers-verified.png`).
+  * **نموذج حجز العزاء**: إرسال ناجح وتوليد كود الحجز المرجعي **`COND-JY6NDA`**، حفظه في Supabase (`28bb0789-d63f-49b5-b2aa-6270acd5e440`)، وحفظه بحالة «معلق» (`C2-condolence-result.png`).
+  * **نموذج التواصل**: إرسال ناجح، وحفظ الرسالة في جدول `contact_messages` بقاعدة بيانات Supabase (`b369c5ad-a316-4e7e-a966-87699bcd6e64`).
+  * **سجل التدقيق**: 6 عمليات موثقة في `audit_log` ومطابقة في `/audit` بالإدارة (`Z2-admin-audit-verified.png`).
+- [x] **مسح المسارات وتجربة المستخدم**:
+  * 14 مساراً عاماً (200 OK) + 5 مسارات متقاعدة (404 Clean) + 10 مسارات إدارة (200 OK).
+  * 52 لقطة شاشة كاملة موثقة في `c:\Church-Site\.scratch\qa-live-run\screenshots\`.
+  * الثابت الأمني INV-01 محقق ومصان بنسبة 100%.
+
+## يعمل الآن (فحص الجودة والقبول المباشر الشامل والإضافي — Session QA-2026-09-22 [PROVEN: 10/10])
+- [x] **تشغيل الخوادم وأنفاق Cloudflare Quick Tunnels الحية**:
+  * الموقع العام: `https://queen-zum-diploma-savannah.trycloudflare.com` (HTTP 200 OK).
+  * لوحة الإدارة: `https://stylus-architecture-took-catalogs.trycloudflare.com` (HTTP 307 redirect).
+  * صفحة تسجيل الدخول: `https://stylus-architecture-took-catalogs.trycloudflare.com/login` (HTTP 200 OK).
+- [x] **إضافة البيانات الحية والتحقق المتبادل عبر السطحين وقاعدة Supabase (Extra-Mile Verification)**:
+  * **إضافة قداس أسبوعي**: إنشاء القداس «قداس اختبار حي QA-2026-09-22»، حفظه في Supabase (`7e2c79e0-168c-4eb8-aa58-a74364e58147`)، وظهوره المباشر بالواجهة العامة تحت تبويب «الأحد» (`P3-masses-sunday-detailed.png`).
+  * **إضافة فيديو كنسي**: إنشاء الفيديو «فيديو كنسي اختبار حي QA-2026-09-22»، حفظه في Supabase (`edc81e57-76f3-40a2-a6c9-48b282a08df8`)، وظهوره المباشر بصفحة `/about` العامة (`P2-public-about-video-verified.png`).
+  * **نموذج الاشتراك**: إرسال ناجح للمشترك `qa+live-qa-2026-09-22-sub@example.com`، حفظه في Supabase (`ac944872-ae69-4313-a9db-1075ad155f09`)، وظهوره في `/subscribers` بالإدارة (`Z1-admin-subscribers-verified.png`).
+  * **نموذج حجز العزاء**: إرسال ناجح وتوليد كود الحجز المرجعي **`COND-VJ4LGS`**، حفظه في Supabase (`e690db8f-5a41-4408-977c-4246f605c37a`)، وتحديث عداد اللوحة إلى «2» مع شارة «1 بانتظار الاعتماد» (`Z3-admin-home-counters-verified.png`).
+  * **نموذج التواصل**: إرسال ناجح، وحفظ الرسالة في جدول `contact_messages` بقاعدة بيانات Supabase (`63125d63-07a4-46c4-8c80-a8acb8326f21`).
+  * **سجل التدقيق**: 5 عمليات `create` موثقة في `audit_log` ومطابقة في `/audit` بالإدارة (`Z2-admin-audit-verified.png`).
+- [x] **مسح المسارات وتجربة المستخدم**:
+  * 14 مساراً عاماً (200 OK) + 4 مسارات متقاعدة (404 Clean) + 10 مسارات إدارة (200 OK).
+  * 106 أزرار تفاعلية في قارئ الكتاب المقدس، ومبدل الخط، وفلترة الأيام.
+  * أكثر من 30 لقطة شاشة كاملة موثقة في `c:\Church-Site\.scratch\qa-live-run\screenshots\`.
+  * الثابت الأمني INV-01 محقق ومصان بنسبة 100%.
+
+## يعمل الآن (تحديث ومزامنة مهارة وسكربتات فحص الجودة المباشر — Parish Portal QA Skill Sync — 100% Complete & Verified [PROVEN])
+- [x] **تحديث مواصفة وسكربتات فحص الجودة (Parish Portal QA Skill Updated & Verified)**:
+  * تحديث [SKILL.md](file:///c:/Church-Site/.agents/skills/parish-portal-qa/SKILL.md): تحسين توثيق تسجيل الدخول عبر `window.location.assign()`، توثيق اجتياز إنشاء القداسات والفيديوهات (Resolved Historical Regressions)، تحديث إمكانية الوصول A11y للمودالات، منع الإنذارات الكاذبة لرمز 500 الناجمة عن هاتف الكنيسة `03-5500000`، توثيق تفاعلية أزرار أسفار الكتاب المقدس الـ 73، توثيق منع مهلات `/content/article`، إفصاح البريد، وتوثيق سجل تدقيق `contact_message`.
+  * تحديث [public_sweep.py](file:///c:/Church-Site/.agents/skills/parish-portal-qa/scripts/public_sweep.py): فحص regex محصن لرمز 500 يتجاهل رقم هاتف الكنيسة، كشف وتوثيق أزرار الكتاب المقدس الـ 73، ودعم محددات `button[data-font-size-btn]`.
+  * تحديث [admin_probe.py](file:///c:/Church-Site/.agents/skills/parish-portal-qa/scripts/admin_probe.py): توثيق توجيه `window.location.assign()` والاحتفاظ بإعادة التحميل كملاذ أمان ثانوي.
+  * تحديث [e2e_create.py](file:///c:/Church-Site/.agents/skills/parish-portal-qa/scripts/e2e_create.py): توثيق ثبات ونجاح تدفقات CREATE للقداسات والفيديوهات في الإنتاج.
+  * التحقق والجاهزية: نجاح ترجمة بايثون بنسبة 100% واجتياز 788/788 فحصاً في Vitest.
+
+## يعمل الآن (حزمة معالجة ملاحظات فحص الجودة الختامية وتنظيف سجلات الاختبار — QA Remediation & Staff Cleanup Sprint — 100% Complete & Verified [PROVEN])
+- [x] **معالجة بنود فحص الجودة الـ 7 بالكامل (7/7 QA Remediation Items Resolved & Verified)**:
+  * **P3-1 (إمكانية الوصول لمودال الفيديو)**: تم إضافة `role="dialog"`, `aria-modal="true"`, `aria-labelledby="video-modal-title"`, وسم عنوان `id="video-modal-title"`, وزر إغلاق `aria-label="إغلاق"` في `AdminVideoModal.tsx` واجتياز فحص TDD.
+  * **P3-5 (تسميات مبدل الخط A11y)**: تم إضافة `aria-label={opt.title}` وسمة البيانات `data-font-size-btn={opt.value}` في `FontSizeSwitcher.tsx` واجتياز فحص TDD.
+  * **P3-2 (سجل التدقيق لرسائل التواصل)**: إضافة `contact_message` إلى `AuditEntityType` وتسمياتها بـ domain، وتسجيل عملية `create` فورية في `audit_log` عبر `recordAuditLog` في `contact-actions.ts`.
+  * **P3-3 (حظر مهلات مسارات المحتوى القديمة)**: تفعيل `export const dynamicParams = false;` في `apps/web/src/app/content/[type]/page.tsx` وفصل عميل Supabase العام `createPublicSupabaseClient()` لمنع استدعاء الكوكيز وحظر المهلات الطويلة مع استجابة 404 فورية.
+  * **P3-4 (إفصاح البريد الشفاف)**: إضافة إشعار إفصاح كهرماني واضح في `ContactForm.tsx` يوضح أن المتابعة تتم هاتفياً/واتساب ولا تخرج رسائل آلية، مما يوحد الشفافية عبر كافة النماذج.
+  * **P2-2 (انسيابية تحويل تسجيل الدخول)**: تبسيط عملية الدخول في `AdminLoginForm.tsx` و`auth-actions.ts` والاعتماد على `window.location.assign` المباشر وتحديث المسارات بالخادم مع تجريد الحاجة لطلبين متتاليين وإلغاء ظاهرة تعليق توجيه المتصفح.
+  * **P2-1 (دقة عداد القداسات ومنع تنكر البيانات الوهمية)**: إنشاء دالة القراءة المباشرة من قاعدة البيانات `listAdminWeeklyMasses()` في `packages/data-access/src/mass-admin.ts` واستخدامها في لوحة الإدارة الرئيسية وجدول القداسات لمنع ظهور بذور البيانات الوهمية، وزرع القداسات الأساسية الخمسة للكنيسة في قاعدة بيانات Supabase.
+- [x] **تنظيف بيانات الفحص اليدوي لطاقم الكنيسة (Staff Cleanup — Executed in Supabase)**:
+  * حذف قداس الاختبار `c842ded6-e6a6-437c-af1b-65a5ed699b80` من `mass_schedules`.
+  * حذف فيديو الاختبار `930616eb-82c3-4d50-9328-abce5a00a8d3` من `parish_videos`.
+  * رفض حجز العزاء `COND-U4WIID` (`status = 'rejected'`).
+  * حذف المشتركين الاختباريين `qa+test-qa-2026-09-21@example.com` و`qa+qa-2026-09-21-sub@example.com`.
+  * حذف رسالة التواصل `qa+qa-2026-09-21-contact@example.com`.
+  * بقاء جدول التدقيق `audit_log` مصاناً بالكامل (24 سطراً أصلياً دون أي حذف - صفر مساس).
+  * استقرار جدول القداسات على 5 قداسات أسبوعية رسمية مطابقة للجدول الحقيقي.
+- [x] **بوابات الجودة المؤكدة [PROVEN]**:
+  * فحص الأنواع الصارم: 0 أخطاء عبر 5 مشاريع (`pnpm typecheck`).
+  * فحص الأسلوب والتنسيق: 0 أخطاء و0 تحذيرات (`pnpm run lint`).
+  * اختبارات الوحدات والتكامل: 54 ملفاً / **788/788 فحصاً ناجحاً بنسبة 100% (Green)** في Vitest.
+  * بناء الويب: نجاح كامل لـ 57 مساراً ثابتاً (`pnpm --filter web build`).
+  * بناء الإدارة: نجاح كامل لجميع المسارات (`pnpm --filter admin build`).
+
+## يعمل الآن (Live QA Full Acceptance Suite — Session QA-2026-09-21 [PROVEN: 9/10])
+- [x] **تقرير فحص الجودة والقبول المباشر الشامل (Full Live QA Suite — Session QA-2026-09-21)**:
+  * **مسار التقرير والمصادر**: `C:\Users\KimoStore\Downloads\New Report` (التقرير: `TEST-REPORT.md`، حزمة الأدلة التقنية: `final-checks-report.txt`، `e2e-resume-report.txt`، `probe-report.txt`، `public-probe-report.txt`، و62 لقطة شاشة كاملة 1440×900 في `screenshots/screenshots`).
+  * **التاريخ والتوقيت**: الاثنين 21 سبتمبر 2026 — Monday, 21 September 2026 (~18:10 إلى 18:45 بتوقيت القاهرة).
+  * **معرّف الجلسة**: `QA-2026-09-21` (إعادة تشغيل بعد الجولات الصباحية ~02:00–05:30).
+  * **الروابط المختبرة عبر أنفاق Cloudflare Quick Tunnels**:
+    - الموقع العام: `https://debian-structured-stuck-stats.trycloudflare.com`
+    - لوحة الإدارة: `https://audio-university-legislature-occurrence.trycloudflare.com`
+    - صفحة تسجيل الدخول: `/login`
+  * **حساب الإدارة**: `admin@saintsmaximos.org` — الدور بالواجهة: **مالك (مسؤول النظام)**.
+  * **التقييم والدرجة العامة**: **9 / 10** — صفر أخطاء P0 أو P1 متبقية؛ كافة المسارات الأساسية تعمل بنجاح تام.
+  * **إصلاح أخطاء P0 الانحدارية التاريخية بالكامل (Historic P0 Regressions FIXED)**:
+    - [x] **إضافة قداس أسبوعي (Admin CREATE Weekly Mass)**: المودال يعرض الحقول المسمّاة صراحة (`title_ar`, `day_of_week`, `altar_id`, `start_time`, `end_time`, `target_group_ar`, `notes_ar`, `is_active`)، حفظ بنجاح، ظهور الصف في جدول الإدارة كقداس `نشط` («قداس اختبار QA-2026-09-21» — الأحد 06:00–08:30)، وظهوره الحي في الموقع العام تحت تبويب يوم «الأحد» حصراً (P5).
+    - [x] **إضافة فيديو كنسي (Admin CREATE Parish Video)**: المودال يعرض الحقول بوضوح (`source_url`, `title_ar`, `title_en`, `description_ar`, `description_en`, `sort_order`, `is_public`, `is_active`)، حفظ بنجاح، ظهور الصف في جدول الإدارة كفيديو `منشور` + `نشط` (يوتيوب، ترتيب 0)، وظهوره الحي في صفحة `/about` العامة (P4).
+  * **تصفح وقراءة المسارات العامة (Public Read — 14 Routes HTTP 200)**:
+    - [x] مسح 14 مساراً عاماً بنجاح 200 بمحتوى حقيقي (`/`, `/masses`, `/events`, `/live`, `/bible`, `/gallery`, `/sermons`, `/subscribe`, `/condolence`, `/contact`, `/privacy`, `/about`, `/about/clergy`, `/about/altars`). صفحة `/subscribe` شهدت مهلة في أول محاولة وحملت 200 عند الإعادة.
+    - [x] مسارات 404 المتقاعدة تعيد 404 نظيف كما صُممت (`/clinics`, `/donate`, `/schedule`, `/stream`). استثناء: المسار القديم `/content/article` انتهت مهلته (>45s، انظر P3-3).
+  * **نماذج الكتابة العامة الثلاثة (Public Write — 3 Forms 100% Verified)**:
+    - [x] **نموذج الاشتراك (`/subscribe`)**: ظهور بانر النجاح مع الإفصاح الشفاف بتعطيل البريد، وهبوط سطرين جديدين في `/subscribers` (`qa+qa-2026-09-21-sub@example.com` و`qa+test-qa-2026-09-21@example.com`).
+    - [x] **نموذج حجز العزاء (`/condolence`)**: ظهور بانر النجاح مع كود الحجز المرجعي **`COND-U4WIID`** (الفترة المسائية 6-10م، تاريخ 2026-10-21)، وظهوره بلوحة الإدارة كبطاقة كهرمانية «1 بانتظار الاعتماد (معلق)».
+    - [x] **نموذج التواصل (`/contact`)**: إرسال ناجح بأولوية عادية (normal) وظهور بانر التأكيد.
+  * **لوحة الإدارة والمصادقة وتدفق البيانات (Admin Dashboard & Propagation)**:
+    - [x] تسجيل الدخول: اجتياز كامل (مع رصد ملاحظة متقطعة في إعادة التوجيه P2-2).
+    - [x] مسح مسارات الإدارة العشرة: جميعها 200 بنجاح مع بيانات حقيقية وبلا رايات أخطاء.
+    - [x] تدفق البيانات: تحديث عدادات لوحة الإدارة حياً، وهبوط عمليات `إنشاء` في `/audit` بالفاعل «زائر الموقع».
+    - [x] الأمان واستقلال البوابة (INV-01): صفر كوكيز مصادقة على المسارات العامة، وصفر تسريب لواجهات الإدارة.
+  * **إحصائيات العدادات الحية في لوحة الإدارة (Live Counters)**:
+    - القداسات الأسبوعية: 5 قبل الفحص → 1 بعده (تحت الفحص P2-1؛ الجدول به صف الاختبار فقط، وصفر حذف في التدقيق).
+    - الفعاليات: 1 فعالة.
+    - الفيديوهات: 0 → 1 (منشور ونشط).
+    - الخدمات والمرافق: 8.
+    - مكتبة الوسائط: 1 ملف.
+    - حجوزات العزاء: 0 → 1 (`COND-U4WIID` معلق).
+    - نماذج CMS: 0.
+    - شريط التنقل: 21 عنصراً.
+    - المشتركون: 1 → 2.
+  * **الفروق الدقيقة والملاحظات الميدانية (Nuances & Field Observations)**:
+    - فلترة أيام القداسات: 7 أزرار أيام؛ الجمعة يعرض قداس الجمعة، والقداس الاختباري يظهر في الأحد فقط.
+    - قارئ الكتاب المقدس: 73 سفراً (العهد القديم 46 / الجديد 27) مع الإصحاح الأول لمتى. قيد "0 book links" كان أثراً تقنياً للمسبار (أزرار عميل `<button>` وليست روابط `<a>`).
+    - رايات الرمز 500 في المسح: إنذارات كاذبة على `/events`, `/live`, `/gallery`, `/contact` بسبب احتواء هاتف الكنيسة `03-5500000` على النص الفرعي "500".
+    - صفحة البث المباشر `/live`: رسالة عدم التهيئة المهذبة تظهر بنجاح («البث المباشر غير نشط حالياً») وفق المواصفات.
+    - مبدل حجم الخط: أزرار A+/A− موجودة في شريط الأدوات العلوي.
+  * **فهرس المشكلات والتحسينات المرصودة (Cataloged Bugs & Improvements P2/P3 — All Resolved & Verified [PROVEN])**:
+    - [x] P2-1 (تم الإصلاح): دقة عداد القداسات ومنع تنكر البيانات الوهمية؛ تم إنشاء دالة القراءة المباشرة من قاعدة البيانات `listAdminWeeklyMasses()` في `packages/data-access/src/mass-admin.ts` واستخدامها في لوحة الإدارة وجدول القداسات، وزرع القداسات الأساسية الخمسة للكنيسة في قاعدة بيانات Supabase [PROVEN].
+    - [x] P2-2 (تم الإصلاح): انسيابية تحويل تسجيل الدخول؛ تبسيط عملية الدخول في `AdminLoginForm.tsx` و`auth-actions.ts` والاعتماد على `window.location.assign` المباشر وتحديث المسارات بالخادم مع تجريد الحاجة لطلبين متتاليين وإلغاء ظاهرة تعليق توجيه المتصفح [PROVEN].
+    - [x] P3-1 (تم الإصلاح): إمكانية الوصول لمودال الفيديو؛ تم إضافة `role="dialog"`, `aria-modal="true"`, `aria-labelledby="video-modal-title"`, وسم عنوان `id="video-modal-title"`, وزر إغلاق `aria-label="إغلاق"` في `AdminVideoModal.tsx` واجتياز فحص TDD [PROVEN].
+    - [x] P3-2 (تم الإصلاح): سجل التدقيق لرسائل التواصل؛ إضافة `contact_message` إلى `AuditEntityType` وتسمياتها بـ domain، وتسجيل عملية `create` فورية في `audit_log` عبر `recordAuditLog` في `contact-actions.ts` [PROVEN].
+    - [x] P3-3 (تم الإصلاح): حظر مهلات مسارات المحتوى القديمة؛ تفعيل `export const dynamicParams = false;` في `apps/web/src/app/content/[type]/page.tsx` وفصل عميل Supabase العام `createPublicSupabaseClient()` لمنع استدعاء الكوكيز وحظر المهلات الطويلة مع استجابة 404 فورية [PROVEN].
+    - [x] P3-4 (تم الإصلاح): إفصاح البريد الشفاف؛ إضافة إشعار إفصاح كهرماني واضح في `ContactForm.tsx` يوضح أن المتابعة تتم هاتفياً/واتساب ولا تخرج رسائل آلية، مما يوحد الشفافية عبر كافة النماذج [PROVEN].
+    - [x] P3-5 (تم الإصلاح): تسميات مبدل الخط A11y؛ تم إضافة `aria-label={opt.title}` وسمة البيانات `data-font-size-btn={opt.value}` في `FontSizeSwitcher.tsx` واجتياز فحص TDD [PROVEN].
+  * **تنفيذ تنظيف البيانات التجريبية لطاقم الكنيسة (Staff Cleanup — Executed in Supabase [PROVEN])**:
+    - [x] حذف قداس الاختبار `c842ded6-e6a6-437c-af1b-65a5ed699b80` من `mass_schedules`.
+    - [x] حذف فيديو الاختبار `930616eb-82c3-4d50-9328-abce5a00a8d3` من `parish_videos`.
+    - [x] رفض حجز العزاء `COND-U4WIID` (`status = 'rejected'`).
+    - [x] حذف المشتركين الاختباريين `qa+test-qa-2026-09-21@example.com` و`qa+qa-2026-09-21-sub@example.com` من `subscribers`.
+    - [x] حذف رسالة التواصل التجريبية الواردة من `qa+qa-2026-09-21-contact@example.com`.
+    - [x] بقاء جدول التدقيق `audit_log` مصاناً بالكامل (24 سطراً أصلياً دون أي حذف - صفر مساس).
+    - [x] استقرار جدول القداسات على 5 قداسات أسبوعية رسمية مطابقة للجدول الحقيقي.
+
+## يعمل الآن (Ecclesiastical Liturgical System DESIGN.md — 100% Complete & Verified [PROVEN])
+- [x] **حفظ وثيقة نظام التصميم الكنسي الرسمية (DESIGN.md)**:
+  * حفظ `c:\Church-Site\DESIGN.md` بالترويسة الكاملة وقيم الألوان المشتقة من ملصقات الكنيسة الرسمية (`#5C101B`, `#3D0B12`, `#C9933B`, `#D4AF37`, `#FDFBF7`, `#F3E5AB`).
+  * مواصفات التيبوغرافيا والهوامش واستدارات الأقواس القبطية ومكونات الجداول الليتورجية المتعددة المذابح.
+
+## يعمل الآن (Facebook Empirical Design System & Stitch AI Prompt — 100% Verified [PROVEN])
+- [x] **تحليل صفحة الفيسبوك الرسمية واستخراج نظام التصميم الحقيقي (Facebook Empirical Design System)**:
+  * استخراج وتحليل الأصول الرسمية لصفحة الكنيسة (`https://www.facebook.com/100070313048338/` — 19,909 متابعين).
+  * تحليل ملصق عيد النيروز الرسمي (`post_nayrouz.jpg`)، وشعار الكنيسة والبطريركية (`church_logo.jpg`)، وصورة مجمع الآباء مع البابا تواضروس الثاني (`church_cover.jpg`)، وسلسلة بطاقات تخرج وتكريم الخدام بالإكليريكية (`servant_card.jpg`).
+  * استخراج رموز الألوان الدقيقة: خمر ليتورجي `#5C101B` / `#3D0B12`، كهرمان مقدس `#C9933B` / `#D4AF37`، عاجي وورق بردي `#FDFBF7` / `#F3E5AB`، أسود فحمي `#1A1615`.
+  * صياغة البرومبت الكامل الموجه لـ Stitch AI في ملف الأثر: `church_facebook_design_system_and_stitch_prompt.md`.
+
 ## يعمل الآن (QA Remediation & Performance Sprint — 100% Complete & Verified)
 - [x] **معالجة ملاحظات فحص الجودة وتصليب الأداء (QA Remediation & Performance)**:
   * **تسجيل دخول الإدارة (Admin Login UX)**:

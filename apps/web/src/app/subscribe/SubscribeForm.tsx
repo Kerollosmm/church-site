@@ -15,7 +15,7 @@
 // NO EMAIL IS SENT: when the action reports that e-mail delivery is not enabled (which is the case on
 // every deployment today — see `src/lib/notify/`), the confirmation carries that statement explicitly.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, BellRing, CheckCircle2, Loader2 } from "lucide-react";
@@ -55,6 +55,9 @@ export interface SubscribeFormProps {
 }
 
 export function SubscribeForm({ locale, groups, emailDeliveryEnabled = false }: SubscribeFormProps): React.ReactElement {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
@@ -161,7 +164,15 @@ export function SubscribeForm({ locale, groups, emailDeliveryEnabled = false }: 
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4" noValidate>
+      <form
+        method="post"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void handleSubmit(onSubmit)(e);
+        }}
+        className="mt-4 space-y-4"
+        noValidate
+      >
         <div>
           <label htmlFor="subscribe-email" className="block font-heading text-xs font-bold text-copticNavy">
             {t(locale, "subscribe.emailLabel")} <span className="text-red-500">*</span>
@@ -244,8 +255,8 @@ export function SubscribeForm({ locale, groups, emailDeliveryEnabled = false }: 
 
         <button
           type="submit"
-          disabled={isSubmitting}
-          className={`inline-flex items-center justify-center gap-2 rounded-xl bg-copticNavy px-6 py-2.5 font-heading text-xs font-bold text-white transition hover:bg-copticNavy-700 disabled:opacity-50 sm:text-sm ${FOCUS_RING}`}
+          disabled={!isMounted || isSubmitting}
+          className={`inline-flex items-center justify-center gap-2 rounded-xl bg-copticNavy px-6 py-2.5 font-heading text-xs font-bold text-white transition hover:bg-copticNavy-700 disabled:opacity-50 disabled:cursor-not-allowed sm:text-sm ${FOCUS_RING}`}
         >
           {isSubmitting ? (
             <>

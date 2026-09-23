@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogIn, Loader2, AlertCircle, CheckCircle2, Mail, KeyRound } from "lucide-react";
-import { signIn, confirmSessionAction } from "@/actions/auth-actions";
+import { signIn } from "@/actions/auth-actions";
 import { StaffSignInSchema } from "@/lib/validations/auth-schema";
 
 export function AdminLoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,12 +28,8 @@ export function AdminLoginForm() {
         setError(res.message ?? "تعذر تسجيل الدخول، يرجى المحاولة مرة أخرى");
         return;
       }
-      const confirmRes = await confirmSessionAction("/masses");
-      if (!confirmRes.success) {
-        setError(confirmRes.error ?? "تعذر تأكيد الجلسة، يرجى المحاولة مرة أخرى");
-        return;
-      }
-      router.replace(confirmRes.targetUrl);
+      const target = res.targetUrl || "/masses";
+      window.location.assign(target);
     } catch {
       setError("تعذر الاتصال بخدمة الدخول حالياً، يرجى المحاولة لاحقاً");
     } finally {

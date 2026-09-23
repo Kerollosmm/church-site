@@ -10,6 +10,7 @@ export interface StaffAuthResult {
   success: boolean;
   message?: string;
   errors?: Record<string, string[] | undefined>;
+  targetUrl?: string;
 }
 
 /**
@@ -56,7 +57,8 @@ export async function signIn(rawInput: unknown): Promise<StaffAuthResult> {
       };
     }
 
-    return { success: true };
+    revalidatePath("/", "layout");
+    return { success: true, targetUrl: "/masses" };
   } catch (err) {
     console.error("Staff sign-in failed:", err);
     return {

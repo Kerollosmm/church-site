@@ -4,6 +4,7 @@ import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset
 const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
+  keepAliveTimeout: 65000,
   images: {
     remotePatterns: [
       {
@@ -26,6 +27,10 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
+          {
+            key: "Keep-Alive",
+            value: "timeout=65",
+          },
           {
             key: "X-Robots-Tag",
             value: "noindex, nofollow",

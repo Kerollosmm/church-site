@@ -82,6 +82,14 @@ const PERMISSIONS_POLICY = [
 const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
+  keepAliveTimeout: 65000,
+  /**
+   * Dev-only allowlist for the Cloudflare quick tunnels used by live acceptance runs
+   * (`pnpm dev:web` behind `cloudflared`). Without it Next 15 warns on every cross-origin
+   * request to `/_next/*`; with it configured, unknown origins are blocked instead (still dev
+   * only — `next build` and `next start` ignore this key).
+   */
+  allowedDevOrigins: ["*.trycloudflare.com"],
   experimental: {
     optimizePackageImports: ["lucide-react"],
     serverActions: {
@@ -116,6 +124,10 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
+          {
+            key: "Keep-Alive",
+            value: "timeout=65",
+          },
           {
             // Takes effect only over HTTPS (the deployment target is HTTPS-only); browsers ignore
             // it for plain-HTTP dev servers. 180 days, subdomains included.

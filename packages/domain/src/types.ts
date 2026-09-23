@@ -103,7 +103,8 @@ export type AuditEntityType =
   | "service"
   | "navigation"
   | "asset"
-  | "booking";
+  | "booking"
+  | "contact_message";
 
 export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   event: "فعالية",
@@ -122,6 +123,7 @@ export const AUDIT_ENTITY_TYPE_LABELS_AR: Record<AuditEntityType, string> = {
   navigation: "شريط التنقل",
   asset: "أصل خارجي",
   booking: "حجز قاعة العزاء",
+  contact_message: "رسالة تواصل",
 };
 
 // ============================================================================
