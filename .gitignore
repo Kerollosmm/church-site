@@ -68,3 +68,6 @@ qa-run-*/
 parish-portal-qa-local-kit*/
 test-login.png
 screenshots/
+testsprite_tests/tmp/
+testsprite_tests/tmp/config.json
+.testsprite/runs/

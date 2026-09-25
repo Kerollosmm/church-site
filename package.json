@@ -27,7 +27,8 @@
   },
   "pnpm": {
     "overrides": {
-      "postcss": "^8.5.28"
+      "postcss": "^8.5.28",
+      "zod": "3.24.2"
     }
   }
 }

@@ -50,6 +50,24 @@ export async function createContentTypeAction(
   try {
     const repo = getContentTypeRepository();
     const created = await repo.createContentType(input, actor);
+
+    // Auto-seed default title field so newly created templates immediately support content entries
+    try {
+      await repo.createContentField(
+        {
+          contentTypeId: created.id,
+          labelAr: "العنوان",
+          slug: "title",
+          fieldType: "text",
+          isRequired: true,
+          sortOrder: 0,
+        },
+        actor
+      );
+    } catch (fieldErr) {
+      console.warn("[createContentTypeAction] Failed to auto-seed title field:", fieldErr);
+    }
+
     await revalidateContentSurfaces(created.slug);
     revalidatePath("/content-types");
     return {
@@ -59,6 +77,72 @@ export async function createContentTypeAction(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "فشل إنشاء نموذج المحتوى.";
+    return { success: false, message };
+  }
+}
+
+export async function duplicateContentTypeAction(
+  sourceId: string
+): Promise<ContentTypeActionResult<ContentType>> {
+  const session = await requireStaff();
+  const role = adminRoleFromStaffRole(session.role);
+
+  if (role === null || !can(role, "content:manage")) {
+    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
+  }
+
+  const actor: Actor = {
+    id: session.userId,
+    name: session.fullNameAr,
+  };
+
+  try {
+    const repo = getContentTypeRepository();
+    const source = await repo.getContentTypeById(sourceId);
+    if (!source) {
+      return { success: false, message: "نموذج المحتوى المطلوب نسخه غير موجود." };
+    }
+
+    const cloned = await repo.createContentType(
+      {
+        nameAr: `${source.nameAr} (نسخة)`,
+        nameEn: source.nameEn ? `${source.nameEn} (Copy)` : null,
+        slug: `${source.slug}-copy-${Date.now().toString(36)}`,
+        icon: source.icon ?? null,
+        template: source.template ?? null,
+        isActive: source.isActive,
+      },
+      actor
+    );
+
+    const sourceFields = await repo.listContentFields(sourceId);
+    for (const field of sourceFields) {
+      await repo.createContentField(
+        {
+          contentTypeId: cloned.id,
+          slug: field.slug,
+          labelAr: field.labelAr,
+          labelEn: field.labelEn ?? null,
+          fieldType: field.fieldType,
+          isRequired: field.isRequired,
+          isTranslatable: field.isTranslatable,
+          validationRules: field.validationRules ?? null,
+          options: field.options,
+          sortOrder: field.sortOrder,
+        },
+        actor
+      );
+    }
+
+    await revalidateContentSurfaces(cloned.slug);
+    revalidatePath("/content-types");
+    return {
+      success: true,
+      message: `تم نسخ نموذج المحتوى «${cloned.nameAr}» بنجاح.`,
+      data: cloned,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "فشل نسخ نموذج المحتوى.";
     return { success: false, message };
   }
 }

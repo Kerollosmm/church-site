@@ -17,12 +17,15 @@ import {
   XCircle,
   Loader2,
   X,
+  Copy,
+  Search,
 } from "lucide-react";
 import type { ContentType } from "@church-site/domain";
 import {
   createContentTypeAction,
   updateContentTypeAction,
   deleteContentTypeAction,
+  duplicateContentTypeAction,
 } from "@/actions/content-type-actions";
 import { AdminFeedback, type AdminFeedbackTone } from "@/components/admin/AdminFeedback";
 import {
@@ -56,12 +59,15 @@ export function ContentTypeManager({
   const [modalOpen, setModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<ContentType | null>(null);
 
-  // Form states
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
   const [slug, setSlug] = useState("");
   const [template, setTemplate] = useState("default");
   const [isActive, setIsActive] = useState(true);
+
+  // Search & Filter states
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
   const [feedback, setFeedback] = useState<{ message: string; tone: AdminFeedbackTone } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -147,6 +153,31 @@ export function ContentTypeManager({
     });
   };
 
+  const handleDuplicate = (id: string) => {
+    startTransition(async () => {
+      const res = await duplicateContentTypeAction(id);
+      if (res.success) {
+        setFeedback({ message: res.message, tone: "success" });
+        router.refresh();
+      } else {
+        setFeedback({ message: res.message, tone: "error" });
+      }
+    });
+  };
+
+  const filteredTypes = types.filter((t) => {
+    if (statusFilter === "active" && !t.isActive) return false;
+    if (statusFilter === "inactive" && t.isActive) return false;
+    if (!search.trim()) return true;
+    const q = search.trim().toLowerCase();
+    return (
+      t.nameAr.toLowerCase().includes(q) ||
+      (t.nameEn && t.nameEn.toLowerCase().includes(q)) ||
+      t.slug.toLowerCase().includes(q) ||
+      (t.template && t.template.toLowerCase().includes(q))
+    );
+  });
+
   return (
     <div className="space-y-6">
       {feedback && (
@@ -179,6 +210,43 @@ export function ContentTypeManager({
         )}
       </div>
 
+      {/* Search and Filters Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex flex-wrap items-center gap-4 flex-1">
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="بحث في النماذج..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl pr-9 pl-3 py-1.5 text-xs text-copticNavy focus:outline-hidden"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label htmlFor="content-type-status-select" className="text-xs font-heading font-bold text-slate-700 whitespace-nowrap">
+              تصفية بالحالة:
+            </label>
+            <select
+              id="content-type-status-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-copticNavy focus:outline-hidden"
+            >
+              <option value="all">كافة الحالات</option>
+              <option value="active">نشط</option>
+              <option value="inactive">معطّل</option>
+            </select>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-500 whitespace-nowrap">
+          النماذج المعروضة: <strong className="text-copticNavy">{filteredTypes.length}</strong> من أصل{" "}
+          <strong className="text-copticNavy">{types.length}</strong>
+        </p>
+      </div>
+
       <div className={ADMIN_PANEL}>
         <div className="overflow-x-auto">
           <table className={ADMIN_TABLE}>
@@ -194,7 +262,7 @@ export function ContentTypeManager({
               </tr>
             </thead>
             <tbody>
-              {types.map((t) => {
+              {filteredTypes.map((t) => {
                 const fieldsCount = fieldCounts[t.id] ?? 0;
                 const entriesCount = entryCounts[t.id] ?? 0;
 
@@ -263,6 +331,17 @@ export function ContentTypeManager({
                           <>
                             <button
                               type="button"
+                              onClick={() => handleDuplicate(t.id)}
+                              className={ADMIN_BUTTON_QUIET}
+                              title="نسخ النموذج"
+                              disabled={isPending}
+                            >
+                              <Copy className="w-3.5 h-3.5 text-slate-600" />
+                              <span>نسخ</span>
+                            </button>
+
+                            <button
+                              type="button"
                               onClick={() => openEditModal(t)}
                               className={ADMIN_BUTTON_QUIET}
                               title="تعديل النموذج"
@@ -287,10 +366,10 @@ export function ContentTypeManager({
                 );
               })}
 
-              {types.length === 0 && (
+              {filteredTypes.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-slate-500">
-                    لا توجد نماذج محتوى معرّفة حالياً.
+                    لا توجد نماذج محتوى مطابقة للتصفية الحالية.
                   </td>
                 </tr>
               )}

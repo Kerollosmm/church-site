@@ -112,6 +112,7 @@ export function QuickServiceGrid() {
             <Link
               key={srv.title}
               href={srv.href}
+              prefetch={false}
               className="rounded-2xl border border-copticGold-200 bg-white shadow-xs hover:border-copticGold-400 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none group flex flex-col justify-between p-4"
             >
               <div>

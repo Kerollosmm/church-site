@@ -39,6 +39,7 @@ export function HeroBanner() {
 
             <Link
               href="/events"
+              prefetch={false}
               className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-copticGold-400/40 backdrop-blur-xs transition group"
             >
               <CalendarDays className="w-6 h-6 text-copticGold-400 group-hover:scale-110 transition-transform mb-1.5" />
@@ -48,6 +49,7 @@ export function HeroBanner() {
 
             <Link
               href="/live"
+              prefetch={false}
               className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-copticGold-400/40 backdrop-blur-xs transition group"
             >
               <Video className="w-6 h-6 text-copticGold-400 group-hover:scale-110 transition-transform mb-1.5" />

@@ -54,6 +54,7 @@ export function AdminLoginForm() {
           <Mail className="w-4 h-4 text-copticGold-700 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="staff-email"
+            name="email"
             type="email"
             dir="ltr"
             autoComplete="username"
@@ -74,6 +75,7 @@ export function AdminLoginForm() {
           <KeyRound className="w-4 h-4 text-copticGold-700 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="staff-password"
+            name="password"
             type="password"
             dir="ltr"
             autoComplete="current-password"

@@ -19,6 +19,39 @@
   * حذف المفتاح غير المعترف به `keepAliveTimeout: 65000` من `apps/web/next.config.ts` و`apps/admin/next.config.ts` وإلغاء تحذير البناء.
   * حصر نطاقات `*.trycloudflare.com` و`localhost` في `serverActions.allowedOrigins` ببيئة التطوير فقط (`!isProduction`).
   * إضافة مستمع مفتاح `Escape` لمودال الفيديو `AdminVideoModal.tsx` لتعزيز إمكانية الوصول من لوحة المفاتيح والتحقق من تنظيف المستمع عند إغلاق/إلغاء تركيب المكون.
+- [x] **تأسيس جناح فحص TestSprite وحل مشاكل المسارات (TestSprite Onboarding & Admin Route Hardening)**:
+  * إنشاء وتفعيل مشروعي TestSprite حيين:
+    - `Church-Site-Web` (`9efc1ddc-85c8-4385-b299-e0a6a50978dd`): 27 فحصاً معتمداً، واجتياز فحوصات تعريف الكنيسة، وتصفح الأقسام، والميديا.
+    - `Church-Site-Admin` (`c698af0b-3a3d-40f9-bbb7-599c74ecea47`): 39 فحصاً معتمداً مع المصادقة الحية لحساب `admin@saintsmaximos.org`.
+  * حل عائق بادئة `/admin/*`: إضافة توجيهات مسارات تلقائية في `apps/admin/next.config.ts` تحول `/admin/:path*` إلى `/:path*` لمنع أخطاء 404 عند استهداف الأدوات لمسارات الإدارة الكلاسيكية.
+  * تحصين حقول تسجيل الدخول في `AdminLoginForm.tsx`: تزويد الحقول بخواص `name="email"` و`name="password"` الصريحة لتمكين الإكمال التلقائي وأدوات الفحص الآلي.
+  * تسخين المجمّع لكافة مسارات الإدارة العشرة وتخفيض زمن التجميع والاستجابة من 108 ثوانٍ إلى أقل من ثانية واحدة، متفادياً مهلات نفق Cloudflare.
+  * تحديث نمط مشروع الإدارة إلى `originMode: local` وربط المنفذ `3001` بنفق TestSprite المباشر.
+  * تشغيل واكتمال فحص كافة حالات الاختبار الـ 39 لتطبيق الإدارة تتابعياً (39 TestSprite Admin Cases Sequentially Executed):
+    - **نجاح كامل بنسبة 100% لكافة الاختبارات الـ 39 (39/39 Green — 100% Passed)**:
+      1. تم تمرير الحالات الـ 27 الأولى في المسارات الأساسية.
+      2. تم علاج الحالات الـ 12 السابقة وتمريرها بنجاح تام عبر TestSprite CLI بدون وسيط مهلة:
+         - تصفية وفرز القداسات (`0811f783`, `c58028fe`).
+         - حذف القداس وتطهير التكرار (`dc952f3a`).
+         - تصفية الفعاليات ومواعيد العزاء بنطاق زمني (`32256bfa`, `f3ab147e`).
+         - البحث والتصفية والنسخ لقوالب المحتوى CMS (`ff55a601`, `f5d780be`, `2fe94571`).
+         - نشر إصدار قالب CMS مع الحقول الافتراضية (`a6826bf8`).
+         - إضافة قداس جديد مع مزامنة الهيدريشن (`058737ae`).
+         - فتح لوحة التحكم من القوائم (`679399f7`).
+    - **صفر أخطاء أو انهيارات برمجية (Zero Fatal Crashes / 0 Failed)**: استقرار تام لتطبيق الإدارة.
+    - تقرير الفحص الشامل محفوظ في [`testsprite_tests/testsprite-mcp-test-report.md`](file:///C:/Church-Site/testsprite_tests/testsprite-mcp-test-report.md) و[`docs/testsprite-admin-report.md`](file:///C:/Church-Site/docs/testsprite-admin-report.md).
+- [x] **معالجة واجتياز فحوصات E2E الخمسة بالكامل بنسبة 100% (All 5 E2E Test Failures Resolved & Verified)**:
+  * حل عاصفة التحميل المسبق (Prefetch Storm Fix): إضافة `prefetch={false}` في كافة مكونات الروابط العامة (`HeaderClient.tsx`, `HeroBanner.tsx`, `QuickServiceGrid.tsx`, `QuickActionBar.tsx`, `Footer.tsx`) لمنع إطلاق عشرات الطلبات المتزامنة وتفادي 429 عبر نفق Cloudflare.
+  * تحسين إمكانية الوصول وشريط التنقل السريع: إتاحة اختصارات القداسات والفعاليات على كافة الشاشات مع حصر زر القائمة المنسدلة بـ `xl:hidden`.
+  * بذر ومزامنة بيانات قاعدة البيانات في Supabase: إدراج 37 مصطلح تصنيف، 16 سلسلة فعاليات أسبوعية، 4 فعاليات قادمة لشهري سبتمبر وأكتوبر 2026 مع ربط المصطلحات، وسجلي بث مباشر (مباشر نشط مع رابط التضمين المعتمد لليوتيوب، ومجدول قادم).
+  * ضبط قناة اليوتيوب: تزويد متغير البيئة `NEXT_PUBLIC_YOUTUBE_CHANNEL_URL` في `apps/web/.env.local`.
+  * تحصين الاعتماديات: تثبيت إصدار `zod: 3.24.2` في `pnpm.overrides` لتفادي تعارض `@hookform/resolvers`.
+  * اجتياز كامل الاختبارات الخمسة في TestSprite بنسبة 100% (24/24 خطوة بنجاح تام):
+    1. `Open live broadcast page` (`3a9f9c83`): 4/4 خطوات ناجحة (PASSED).
+    2. `View church events from the homepage` (`55627856`): 3/3 خطوات ناجحة (PASSED).
+    3. `Open church events page` (`47d80d0c`): 5/5 خطوات ناجحة (PASSED).
+    4. `Use the public events area to find an upcoming church activity` (`16f56309`): 7/7 خطوات ناجحة (PASSED).
+    5. `Access the live stream from the church services section` (`f7ee0ad3`): 5/5 خطوات ناجحة (PASSED).
 - [x] **بوابات الجودة المحلية (Local Quality Gates — 100% Green Locally)**:
   * فحص الأسرار: 0 أسرار مكتشفة في الشجرة الحالية عبر `node scripts/scan-secrets.mjs` (Current-tree secret scan passed; Historical credential exposure still requires password rotation and Git history rewrite).
   * فحص الأنواع الصارم: 0 أخطاء عبر 5 مشاريع (`pnpm typecheck`).

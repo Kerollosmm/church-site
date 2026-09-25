@@ -6,6 +6,7 @@ settings:
 
 overrides:
   postcss: ^8.5.28
+  zod: 3.24.2
 
 importers:
 
@@ -84,8 +85,8 @@ importers:
         specifier: ^3.0.1
         version: 3.7.0
       zod:
-        specifier: ^3.24.2
-        version: 3.25.76
+        specifier: 3.24.2
+        version: 3.24.2
     devDependencies:
       '@types/node':
         specifier: ^20.17.19
@@ -154,8 +155,8 @@ importers:
         specifier: ^3.0.1
         version: 3.7.0
       zod:
-        specifier: ^3.24.2
-        version: 3.25.76
+        specifier: 3.24.2
+        version: 3.24.2
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.3.7
@@ -203,8 +204,8 @@ importers:
         specifier: ^5.0.9
         version: 5.1.16
       zod:
-        specifier: ^3.24.2
-        version: 3.25.76
+        specifier: 3.24.2
+        version: 3.24.2
     devDependencies:
       '@types/node':
         specifier: ^20.17.19
@@ -216,8 +217,8 @@ importers:
   packages/domain:
     dependencies:
       zod:
-        specifier: ^3.24.2
-        version: 3.25.76
+        specifier: 3.24.2
+        version: 3.24.2
     devDependencies:
       '@types/node':
         specifier: ^20.17.19
@@ -2752,8 +2753,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@3.24.2:
+    resolution: {integrity: sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ==}
 
 snapshots:
 
@@ -5317,4 +5318,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.25.76: {}
+  zod@3.24.2: {}

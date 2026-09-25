@@ -13,6 +13,9 @@ import {
   Loader2,
   AlertCircle,
   X,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import type { WeeklyMassRow } from "@church-site/data-access/client";
 import { DAY_OF_WEEK_LABELS_AR } from "@church-site/data-access/client";
@@ -40,6 +43,8 @@ export function AdminMassesTable({
 }: AdminMassesTableProps) {
   const [massList, setMassList] = useState<WeeklyMassRow[]>(initialMasses);
   const [selectedAltar, setSelectedAltar] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | "active" | "inactive">("all");
+  const [timeSortOrder, setTimeSortOrder] = useState<"asc" | "desc" | null>(null);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,9 +58,21 @@ export function AdminMassesTable({
     message: string;
   } | null>(null);
 
-  const filtered = massList.filter(
-    (s) => selectedAltar === "all" || s.altar_id === selectedAltar
-  );
+  let filtered = massList.filter((s) => {
+    const matchAltar = selectedAltar === "all" || s.altar_id === selectedAltar;
+    const matchStatus =
+      selectedStatus === "all" ||
+      (selectedStatus === "active" && s.is_active) ||
+      (selectedStatus === "inactive" && !s.is_active);
+    return matchAltar && matchStatus;
+  });
+
+  if (timeSortOrder) {
+    filtered = [...filtered].sort((a, b) => {
+      const comp = a.start_time.localeCompare(b.start_time);
+      return timeSortOrder === "asc" ? comp : -comp;
+    });
+  }
 
   function handleOpenCreateModal() {
     setEditingMass(null);
@@ -144,25 +161,43 @@ export function AdminMassesTable({
 
   return (
     <div className="space-y-6 max-w-7xl">
-      {/* Control bar: Altar filter & Add mass button */}
+      {/* Control bar: Altar filter, Status filter & Add mass button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <div className="flex items-center gap-3">
-          <label htmlFor="altar-select" className="text-xs font-heading font-bold text-slate-700 whitespace-nowrap">
-            تصفية بالمذبح:
-          </label>
-          <select
-            id="altar-select"
-            value={selectedAltar}
-            onChange={(e) => setSelectedAltar(e.target.value)}
-            className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-copticNavy focus:outline-hidden"
-          >
-            <option value="all">كافة المذابح ({massList.length})</option>
-            {altars.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.name_ar}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-3">
+            <label htmlFor="altar-select" className="text-xs font-heading font-bold text-slate-700 whitespace-nowrap">
+              تصفية بالمذبح:
+            </label>
+            <select
+              id="altar-select"
+              value={selectedAltar}
+              onChange={(e) => setSelectedAltar(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-copticNavy focus:outline-hidden"
+            >
+              <option value="all">كافة المذابح ({massList.length})</option>
+              {altars.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name_ar}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label htmlFor="status-select" className="text-xs font-heading font-bold text-slate-700 whitespace-nowrap">
+              تصفية بالحالة:
+            </label>
+            <select
+              id="status-select"
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as "all" | "active" | "inactive")}
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-copticNavy focus:outline-hidden"
+            >
+              <option value="all">كافة الحالات</option>
+              <option value="active">نشط</option>
+              <option value="inactive">غير مُفعَّل</option>
+            </select>
+          </div>
         </div>
 
         {canCreate && (
@@ -194,7 +229,39 @@ export function AdminMassesTable({
                 <th className="p-4">اليوم</th>
                 <th className="p-4">اسم القداس</th>
                 <th className="p-4">المذبح</th>
-                <th className="p-4">التوقيت</th>
+                <th
+                  className="p-4"
+                  aria-sort={
+                    timeSortOrder === "asc"
+                      ? "ascending"
+                      : timeSortOrder === "desc"
+                      ? "descending"
+                      : "none"
+                  }
+                >
+                  <button
+                    type="button"
+                    data-sort="time"
+                    onClick={() => {
+                      setTimeSortOrder((prev) => {
+                        if (prev === null) return "asc";
+                        if (prev === "asc") return "desc";
+                        return null;
+                      });
+                    }}
+                    className="inline-flex items-center gap-1.5 hover:text-copticNavy transition font-heading font-bold cursor-pointer"
+                    title="ترتيب حسب التوقيت"
+                  >
+                    <span>التوقيت</span>
+                    {timeSortOrder === "asc" ? (
+                      <ArrowUp className="w-3.5 h-3.5 text-copticNavy" />
+                    ) : timeSortOrder === "desc" ? (
+                      <ArrowDown className="w-3.5 h-3.5 text-copticNavy" />
+                    ) : (
+                      <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                    )}
+                  </button>
+                </th>
                 <th className="p-4">الفئة المستهدفة</th>
                 <th className="p-4">ملاحظات</th>
                 <th className="p-4 text-center">الحالة</th>

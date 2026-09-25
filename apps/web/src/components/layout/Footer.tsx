@@ -62,7 +62,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/events" className="hover:text-copticGold-300 transition-colors">
+                <Link href="/events" prefetch={false} className="hover:text-copticGold-300 transition-colors">
                   الفعاليات والمناسبات القادمة
                 </Link>
               </li>
@@ -82,7 +82,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/live" className="hover:text-copticGold-300 transition-colors">
+                <Link href="/live" prefetch={false} className="hover:text-copticGold-300 transition-colors">
                   البث المباشر للصلوات والنهضات
                 </Link>
               </li>

@@ -59,6 +59,8 @@ export function BookingsManager({ bookings, loadErrorAr }: BookingsManagerProps)
   const router = useRouter();
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [feedback, setFeedback] = useState<AdminBookingActionResult | null>(null);
@@ -78,13 +80,16 @@ export function BookingsManager({ bookings, loadErrorAr }: BookingsManagerProps)
 
   const filtered = bookings.filter((b) => {
     const matchStatus = filter === "all" || b.status === filter;
+    const bookingDate = (b as { booking_date?: string }).booking_date ?? b.event_date;
+    const matchStartDate = !startDate || bookingDate >= startDate;
+    const matchEndDate = !endDate || bookingDate <= endDate;
     const term = search.trim();
     const matchSearch =
       !term ||
       b.deceased_full_name.includes(term) ||
       b.applicant_name.includes(term) ||
       b.booking_reference_code.includes(term);
-    return matchStatus && matchSearch;
+    return matchStatus && matchStartDate && matchEndDate && matchSearch;
   });
 
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
@@ -104,7 +109,29 @@ export function BookingsManager({ bookings, loadErrorAr }: BookingsManagerProps)
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs text-slate-600">
+            <label htmlFor="booking-start-date" className="font-bold whitespace-nowrap">من</label>
+            <input
+              id="booking-start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-copticNavy focus:outline-hidden"
+            />
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-slate-600">
+            <label htmlFor="booking-end-date" className="font-bold whitespace-nowrap">إلى</label>
+            <input
+              id="booking-end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-copticNavy focus:outline-hidden"
+            />
+          </div>
+
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
             <input
