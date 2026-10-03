@@ -6,6 +6,7 @@ import {
   isHostAllowed,
   type ResolveResult,
 } from "./asset-allowlist";
+import { getConfiguredSupabaseHost } from "../videos/trusted-embeds";
 
 // YouTube video ID: exactly 11 characters (alphanumeric, -, _)
 const YOUTUBE_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
@@ -263,12 +264,13 @@ export function getSafeRenderableImageUrl(
     return trimmed;
   }
 
-  // Check if it's a Supabase storage URL
+  // Check if it's a Supabase storage URL for the parish's own project
   try {
     const parsed = new URL(trimmed);
     if (parsed.protocol === "https:") {
       const hostname = parsed.hostname.toLowerCase();
-      if (hostname === "supabase.co" || hostname.endsWith(".supabase.co")) {
+      const projectSupabaseHost = getConfiguredSupabaseHost();
+      if (projectSupabaseHost !== null && hostname === projectSupabaseHost) {
         return parsed.toString();
       }
     }

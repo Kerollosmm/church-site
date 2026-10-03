@@ -5,7 +5,7 @@
 // Converts arbitrary valid YouTube / Facebook / Direct links into safe embed URLs.
 
 import type { VideoProvider } from "@church-site/domain";
-import { TRUSTED_EMBED_HOSTS } from "./trusted-embeds";
+import { getConfiguredSupabaseHost, TRUSTED_EMBED_HOSTS } from "./trusted-embeds";
 
 export interface NormalizedVideoUrl {
   provider: VideoProvider;
@@ -46,11 +46,12 @@ export function normalizeVideoUrl(raw: string | null | undefined): NormalizedVid
   if (parsed.protocol !== "https:") return null;
 
   const host = parsed.hostname.toLowerCase();
+  const projectSupabaseHost = getConfiguredSupabaseHost();
 
-  // Validate that hostname is trusted or matches *.supabase.co
+  // Validate that hostname is trusted or matches the project's own Supabase host
   const isTrustedHost =
     TRUSTED_EMBED_HOSTS.includes(host) ||
-    host.endsWith(".supabase.co");
+    (projectSupabaseHost !== null && host === projectSupabaseHost);
 
   if (!isTrustedHost) return null;
 
@@ -125,9 +126,9 @@ export function normalizeVideoUrl(raw: string | null | undefined): NormalizedVid
     };
   }
 
-  // 3. Direct stream / media URL on approved hosts (*.supabase.co)
+  // 3. Direct stream / media URL on approved hosts (project's Supabase host)
   if (
-    host.endsWith(".supabase.co") ||
+    (projectSupabaseHost !== null && host === projectSupabaseHost) ||
     parsed.pathname.endsWith(".mp4") ||
     parsed.pathname.endsWith(".webm") ||
     parsed.pathname.endsWith(".m3u8")

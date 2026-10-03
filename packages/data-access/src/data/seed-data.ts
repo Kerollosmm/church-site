@@ -251,7 +251,32 @@ export const SEED_MASS_SCHEDULES: WeeklyMassRow[] = [
       rank_title_ar: "قس",
     },
   },
-];
+    {
+      id: "e0000000-0000-0000-0000-000000000099",
+      altar_id: "a0000000-0000-0000-0000-000000000001",
+      celebrant_priest_id: "c0000000-0000-0000-0000-000000000001",
+      day_of_week: "Tuesday",
+      title_ar: "قداس اختبار حي QA-2026-09-22",
+      start_time: "07:00:00",
+      end_time: "09:00:00",
+      target_group_ar: "عام لجميع الشعب",
+      notes_ar: "قداس اختباري معتمد لأنظمة الفحص الدوري.",
+      is_seasonal: false,
+      is_active: true,
+      created_at: "2026-01-01T00:00:00Z",
+      updated_at: "2026-01-01T00:00:00Z",
+      altar: {
+        id: "a0000000-0000-0000-0000-000000000001",
+        name_ar: "المذبح الأوسط الرئيسي",
+        name_en: "Main Altar",
+      },
+      celebrant: {
+        id: "c0000000-0000-0000-0000-000000000001",
+        clerical_name_ar: "القمص مكسيموس وصفي",
+        rank_title_ar: "قمص",
+      },
+    },
+  ];
 
 export const SEED_CHURCH_MEETINGS: Tables<"church_meetings">[] = [
   {

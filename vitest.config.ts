@@ -62,6 +62,7 @@ export default defineConfig({
       "@admin": fileURLToPath(new URL("./apps/admin/src", import.meta.url)),
       "@church-site/domain": fileURLToPath(new URL("./packages/domain/src", import.meta.url)),
       "@church-site/data-access": fileURLToPath(new URL("./packages/data-access/src", import.meta.url)),
+      "@church-site/ui/server": fileURLToPath(new URL("./packages/ui/src/server.ts", import.meta.url)),
       "@church-site/ui": fileURLToPath(new URL("./packages/ui/src", import.meta.url)),
       "next/cache": fileURLToPath(new URL("./apps/web/node_modules/next/cache.js", import.meta.url)),
       "next/headers": fileURLToPath(new URL("./apps/web/node_modules/next/headers.js", import.meta.url)),

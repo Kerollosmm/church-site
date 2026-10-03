@@ -20,10 +20,12 @@ describe("E2E Parish Videos Proof (Gate G6)", () => {
   beforeEach(async () => {
     dataDir = await mkdtemp(path.join(tmpdir(), "video-e2e-"));
     process.env.CHURCH_DATA_DIR = dataDir;
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://church-portal.supabase.co";
     repo = new JsonParishVideoRepository();
   });
 
   afterEach(async () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     delete process.env.CHURCH_DATA_DIR;
     await rm(dataDir, { recursive: true, force: true });
   });

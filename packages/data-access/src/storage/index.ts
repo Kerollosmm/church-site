@@ -13,6 +13,12 @@ import * as path from "node:path";
 import { isAllowedMediaMimeType, MAX_MEDIA_SIZE_BYTES } from "@church-site/domain";
 import { getSupabaseUrl, hasSupabaseAdminEnv } from "../env";
 import { createAdminClient } from "../supabase/admin";
+import {
+  detectMimeTypeFromMagicBytes,
+  verifyMediaMagicBytes,
+} from "../validations/media-schemas";
+
+export { detectMimeTypeFromMagicBytes, verifyMediaMagicBytes };
 
 export interface UploadMediaInput {
   filename: string;
@@ -88,7 +94,7 @@ export function computeSha256(bytes: Uint8Array | Buffer): string {
 }
 
 function validateMedia(mimeType: string, bytes: Uint8Array | Buffer): void {
-  if (!isAllowedMediaMimeType(mimeType)) {
+  if (!isAllowedMediaMimeType(mimeType) || mimeType === "image/svg+xml") {
     throw new Error(
       `نوع الملف غير مسموح به (${mimeType}). الأنواع المسموح بها: الصور، مقاطع الفيديو MP4، ومستندات PDF.`
     );
@@ -98,6 +104,8 @@ function validateMedia(mimeType: string, bytes: Uint8Array | Buffer): void {
     const maxMb = Math.round(MAX_MEDIA_SIZE_BYTES / (1024 * 1024));
     throw new Error(`حجم الملف يتجاوز الحد الأقصى المسموح به (${maxMb} ميجابايت).`);
   }
+
+  verifyMediaMagicBytes(mimeType, bytes);
 }
 
 /**

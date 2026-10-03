@@ -1,4 +1,4 @@
-// src/components/events/term-icons.tsx
+// packages/ui/src/components/events/term-icons.tsx
 // THE registry that turns a taxonomy term's stored `icon` name (a lucide name such as "Church") into
 // an actual icon component.
 //
@@ -6,9 +6,6 @@
 // name) forces the bundler to keep the whole icon set — over a thousand modules — in the client
 // bundle. Every icon the parish vocabulary can use is therefore imported explicitly below and a term
 // that names an icon which is NOT in the registry renders the neutral `Tag` instead of breaking.
-//
-// ADDING A NEW TERM ICON NAME IS A TWO-LINE CODE CHANGE: import the lucide component and add it to
-// `TERM_ICONS` under its stored name. There is deliberately NO dynamic resolution.
 
 import React from "react";
 import {

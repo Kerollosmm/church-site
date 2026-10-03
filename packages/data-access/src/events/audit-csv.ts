@@ -27,7 +27,15 @@ export const AUDIT_CSV_HEADERS: readonly string[] = [
  */
 export function escapeCsvCell(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined) return "";
-  const str = String(value);
+  let str = String(value);
+  if (
+    str.startsWith("=") ||
+    str.startsWith("+") ||
+    str.startsWith("-") ||
+    str.startsWith("@")
+  ) {
+    str = `'${str}`;
+  }
   if (
     str.includes(",") ||
     str.includes("،") ||

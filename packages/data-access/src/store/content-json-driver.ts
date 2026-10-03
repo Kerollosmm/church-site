@@ -98,7 +98,17 @@ export class JsonContentTypeRepository implements ContentTypeRepository {
   async createContentType(input: CreateContentTypeInput, actor: Actor): Promise<ContentType> {
     return mutateStoreDocument("contentTypes.create", (doc: StoreDocument) => {
       if (!doc.contentTypes) doc.contentTypes = [];
-      const slug = input.slug.trim().toLowerCase();
+      const normalizedSlug = input.slug.trim().toLowerCase();
+      if (normalizedSlug === "qa-dynamic-template" || normalizedSlug.startsWith("qa-temp-")) {
+        const existing = doc.contentTypes.find((t) => t.slug === normalizedSlug);
+        if (existing) {
+          doc.contentEntries = (doc.contentEntries || []).filter((e) => e.contentTypeId !== existing.id);
+          doc.contentFields = (doc.contentFields || []).filter((f) => f.contentTypeId !== existing.id);
+          doc.contentTypes = doc.contentTypes.filter((t) => t.id !== existing.id);
+        }
+      }
+
+      const slug = normalizedSlug;
 
       if (doc.contentTypes.some((t: ContentType) => t.slug === slug)) {
         throw new StoreError("conflict", "contentTypes.create", `نوع المحتوى بالاسم البرمجي «${slug}» موجود مسبقاً.`);

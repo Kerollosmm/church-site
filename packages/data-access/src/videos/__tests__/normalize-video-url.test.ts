@@ -1,7 +1,7 @@
 // packages/data-access/src/videos/__tests__/normalize-video-url.test.ts
 // Comprehensive unit tests for video URL normalization and security validation.
 
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { normalizeVideoUrl } from "../normalize-video-url";
 import { getTrustedEmbedUrl, TRUSTED_EMBED_HOSTS } from "../trusted-embeds";
 
@@ -72,8 +72,22 @@ describe("normalizeVideoUrl", () => {
     });
   });
 
-  describe("Direct Video URLs on Approved Hosts (*.supabase.co)", () => {
-    it("accepts direct https mp4 stream on supabase", () => {
+  describe("Direct Video URLs on Approved Hosts (Project Supabase Host)", () => {
+    const originalEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    beforeEach(() => {
+      process.env.NEXT_PUBLIC_SUPABASE_URL = "https://church-portal.supabase.co";
+    });
+
+    afterEach(() => {
+      if (originalEnv !== undefined) {
+        process.env.NEXT_PUBLIC_SUPABASE_URL = originalEnv;
+      } else {
+        delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+      }
+    });
+
+    it("accepts direct https mp4 stream on project supabase host", () => {
       const url = "https://church-portal.supabase.co/storage/v1/object/public/recordings/liturgy-2026-09-17.mp4";
       const result = normalizeVideoUrl(url);
       expect(result).not.toBeNull();
@@ -81,7 +95,7 @@ describe("normalizeVideoUrl", () => {
       expect(result?.embedUrl).toBe(url);
     });
 
-    it("accepts direct https m3u8 HLS stream on supabase", () => {
+    it("accepts direct https m3u8 HLS stream on project supabase host", () => {
       const url = "https://church-portal.supabase.co/storage/v1/object/public/hls/live.m3u8";
       const result = normalizeVideoUrl(url);
       expect(result).not.toBeNull();
@@ -89,12 +103,17 @@ describe("normalizeVideoUrl", () => {
       expect(result?.embedUrl).toBe(url);
     });
 
-    it("accepts direct https webm stream on supabase", () => {
+    it("accepts direct https webm stream on project supabase host", () => {
       const url = "https://church-portal.supabase.co/storage/v1/object/public/videos/welcome.webm";
       const result = normalizeVideoUrl(url);
       expect(result).not.toBeNull();
       expect(result?.provider).toBe("direct");
       expect(result?.embedUrl).toBe(url);
+    });
+
+    it("rejects untrusted third-party supabase hosts", () => {
+      const url = "https://attacker.supabase.co/storage/v1/object/public/recordings/malicious.mp4";
+      expect(normalizeVideoUrl(url)).toBeNull();
     });
   });
 
@@ -145,14 +164,28 @@ describe("getTrustedEmbedUrl", () => {
     expect(trusted).toContain("https://www.facebook.com/plugins/video.php");
   });
 
-  it("trusts supabase storage stream URLs", () => {
-    const trusted = getTrustedEmbedUrl("https://abcdef.supabase.co/storage/v1/object/public/videos/stream.mp4");
-    expect(trusted).toBe("https://abcdef.supabase.co/storage/v1/object/public/videos/stream.mp4");
+  it("trusts supabase storage stream URLs when matching configured project host", () => {
+    const originalEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://abcdef.supabase.co";
+    try {
+      const trusted = getTrustedEmbedUrl("https://abcdef.supabase.co/storage/v1/object/public/videos/stream.mp4");
+      expect(trusted).toBe("https://abcdef.supabase.co/storage/v1/object/public/videos/stream.mp4");
+
+      const untrusted = getTrustedEmbedUrl("https://other.supabase.co/storage/v1/object/public/videos/stream.mp4");
+      expect(untrusted).toBeNull();
+    } finally {
+      if (originalEnv !== undefined) {
+        process.env.NEXT_PUBLIC_SUPABASE_URL = originalEnv;
+      } else {
+        delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+      }
+    }
   });
 
   it("returns null for non-https or untrusted hosts", () => {
     expect(getTrustedEmbedUrl("http://youtube-nocookie.com/embed/123")).toBeNull();
     expect(getTrustedEmbedUrl("https://malicious-site.com/embed/123")).toBeNull();
+    expect(getTrustedEmbedUrl("https://untrusted.supabase.co/video.mp4")).toBeNull();
     expect(getTrustedEmbedUrl("javascript:alert(1)")).toBeNull();
     expect(getTrustedEmbedUrl("")).toBeNull();
     expect(getTrustedEmbedUrl(null)).toBeNull();

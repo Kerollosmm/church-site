@@ -22,6 +22,23 @@ export const TRUSTED_EMBED_ORIGINS: string[] = TRUSTED_EMBED_HOSTS.map(
   (host) => `https://${host}`
 );
 
+/** Cloudflare Turnstile: the challenge script, its iframe, and the server-side siteverify call. */
+export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
+
+/**
+ * Returns the hostname of the parish's own Supabase project from NEXT_PUBLIC_SUPABASE_URL,
+ * or null if unset or invalid. Prevents trusting arbitrary 3rd-party Supabase projects.
+ */
+export function getConfiguredSupabaseHost(): string | null {
+  const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!envUrl) return null;
+  try {
+    return new URL(envUrl).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Returns the normalized URL when `raw` is a valid https URL on a trusted embed host,
  * and null otherwise. Rejects non-https, lookalikes, javascript:, data:, and invalid URLs.
@@ -42,9 +59,10 @@ export function getTrustedEmbedUrl(raw: string | null | undefined): string | nul
   if (parsed.protocol !== "https:") return null;
   const host = parsed.hostname.toLowerCase();
 
+  const projectSupabaseHost = getConfiguredSupabaseHost();
   const isTrusted =
     TRUSTED_EMBED_HOSTS.includes(host) ||
-    host.endsWith(".supabase.co");
+    (projectSupabaseHost !== null && host === projectSupabaseHost);
 
   if (!isTrusted) return null;
 

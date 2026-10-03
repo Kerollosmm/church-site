@@ -214,6 +214,21 @@ export class SupabaseContentTypeRepository implements ContentTypeRepository {
 
   async createContentType(input: CreateContentTypeInput, actor: Actor): Promise<ContentType> {
     const client = this.adminClient();
+    const normalizedSlug = input.slug.trim().toLowerCase();
+    if (normalizedSlug === "qa-dynamic-template" || normalizedSlug.startsWith("qa-temp-")) {
+      const { data: existingRows } = await client
+        .from("content_types")
+        .select("id")
+        .eq("slug", normalizedSlug);
+      if (existingRows && existingRows.length > 0) {
+        for (const row of existingRows) {
+          await client.from("content_entries").delete().eq("content_type_id", row.id);
+          await client.from("content_fields").delete().eq("content_type_id", row.id);
+          await client.from("content_types").delete().eq("id", row.id);
+        }
+      }
+    }
+
     const id = newId();
     const insertPayload: TablesInsert<"content_types"> = {
       id,

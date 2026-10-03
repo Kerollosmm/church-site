@@ -11,15 +11,22 @@ import {
   MediaSchema,
   firstIssueMessage,
 } from "../event-schemas";
+import {
+  detectMimeTypeFromMagicBytes,
+  verifyMediaMagicBytes,
+} from "../media-schemas";
 
 describe("isAllowedMediaMimeType", () => {
-  it("returns true for image/* MIME types (jpeg, png, webp, gif, svg, avif)", () => {
+  it("returns true for safe image MIME types (jpeg, png, webp, gif, avif)", () => {
     expect(isAllowedMediaMimeType("image/jpeg")).toBe(true);
     expect(isAllowedMediaMimeType("image/png")).toBe(true);
     expect(isAllowedMediaMimeType("image/webp")).toBe(true);
     expect(isAllowedMediaMimeType("image/gif")).toBe(true);
-    expect(isAllowedMediaMimeType("image/svg+xml")).toBe(true);
     expect(isAllowedMediaMimeType("image/avif")).toBe(true);
+  });
+
+  it("disallows image/svg+xml to prevent stored XSS", () => {
+    expect(isAllowedMediaMimeType("image/svg+xml")).toBe(false);
   });
 
   it("returns true for video/mp4 and application/pdf", () => {
@@ -45,7 +52,6 @@ describe("MediaUploadSchema", () => {
     { filename: "icon.png", mimeType: "image/png" },
     { filename: "banner.webp", mimeType: "image/webp" },
     { filename: "anim.gif", mimeType: "image/gif" },
-    { filename: "vector.svg", mimeType: "image/svg+xml" },
   ];
 
   it.each(validImages)("accepts valid image ($mimeType)", ({ filename, mimeType }) => {
@@ -323,5 +329,96 @@ describe("MediaSchema", () => {
     if (!malformedMime.success) {
       expect(firstIssueMessage(malformedMime.error)).toBe("نوع الملف غير صالح (مثال: image/jpeg).");
     }
+  });
+
+  it("rejects image/svg+xml in MediaUploadSchema to prevent stored XSS", () => {
+    const svgResult = MediaUploadSchema.safeParse({
+      filename: "vector.svg",
+      mimeType: "image/svg+xml",
+      sizeBytes: 1024,
+    });
+    expect(svgResult.success).toBe(false);
+    if (!svgResult.success) {
+      expect(firstIssueMessage(svgResult.error)).toBe("نوع الملف غير مدعوم.");
+    }
+  });
+});
+
+describe("Magic Byte Sniffing & Verification (C.4#5)", () => {
+  const jpegBytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
+  const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const gif87Bytes = Buffer.from([0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x01, 0x00]);
+  const gif89Bytes = Buffer.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00]);
+  const webpBytes = Buffer.concat([
+    Buffer.from("RIFF"),
+    Buffer.alloc(4),
+    Buffer.from("WEBP"),
+  ]);
+  const pdfBytes = Buffer.from("%PDF-1.7 standard document");
+  const mp4Bytes = Buffer.concat([
+    Buffer.alloc(4), // length
+    Buffer.from("ftyp"), // ftyp box
+    Buffer.from("isom"), // brand
+  ]);
+
+  describe("detectMimeTypeFromMagicBytes", () => {
+    it("detects image/jpeg", () => {
+      expect(detectMimeTypeFromMagicBytes(jpegBytes)).toBe("image/jpeg");
+    });
+
+    it("detects image/png", () => {
+      expect(detectMimeTypeFromMagicBytes(pngBytes)).toBe("image/png");
+    });
+
+    it("detects image/gif (both 87a and 89a)", () => {
+      expect(detectMimeTypeFromMagicBytes(gif87Bytes)).toBe("image/gif");
+      expect(detectMimeTypeFromMagicBytes(gif89Bytes)).toBe("image/gif");
+    });
+
+    it("detects image/webp", () => {
+      expect(detectMimeTypeFromMagicBytes(webpBytes)).toBe("image/webp");
+    });
+
+    it("detects application/pdf", () => {
+      expect(detectMimeTypeFromMagicBytes(pdfBytes)).toBe("application/pdf");
+    });
+
+    it("detects video/mp4", () => {
+      expect(detectMimeTypeFromMagicBytes(mp4Bytes)).toBe("video/mp4");
+    });
+
+    it("returns null for unrecognized or truncated buffers", () => {
+      expect(detectMimeTypeFromMagicBytes(Buffer.from("hello world"))).toBeNull();
+      expect(detectMimeTypeFromMagicBytes(Buffer.from([0x00, 0x01]))).toBeNull();
+      expect(detectMimeTypeFromMagicBytes(Buffer.alloc(0))).toBeNull();
+    });
+  });
+
+  describe("verifyMediaMagicBytes", () => {
+    it("passes when declared MIME matches magic bytes", () => {
+      expect(() => verifyMediaMagicBytes("image/jpeg", jpegBytes)).not.toThrow();
+      expect(() => verifyMediaMagicBytes("image/png", pngBytes)).not.toThrow();
+      expect(() => verifyMediaMagicBytes("image/gif", gif89Bytes)).not.toThrow();
+      expect(() => verifyMediaMagicBytes("image/webp", webpBytes)).not.toThrow();
+      expect(() => verifyMediaMagicBytes("application/pdf", pdfBytes)).not.toThrow();
+      expect(() => verifyMediaMagicBytes("video/mp4", mp4Bytes)).not.toThrow();
+    });
+
+    it("disallows image/svg+xml regardless of buffer content", () => {
+      expect(() => verifyMediaMagicBytes("image/svg+xml", Buffer.from("<svg></svg>"))).toThrow(
+        /image\/svg\+xml/
+      );
+    });
+
+    it("throws when file contents do not match declared MIME type", () => {
+      // JPEG bytes declared as image/png
+      expect(() => verifyMediaMagicBytes("image/png", jpegBytes)).toThrow(
+        /لا يطابق نوع MIME المعلن/
+      );
+      // Plain text declared as application/pdf
+      expect(() => verifyMediaMagicBytes("application/pdf", Buffer.from("plain text"))).toThrow(
+        /لا يطابق نوع MIME المعلن/
+      );
+    });
   });
 });

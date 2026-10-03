@@ -19,6 +19,8 @@
 //
 // Nothing here depends on the host timezone: every value derives from the ISO instants it is given.
 
+import { getWallClock } from "@church-site/domain";
+
 /** RFC 5545 mandates CRLF line endings, on every line and after the last one. */
 const CRLF = "\r\n";
 
@@ -48,6 +50,7 @@ export interface IcsEventInput {
   url?: string | null;
   startsAt: string;
   endsAt?: string | null;
+  allDay?: boolean | null;
 }
 
 function parseInstant(value: string | Date): Date | null {
@@ -145,13 +148,44 @@ export function buildIcsCalendar(
     const start = parseInstant(event.startsAt);
     if (!start) continue;
 
-    const end = (event.endsAt ? parseInstant(event.endsAt) : null) ?? new Date(start.getTime() + DEFAULT_DURATION_MS);
-
     lines.push("BEGIN:VEVENT");
     lines.push(`UID:${event.uid}${UID_SUFFIX}`);
     lines.push(`DTSTAMP:${stamp}`);
-    lines.push(`DTSTART:${icsUtcStamp(start)}`);
-    lines.push(`DTEND:${icsUtcStamp(end)}`);
+
+    if (event.allDay) {
+      const startWall = getWallClock(start, timeZone);
+      const startDayStr = `${startWall.year}${String(startWall.month).padStart(2, "0")}${String(startWall.day).padStart(2, "0")}`;
+
+      let endDayStr: string;
+      if (event.endsAt) {
+        const end = parseInstant(event.endsAt);
+        if (end) {
+          const endWall = getWallClock(end, timeZone);
+          const endUtc = Date.UTC(endWall.year, endWall.month - 1, endWall.day);
+          const startUtc = Date.UTC(startWall.year, startWall.month - 1, startWall.day);
+          if (endUtc > startUtc) {
+            endDayStr = `${endWall.year}${String(endWall.month).padStart(2, "0")}${String(endWall.day).padStart(2, "0")}`;
+          } else {
+            const nextUtc = new Date(Date.UTC(startWall.year, startWall.month - 1, startWall.day + 1));
+            endDayStr = `${nextUtc.getUTCFullYear()}${String(nextUtc.getUTCMonth() + 1).padStart(2, "0")}${String(nextUtc.getUTCDate()).padStart(2, "0")}`;
+          }
+        } else {
+          const nextUtc = new Date(Date.UTC(startWall.year, startWall.month - 1, startWall.day + 1));
+          endDayStr = `${nextUtc.getUTCFullYear()}${String(nextUtc.getUTCMonth() + 1).padStart(2, "0")}${String(nextUtc.getUTCDate()).padStart(2, "0")}`;
+        }
+      } else {
+        const nextUtc = new Date(Date.UTC(startWall.year, startWall.month - 1, startWall.day + 1));
+        endDayStr = `${nextUtc.getUTCFullYear()}${String(nextUtc.getUTCMonth() + 1).padStart(2, "0")}${String(nextUtc.getUTCDate()).padStart(2, "0")}`;
+      }
+
+      lines.push(`DTSTART;VALUE=DATE:${startDayStr}`);
+      lines.push(`DTEND;VALUE=DATE:${endDayStr}`);
+    } else {
+      const end = (event.endsAt ? parseInstant(event.endsAt) : null) ?? new Date(start.getTime() + DEFAULT_DURATION_MS);
+      lines.push(`DTSTART:${icsUtcStamp(start)}`);
+      lines.push(`DTEND:${icsUtcStamp(end)}`);
+    }
+
     lines.push(`SUMMARY:${escapeText(event.title)}`);
     pushOptional(lines, "DESCRIPTION", event.description);
     pushOptional(lines, "LOCATION", event.location);
