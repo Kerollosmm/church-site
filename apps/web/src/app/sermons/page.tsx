@@ -23,12 +23,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, BookOpenText, CalendarDays, ChevronLeft, Church, Mic, Radio } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { FlagBadge } from "@/components/events/FlagBadge";
-import { buildEventsHref } from "@/lib/events/filters";
-import { getFeedTaxonomy, type EventFeedTermView } from "@/lib/events/feed";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { t, type MessageKey } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
+import { FlagBadge } from "@church-site/ui";
+import { buildEventsHref } from "@church-site/data-access";
+import { getFeedTaxonomy, type EventFeedTermView } from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { t, type MessageKey } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 
 export const revalidate = 86400; // 24h ISR
 

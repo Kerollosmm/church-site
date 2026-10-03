@@ -1,5 +1,5 @@
 import React from "react";
-import { Skeleton, EventCardSkeleton } from "@/components/ui/Skeleton";
+import { Skeleton, EventCardSkeleton } from "@church-site/ui";
 
 export default function EventsLoading() {
   return (

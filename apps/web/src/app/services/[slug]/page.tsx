@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { ContactLinks } from "@/components/contact/ContactLinks";
 import { HeartHandshake, Clock, MapPin, CheckCircle2, ChevronLeft, Phone, Building2 } from "lucide-react";
-import { getServiceBySlug, SEED_PUBLIC_SERVICES } from "@/lib/queries";
+import { getServiceBySlug, SEED_PUBLIC_SERVICES } from "@church-site/data-access";
 
 export const revalidate = 86400;
 

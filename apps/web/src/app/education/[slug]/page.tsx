@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { GraduationCap, BookOpen, Clock, UserCheck, ChevronLeft } from "lucide-react";
-import { getSchoolBySlug, SEED_SCHOOLS } from "@/lib/queries";
+import { getSchoolBySlug, SEED_SCHOOLS } from "@church-site/data-access";
 import { isProgramSlug } from "@/lib/validations/church-schemas";
 import { EducationEnrollmentForm } from "./EducationEnrollmentForm";
 

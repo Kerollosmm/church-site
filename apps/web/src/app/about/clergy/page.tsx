@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Users, Phone, MessageSquare, Calendar, Clock, Award, Shield } from "lucide-react";
-import { getClergy } from "@/lib/queries";
+import { getClergy } from "@church-site/data-access";
 import { toWhatsAppUrl } from "@/lib/utils/parish-contact";
 
 export const metadata: Metadata = {

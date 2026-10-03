@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { Compass, Clock, MapPin, ChevronLeft } from "lucide-react";
-import { getActivities } from "@/lib/queries";
+import { getActivities } from "@church-site/data-access";
 
 export const metadata: Metadata = {
   title: "الأنشطة الرعوية والشبابية",

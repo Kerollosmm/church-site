@@ -21,10 +21,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, BellRing, CheckCircle2, Loader2 } from "lucide-react";
 import { subscribeToEventsAction, type SubscribeResultCode } from "@/actions/subscription-actions";
 import { TurnstileWidget } from "@/components/security/TurnstileWidget";
-import type { SubscribableTopicGroup } from "@/lib/events/subscribers";
-import { localized } from "@/lib/i18n/localized";
-import { t, type MessageKey } from "@/lib/i18n/messages";
-import { LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
+import type { SubscribableTopicGroup } from "@church-site/data-access";
+import { localized } from "@church-site/ui";
+import { t, type MessageKey } from "@church-site/ui";
+import { LOCALE_DIRECTION, type Locale } from "@church-site/ui";
 import { EventSubscriptionSchema, type EventSubscriptionInput } from "@/lib/validations/church-schemas";
 
 const FOCUS_RING =

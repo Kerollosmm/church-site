@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getBibleBooks } from "@/lib/queries";
+import { getBibleBooks } from "@church-site/data-access";
 import { BibleReaderClient } from "./BibleReaderClient";
 
 export const metadata: Metadata = {

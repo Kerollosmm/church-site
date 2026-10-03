@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { GraduationCap, Clock, ChevronLeft, Award, UserCheck } from "lucide-react";
-import { getSchoolsAcademies } from "@/lib/queries";
+import { getSchoolsAcademies } from "@church-site/data-access";
 
 export const metadata: Metadata = {
   title: "المدارس والمعاهد الكنسية والأكاديميات",

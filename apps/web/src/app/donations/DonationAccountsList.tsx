@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   Receipt,
 } from "lucide-react";
-import type { Tables } from "@/types/database.types";
+import type { Tables } from "@church-site/domain";
+import { toWhatsAppUrl, PARISH_PHONE_EMERGENCY_1 } from "@/lib/utils/parish-contact";
 
 export interface DonationAccountsListProps {
   /** Official bank accounts from `getDonationAccounts()` (database or seeded fallback). */
@@ -179,12 +180,12 @@ export function DonationAccountsList({ accounts }: DonationAccountsListProps) {
               <span>للحصول على إيصال استلام رسمي، يرجى إرسال صورة التحويل البنكي لواتساب الإدارة المالية.</span>
             </div>
             <a
-              href="https://wa.me/201200000000"
+              href={toWhatsAppUrl(PARISH_PHONE_EMERGENCY_1)}
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold text-copticGold-300 hover:text-white"
             >
-              واتساب السكرتارية المالية: 01200000000
+              واتساب السكرتارية المالية: {PARISH_PHONE_EMERGENCY_1}
             </a>
           </div>
         </div>

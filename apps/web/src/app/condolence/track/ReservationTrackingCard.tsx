@@ -5,7 +5,7 @@ import { trackBooking } from "@/actions/condolence-actions";
 import {
   BOOKING_REFERENCE_PLACEHOLDER,
   normalizeBookingReference,
-} from "@/lib/domain/booking-reference";
+} from "@church-site/domain";
 import { Search, Loader2, CheckCircle2, Clock, XCircle, AlertCircle, Building2, Calendar, Copy, Check } from "lucide-react";
 
 interface Props {

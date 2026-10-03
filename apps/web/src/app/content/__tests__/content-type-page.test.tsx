@@ -7,12 +7,16 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("@/lib/store", () => ({
-  getContentTypeRepository: () => ({
-    getContentTypeBySlug: vi.fn().mockResolvedValue(null),
-    listContentTypes: vi.fn().mockResolvedValue([]),
-  }),
-}));
+vi.mock("@church-site/data-access", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@church-site/data-access")>();
+  return {
+    ...actual,
+    getContentTypeRepository: () => ({
+      getContentTypeBySlug: vi.fn().mockResolvedValue(null),
+      listContentTypes: vi.fn().mockResolvedValue([]),
+    }),
+  };
+});
 
 describe("ContentTypeListingPage route", () => {
   it("invokes notFound() immediately when content type does not exist", async () => {

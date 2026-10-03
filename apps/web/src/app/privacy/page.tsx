@@ -25,10 +25,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft, Phone, ShieldCheck } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 
 export const revalidate = 86400; // 24h ISR
 

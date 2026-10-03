@@ -20,12 +20,12 @@ import Link from "next/link";
 import { BellRing, CalendarDays, ChevronLeft } from "lucide-react";
 import { SubscribeForm } from "./SubscribeForm";
 import { PageHero } from "@/components/layout/PageHero";
-import { isEventSubscriptionsEnabled } from "@/lib/env";
-import { groupSubscribableTopics, type SubscribableTopicGroup } from "@/lib/events/subscribers";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
-import { getFeedTaxonomy } from "@/lib/events/feed";
+import { isEventSubscriptionsEnabled } from "@church-site/data-access";
+import { groupSubscribableTopics, type SubscribableTopicGroup } from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
+import { getFeedTaxonomy } from "@church-site/data-access";
 import { getMailer } from "@church-site/data-access";
 
 export const revalidate = 300;

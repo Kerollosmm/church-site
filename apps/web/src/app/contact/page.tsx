@@ -51,18 +51,18 @@ export default function ContactPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <a
-              href="tel:01200000001"
+              href="tel:01220000001"
               className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-2"
             >
               <Phone className="w-4 h-4" />
-              <span dir="ltr">01200000001</span>
+              <span dir="ltr">01220000001</span>
             </a>
             <a
-              href="tel:01200000002"
+              href="tel:01220000002"
               className="bg-white border border-red-300 hover:bg-red-100 text-red-900 font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-2"
             >
               <Phone className="w-4 h-4 text-red-600" />
-              <span dir="ltr">01200000002</span>
+              <span dir="ltr">01220000002</span>
             </a>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function ContactPage() {
                   <div>
                     <strong className="text-copticNavy block mb-0.5">الهاتف الأرضي للسكرتارية:</strong>
                     <p className="text-slateText-secondary font-english text-xs font-bold" dir="ltr">
-                      03-5500000 / 03-5500001
+                      03-5551234 / 03-5551235
                     </p>
                   </div>
                 </div>

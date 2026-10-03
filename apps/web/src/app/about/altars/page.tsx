@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Church, Calendar, Sparkles, BookOpen } from "lucide-react";
-import { getAltars } from "@/lib/queries";
+import { getAltars } from "@church-site/data-access";
 
 export const metadata: Metadata = {
   title: "المذابح الثلاثة والمزارات المقدسة",

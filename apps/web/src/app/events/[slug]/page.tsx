@@ -38,9 +38,9 @@ import {
 import { EventCard } from "@/components/events/EventCard";
 import { FlagGroup } from "@/components/events/FlagGroup";
 import { PageHero } from "@/components/layout/PageHero";
-import { PARISH_ADDRESS_AR, PARISH_NAME_AR, googleMapsDirectionsUrl } from "@/lib/constants";
-import { isValidDateKey } from "@/lib/domain/recurrence";
-import type { RecurrenceRule } from "@/lib/domain/types";
+import { PARISH_ADDRESS_AR, PARISH_NAME_AR, googleMapsDirectionsUrl } from "@church-site/domain";
+import { isValidDateKey } from "@church-site/domain";
+import type { RecurrenceRule } from "@church-site/domain";
 import {
   getPublishedEventBySlug,
   getSeriesDetailBySlug,
@@ -48,14 +48,14 @@ import {
   type EventFeedItem,
   type EventFeedTermView,
   type SeriesDetail,
-} from "@/lib/events/feed";
-import { describeRecurrence, formatCairoOffsetIso } from "@/lib/events/format";
-import { getSiteUrl } from "@/lib/env";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
-import { wallClockToInstant } from "@/lib/utils/zone-time";
+} from "@church-site/data-access";
+import { describeRecurrence, formatCairoOffsetIso } from "@church-site/data-access";
+import { getSiteUrl } from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
+import { wallClockToInstant } from "@church-site/domain";
 
 export const revalidate = 300;
 

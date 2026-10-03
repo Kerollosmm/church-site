@@ -16,14 +16,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, HeartHandshake } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { TermIcon } from "@/components/events/term-icons";
-import { getEventFeed, getFeedTaxonomy, type EventFeedItem, type EventFeedTermView } from "@/lib/events/feed";
-import { buildEventsHref } from "@/lib/events/filters";
-import { formatEventDayHeading, formatEventTimeRange, listWindowRange } from "@/lib/events/format";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
+import { TermIcon } from "@church-site/ui";
+import { getEventFeed, getFeedTaxonomy, type EventFeedItem, type EventFeedTermView } from "@church-site/data-access";
+import { buildEventsHref } from "@church-site/data-access";
+import { formatEventDayHeading, formatEventTimeRange, listWindowRange } from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 
 export const revalidate = 300; // 5m ISR (member of EVENT_SURFACE_PATHS)
 

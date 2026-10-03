@@ -1,16 +1,16 @@
-import { PARISH_ADDRESS_AR } from "@/lib/constants";
-import { getSiteUrl } from "@/lib/env";
+import { PARISH_ADDRESS_AR } from "@church-site/domain";
+import { getSiteUrl } from "@church-site/data-access";
 import {
   SERIES_OCCURRENCE_LIMIT,
   getPublishedEventBySlug,
   getSeriesDetailBySlug,
   parseSeriesSlug,
   type EventFeedItem,
-} from "@/lib/events/feed";
-import { buildIcsCalendar, type IcsEventInput } from "@/lib/events/ics";
-import type { Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { getLocale } from "@/lib/i18n/server";
+} from "@church-site/data-access";
+import { buildIcsCalendar, type IcsEventInput } from "@church-site/data-access";
+import type { Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 
 // src/app/events/[slug]/calendar.ics/route.ts
 // "أضف إلى التقويم" — the `.ics` download for one event or one recurring series.
@@ -57,6 +57,7 @@ function toIcsEvent(item: EventFeedItem, slug: string, locale: Locale): IcsEvent
     url: `${getSiteUrl()}/events/${slug}`,
     startsAt: item.startsAt,
     endsAt: item.endsAt,
+    allDay: item.allDay,
   };
 }
 

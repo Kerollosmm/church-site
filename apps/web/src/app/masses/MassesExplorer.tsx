@@ -5,10 +5,10 @@ import { WeeklyMassTable, MassScheduleItem } from "@/components/masses/WeeklyMas
 import { DayTabFilter } from "@/components/masses/DayTabFilter";
 import { AltarSelectDropdown } from "@/components/masses/AltarSelectDropdown";
 import { PrintScheduleButton } from "@/components/masses/PrintScheduleButton";
-import type { WeeklyMassRow } from "@/lib/queries";
+import type { WeeklyMassRow } from "@church-site/data-access";
 import { getMassPeriodFromTime, type MassPeriod } from "@/lib/utils/parish-contact";
-import { DAY_OF_WEEK_INDEX, DAY_OF_WEEK_LABELS_AR } from "@/lib/utils/mass-schedule";
-import { cn } from "@/lib/utils";
+import { DAY_OF_WEEK_INDEX, DAY_OF_WEEK_LABELS_AR } from "@church-site/data-access/client";
+import { cn } from "@church-site/ui";
 
 const PERIOD_FILTERS: Array<{ value: "all" | MassPeriod; label: string }> = [
   { value: "all", label: "كافة الفترات" },

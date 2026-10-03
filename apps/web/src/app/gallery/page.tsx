@@ -25,11 +25,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, Images, Image as ImageIcon, ExternalLink, FileText, Video } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { getPublicGalleryMedia, type PublicMediaView } from "@/lib/events/feed";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
+import { getPublicGalleryMedia, type PublicMediaView } from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 import { getSafeRenderableImageUrl } from "@church-site/data-access/client";
 
 export const revalidate = 3600; // 1h ISR
@@ -91,19 +91,6 @@ export default async function GalleryPage(): Promise<React.ReactElement> {
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        {/* Staff media upload shortcut */}
-        <div className="flex justify-end">
-          <Link
-            href="/media"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-copticGold-100/70 border border-copticGold-300 text-copticNavy hover:bg-copticGold-200/80 text-xs font-bold transition shadow-2xs"
-            title="إدارة ورفع صور جديدة (لطاقم الخدمة)"
-          >
-            <ImageIcon className="w-4 h-4 text-copticGold-700" />
-            <span>رفع صور جديدة</span>
-            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-          </Link>
-        </div>
-
         {state === "load-failed" ? (
           <div role="alert" data-gallery-state="load-failed" className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6 text-center">
             <h2 className="font-heading text-lg font-bold text-amber-900">{t(locale, "events.loadFailedTitle")}</h2>

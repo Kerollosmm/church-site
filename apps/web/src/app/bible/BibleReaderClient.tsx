@@ -3,10 +3,10 @@
 import React, { useState, useMemo } from "react";
 import { PageHero } from "@/components/layout/PageHero";
 import { BookOpen, Search, Bookmark, ChevronRight, ChevronLeft, Volume2, Sparkles } from "lucide-react";
-import type { Tables } from "@/types/database.types";
+import type { Tables } from "@church-site/domain";
 
 /** The book the reader opens on when the page loads. */
-const DEFAULT_BOOK_SLUG = "matthew";
+const DEFAULT_BOOK_SLUG = "john";
 
 export interface BibleReaderClientProps {
   /**
@@ -178,6 +178,10 @@ export function BibleReaderClient({ books }: BibleReaderClientProps) {
 
               {/* Chapter Scripture Display */}
               <div className="bg-alabasterBg p-6 sm:p-8 rounded-2xl border border-copticGold-200 font-scripture text-lg sm:text-xl text-slateText-primary leading-loose space-y-4">
+                <div className="font-heading font-bold text-xs text-copticGold-900 bg-copticGold-100/90 border border-copticGold-300 px-3 py-1 rounded-lg inline-flex items-center gap-1.5 font-sans not-italic">
+                  <Sparkles className="w-3.5 h-3.5 text-copticGold-700" />
+                  <span>مقدمة الإنجيل — يوحنا ١: ١-٥</span>
+                </div>
                 <p>
                   <span className="text-copticGold-800 font-bold ml-2">١</span>
                   فِي الْبَدْءِ كَانَ الْكَلِمَةُ، وَالْكَلِمَةُ كَانَ عِنْدَ اللهِ، وَكَانَ الْكَلِمَةُ اللهَ.
