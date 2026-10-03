@@ -11,10 +11,10 @@
 
 import React from "react";
 import { EventCard } from "@/components/events/EventCard";
-import type { EventFeedItem } from "@/lib/events/feed";
-import { formatEventDayHeading, getZoneDateKey, relativeDayLabel } from "@/lib/events/format";
-import type { Locale } from "@/lib/i18n/locales";
-import { cn } from "@/lib/utils";
+import type { EventFeedItem } from "@church-site/data-access";
+import { formatEventDayHeading, getZoneDateKey, relativeDayLabel } from "@church-site/data-access";
+import type { Locale } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 
 export interface EventListProps {
   items: readonly EventFeedItem[];

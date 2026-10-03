@@ -13,7 +13,7 @@
 // src/lib/security/turnstile.ts — nothing here is trusted by the server.
 
 import React, { useEffect, useRef } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@church-site/ui";
 
 /**
  * Read as a literal `process.env.NEXT_PUBLIC_*` member expression so Next.js inlines the value

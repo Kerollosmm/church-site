@@ -44,7 +44,7 @@ describe("SanctuaryAltarsShowcase Component", () => {
     ).toBeDefined();
   });
 
-  it("renders the Middle Consecrated Altar (Virgin Mary and Sts. Maximus & Domadius)", () => {
+  it("renders the Middle Consecrated Altar (Sts. Maximus & Domadius)", () => {
     render(<SanctuaryAltarsShowcase />);
 
     // Orientation label & English subtitle
@@ -54,7 +54,7 @@ describe("SanctuaryAltarsShowcase Component", () => {
     // Patron Saint
     expect(
       screen.getByRole("heading", {
-        name: "السيدة العذراء مريم والقديسان مكسيموس ودوماديوس",
+        name: "القديسان مكسيموس ودوماديوس",
         level: 3,
       })
     ).toBeDefined();
@@ -68,7 +68,7 @@ describe("SanctuaryAltarsShowcase Component", () => {
     ).toBeDefined();
   });
 
-  it("renders the Marine Consecrated Altar (St. George)", () => {
+  it("renders the Northern Marine Altar (St. Moses the Black with relic shrine)", () => {
     render(<SanctuaryAltarsShowcase />);
 
     // Orientation label & English subtitle
@@ -78,21 +78,21 @@ describe("SanctuaryAltarsShowcase Component", () => {
     // Patron Saint
     expect(
       screen.getByRole("heading", {
-        name: "الشهيد العظيم مارجرجس الروماني",
+        name: "الشهيد العظيم القوي الأنبا موسى الأسود",
         level: 3,
       })
     ).toBeDefined();
 
-    // Consecration note
-    expect(screen.getByText("مدشن بزيت الميرون المقدس")).toBeDefined();
+    // Consecration note & shrine
+    expect(screen.getByText("مدشن ومجاور لمزار رفات الشهيد")).toBeDefined();
 
     // Liturgical usage
     expect(
-      screen.getByText(/تقام عليه القداسات الإلهية الأسبوعية، صلوات العشيات/i)
+      screen.getByText(/تقام عليه القداسات الإلهية ونهضة القديس السنوية/i)
     ).toBeDefined();
   });
 
-  it("renders the Qibli Consecrated Altar (St. Moses the Black)", () => {
+  it("renders the Southern Qibli Altar (Virgin Mary and St. George)", () => {
     render(<SanctuaryAltarsShowcase />);
 
     // Orientation label & English subtitle
@@ -102,17 +102,17 @@ describe("SanctuaryAltarsShowcase Component", () => {
     // Patron Saint
     expect(
       screen.getByRole("heading", {
-        name: "القوي القديس الأنبا موسى الأسود",
+        name: "والدة الإله القديسة مريم والشهيد العظيم مارجرجس",
         level: 3,
       })
     ).toBeDefined();
 
     // Consecration note
-    expect(screen.getByText("مدشن ومجاور لمزار الرفات المقدسة")).toBeDefined();
+    expect(screen.getByText("مدشن بزيت الميرون المقدس")).toBeDefined();
 
     // Liturgical usage
     expect(
-      screen.getByText(/تقام عليه قداسات الفجر، نهضة الأنبا موسى الأسود السنوية/i)
+      screen.getByText(/تقام عليه قداسات الفجر، صلوات العشيات/i)
     ).toBeDefined();
   });
 

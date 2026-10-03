@@ -10,7 +10,7 @@ import {
   ExternalLink,
   ShieldCheck,
 } from "lucide-react";
-import { PARISH_ADDRESS_AR } from "@/lib/constants";
+import { PARISH_ADDRESS_AR } from "@church-site/domain";
 
 // The footer's labels are deliberately Arabic literals, not `t()` calls: it renders inside the static
 // root layout, which cannot read the locale cookie, so it has no locale to resolve messages against.
@@ -169,7 +169,7 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-2.5 text-xs">
               <Phone className="w-4 h-4 text-copticGold-400 shrink-0" />
-              <span dir="ltr" className="text-right font-english">03-5500000 / 01200000000</span>
+              <span dir="ltr" className="text-right font-english">03-5551234 / 01220000001</span>
             </div>
             <div className="flex items-center gap-2.5 text-xs">
               <Clock className="w-4 h-4 text-copticGold-400 shrink-0" />

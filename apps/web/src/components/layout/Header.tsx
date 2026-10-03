@@ -5,15 +5,17 @@ import React from "react";
 import Link from "next/link";
 import { Church } from "lucide-react";
 import { getPublicNavigation } from "@church-site/data-access";
+import { getCairoWallClock } from "@church-site/data-access/client";
 import { getCopticDateString } from "@/lib/utils/coptic-date";
-import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
-import { FontSizeSwitcher } from "@/components/ui/FontSizeSwitcher";
-import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
+import { LocaleSwitcher } from "@church-site/ui";
+import { FontSizeSwitcher } from "@church-site/ui";
+import { DEFAULT_LOCALE } from "@church-site/ui";
 import { HeaderClient } from "./HeaderClient";
 
 export async function Header() {
   const navigation = await getPublicNavigation();
-  const copticDate = getCopticDateString();
+  const cairoWall = getCairoWallClock();
+  const copticDate = getCopticDateString(cairoWall);
 
   const brand = (
     <Link key="header-brand" href="/" className="flex items-center gap-3 group focus:outline-hidden">

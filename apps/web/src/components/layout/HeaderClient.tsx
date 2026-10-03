@@ -9,8 +9,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, HeartHandshake, Phone } from "lucide-react";
-import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
-import { applyDocumentLocale, readLocaleCookie } from "@/lib/i18n/dom";
+import { DEFAULT_LOCALE, type Locale } from "@church-site/ui";
+import { applyDocumentLocale, readLocaleCookie } from "@church-site/ui";
 import type { PublicNavItem } from "@church-site/domain";
 import { SEED_PUBLIC_NAVIGATION } from "@church-site/data-access/client";
 

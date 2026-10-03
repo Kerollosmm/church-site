@@ -12,18 +12,18 @@ import React from "react";
 import Link from "next/link";
 import { ChevronLeft, Clock, MapPin } from "lucide-react";
 import { FlagGroup } from "@/components/events/FlagGroup";
-import type { EventFeedItem } from "@/lib/events/feed";
+import type { EventFeedItem } from "@church-site/data-access";
 import {
   formatEventDateLong,
   formatEventDayHeading,
   formatEventTimeRange,
   getZoneDateKey,
   relativeDayLabel,
-} from "@/lib/events/format";
-import type { Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { t } from "@/lib/i18n/messages";
-import { cn } from "@/lib/utils";
+} from "@church-site/data-access";
+import type { Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 
 /** The project-wide visible focus ring — one string, so every events control focuses identically. */
 const FOCUS_RING =

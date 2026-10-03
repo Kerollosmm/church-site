@@ -2,8 +2,8 @@
 
 import React from "react";
 import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/utils";
+import { Button } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 
 export function PrintScheduleButton({ className }: { className?: string }) {
   const handlePrint = () => {

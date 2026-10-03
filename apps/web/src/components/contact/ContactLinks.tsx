@@ -1,6 +1,6 @@
 import React from "react";
 import { Phone, MessageCircle, Users, ExternalLink } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@church-site/ui";
 import { toWhatsAppUrl } from "@/lib/utils/parish-contact";
 
 export interface ContactLinksProps {
