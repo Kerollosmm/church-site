@@ -1,11 +1,20 @@
 import type { NextConfig } from "next";
-import { TRUSTED_EMBED_ORIGINS, TURNSTILE_ORIGIN } from "./src/lib/security/trusted-embeds";
+import { TRUSTED_EMBED_ORIGINS, TURNSTILE_ORIGIN } from "../../packages/data-access/src/videos/trusted-embeds";
 import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset-allowlist";
 
 /** True for `next build` / `next start`, false under `next dev`. */
 const isProduction = process.env.NODE_ENV === "production";
 
 const externalImageOrigins = ASSET_ALLOWED_HOSTS.map((host) => `https://${host}`);
+
+let supabaseHost: string | null = null;
+if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  try {
+    supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
+  } catch {
+    supabaseHost = null;
+  }
+}
 
 /**
  * Content-Security-Policy for the whole portal.
@@ -16,8 +25,7 @@ const externalImageOrigins = ASSET_ALLOWED_HOSTS.map((host) => `https://${host}`
  *   - `'unsafe-inline'` in `style-src`: the layout/components emit inline `style` attributes.
  *   - Turnstile: `challenges.cloudflare.com` serves the challenge script and renders it in an
  *     iframe; the siteverify call is server-side (no browser allowance needed).
- *   - Supabase: the project origin is only known at deploy time (`NEXT_PUBLIC_SUPABASE_URL`), so
- *     the hosted-project domain is allowlisted instead of one pinned host.
+ *   - Supabase: pinned to the project's own host (`NEXT_PUBLIC_SUPABASE_URL`) rather than wildcard.
  *   - YouTube / Facebook: the only origins accepted for the live-stream embed, taken from
  *     `TRUSTED_EMBED_HOSTS` so the header and the runtime check cannot drift.
  *
@@ -27,8 +35,7 @@ function contentSecurityPolicy(): string {
   const scriptSrc = ["'self'", "'unsafe-inline'", TURNSTILE_ORIGIN];
   const connectSrc = [
     "'self'",
-    "https://*.supabase.co",
-    "wss://*.supabase.co",
+    ...(supabaseHost ? [`https://${supabaseHost}`, `wss://${supabaseHost}`] : []),
     TURNSTILE_ORIGIN,
   ];
 
@@ -42,11 +49,11 @@ function contentSecurityPolicy(): string {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob: https://*.supabase.co ${externalImageOrigins.join(" ")}`,
+    `img-src 'self' data: blob: ${supabaseHost ? `https://${supabaseHost} ` : ""}${externalImageOrigins.join(" ")}`.trim(),
     "font-src 'self' data:",
     `connect-src ${connectSrc.join(" ")}`,
     `frame-src 'self' ${TURNSTILE_ORIGIN} ${TRUSTED_EMBED_ORIGINS.join(" ")}`,
-    "media-src 'self' https://*.supabase.co",
+    `media-src 'self'${supabaseHost ? ` https://${supabaseHost}` : ""}`,
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -103,10 +110,14 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.supabase.co",
-      },
+      ...(supabaseHost
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseHost,
+            },
+          ]
+        : []),
       ...ASSET_ALLOWED_HOSTS.map((host) => ({
         protocol: "https" as const,
         hostname: host,

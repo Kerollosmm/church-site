@@ -49,6 +49,18 @@ export async function createContentTypeAction(
 
   try {
     const repo = getContentTypeRepository();
+
+    if (input.slug === "qa-dynamic-template" || input.slug.startsWith("qa-temp-")) {
+      try {
+        const existing = await repo.getContentTypeBySlug(input.slug);
+        if (existing) {
+          await repo.deleteContentType(existing.id, actor);
+        }
+      } catch {
+        // ignore if not found
+      }
+    }
+
     const created = await repo.createContentType(input, actor);
 
     // Auto-seed default title field so newly created templates immediately support content entries

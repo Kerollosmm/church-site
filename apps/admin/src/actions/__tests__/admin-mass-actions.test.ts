@@ -12,10 +12,54 @@ import {
 import * as requireStaffModule from "../../lib/auth/require-staff";
 import { can, CAPABILITY_DENIED_MESSAGE_AR } from "@church-site/domain";
 
+import * as dataAccessModule from "@church-site/data-access";
+
 vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
   unstable_cache: vi.fn((fn) => fn),
 }));
+
+vi.mock("@church-site/data-access", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@church-site/data-access")>();
+  return {
+    ...actual,
+    createSupabaseServerClient: vi.fn(),
+    recordAuditLog: vi.fn().mockResolvedValue({ id: "audit-1" }),
+  };
+});
+
+function createMockSupabase(options?: {
+  selectData?: unknown;
+  selectError?: { message: string } | null;
+  mutateData?: unknown;
+  mutateError?: { message: string } | null;
+}) {
+  const selectQuery = {
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({
+      data: options?.selectData ?? null,
+      error: options?.selectError ?? null,
+    }),
+  };
+
+  const mutateQuery = {
+    eq: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({
+      data: options?.mutateData ?? null,
+      error: options?.mutateError ?? null,
+    }),
+  };
+
+  return {
+    from: vi.fn(() => ({
+      select: vi.fn(() => selectQuery),
+      update: vi.fn(() => mutateQuery),
+      delete: vi.fn(() => mutateQuery),
+      insert: vi.fn(() => mutateQuery),
+    })),
+  };
+}
 
 describe("WeeklyMassInputSchema", () => {
   const validPayload = {
@@ -141,7 +185,7 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
     expect(result.message).toBe(CAPABILITY_DENIED_MESSAGE_AR);
   });
 
-  it("allows editor to toggle mass status", async () => {
+  it("allows editor to toggle mass status and records audit log", async () => {
     vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
       userId: "user-secretary-1",
       email: "secretary@example.com",
@@ -149,12 +193,29 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
       role: "secretary",
     });
 
-    // When DB is offline / in mock/dev mode, gracefully returns success
+    const mockMass = { id: "mass-uuid-1", title_ar: "قداس باكر", is_active: true };
+    const mockUpdated = { ...mockMass, is_active: false };
+    const mockSupabase = createMockSupabase({
+      selectData: mockMass,
+      mutateData: mockUpdated,
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
     const result = await toggleMassStatusAction("mass-uuid-1", false);
     expect(result.success).toBe(true);
+    expect(dataAccessModule.recordAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor: { id: "user-secretary-1", name: "secretary@example.com" },
+        action: "mass:toggle",
+        entityType: "mass",
+        entityId: "mass-uuid-1",
+        before: expect.objectContaining({ id: "mass-uuid-1" }),
+        after: expect.objectContaining({ id: "mass-uuid-1", is_active: false }),
+      })
+    );
   });
 
-  it("allows owner (admin) to delete mass", async () => {
+  it("allows owner (admin) to delete mass and records audit log", async () => {
     vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
       userId: "user-admin-1",
       email: "admin@example.com",
@@ -162,8 +223,143 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
       role: "admin",
     });
 
+    const mockMass = { id: "mass-uuid-1", title_ar: "قداس باكر", is_active: true };
+    const mockSupabase = createMockSupabase({
+      selectData: mockMass,
+      mutateData: mockMass,
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
     const result = await deleteMassAction("mass-uuid-1");
     expect(result.success).toBe(true);
+    expect(dataAccessModule.recordAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor: { id: "user-admin-1", name: "admin@example.com" },
+        action: "mass:delete",
+        entityType: "mass",
+        entityId: "mass-uuid-1",
+        before: expect.objectContaining({ id: "mass-uuid-1" }),
+        after: null,
+      })
+    );
+  });
+
+  it("successfully updates mass and records audit log", async () => {
+    vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
+      userId: "user-admin-1",
+      email: "admin@example.com",
+      fullNameAr: "مسؤول النظام",
+      role: "admin",
+    });
+
+    const mockMass = { id: "mass-uuid-1", title_ar: "قداس باكر", start_time: "06:00:00" };
+    const mockUpdated = { ...mockMass, title_ar: "قداس الأحد المعدل" };
+    const mockSupabase = createMockSupabase({
+      selectData: mockMass,
+      mutateData: mockUpdated,
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
+    const result = await updateMassAction("mass-uuid-1", {
+      title_ar: "قداس الأحد المعدل",
+    });
+    expect(result.success).toBe(true);
+    expect(dataAccessModule.recordAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor: { id: "user-admin-1", name: "admin@example.com" },
+        action: "mass:update",
+        entityType: "mass",
+        entityId: "mass-uuid-1",
+        before: expect.objectContaining({ id: "mass-uuid-1" }),
+        after: expect.objectContaining({ id: "mass-uuid-1", title_ar: "قداس الأحد المعدل" }),
+      })
+    );
+  });
+
+  it("enforces fail-closed: returns success: false when updating non-existent mass", async () => {
+    vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
+      userId: "user-admin-1",
+      email: "admin@example.com",
+      fullNameAr: "مسؤول النظام",
+      role: "admin",
+    });
+
+    const mockSupabase = createMockSupabase({
+      selectData: null,
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
+    const result = await updateMassAction("mass-uuid-missing", {
+      title_ar: "قداس غير موجود",
+    });
+    expect(result.success).toBe(false);
+    expect((result as any).error).toBe("تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس");
+    expect(dataAccessModule.recordAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("enforces fail-closed: returns success: false when toggling non-existent mass", async () => {
+    vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
+      userId: "user-admin-1",
+      email: "admin@example.com",
+      fullNameAr: "مسؤول النظام",
+      role: "admin",
+    });
+
+    const mockSupabase = createMockSupabase({
+      selectData: null,
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
+    const result = await toggleMassStatusAction("mass-uuid-missing", true);
+    expect(result.success).toBe(false);
+    expect((result as any).error).toBe("تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس");
+    expect(dataAccessModule.recordAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("enforces fail-closed: returns success: false when deleting non-existent mass", async () => {
+    vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
+      userId: "user-admin-1",
+      email: "admin@example.com",
+      fullNameAr: "مسؤول النظام",
+      role: "admin",
+    });
+
+    const mockSupabase = createMockSupabase({
+      selectData: null,
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
+    const result = await deleteMassAction("mass-uuid-missing");
+    expect(result.success).toBe(false);
+    expect((result as any).error).toBe("تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس");
+    expect(dataAccessModule.recordAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("enforces fail-closed: returns success: false on database errors", async () => {
+    vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
+      userId: "user-admin-1",
+      email: "admin@example.com",
+      fullNameAr: "مسؤول النظام",
+      role: "admin",
+    });
+
+    const mockSupabase = createMockSupabase({
+      selectError: { message: "connection timeout" },
+    });
+    vi.spyOn(dataAccessModule, "createSupabaseServerClient").mockResolvedValue(mockSupabase as any);
+
+    const updateRes = await updateMassAction("mass-uuid-1", { title_ar: "قداس جديد" });
+    expect(updateRes.success).toBe(false);
+    expect((updateRes as any).error).toBe("connection timeout");
+
+    const toggleRes = await toggleMassStatusAction("mass-uuid-1", false);
+    expect(toggleRes.success).toBe(false);
+    expect((toggleRes as any).error).toBe("connection timeout");
+
+    const deleteRes = await deleteMassAction("mass-uuid-1");
+    expect(deleteRes.success).toBe(false);
+    expect((deleteRes as any).error).toBe("connection timeout");
+    expect(dataAccessModule.recordAuditLog).not.toHaveBeenCalled();
   });
 
   it("validates input in updateMassAction and rejects invalid times", async () => {

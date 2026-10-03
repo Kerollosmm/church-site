@@ -61,7 +61,7 @@ import {
   ADMIN_TD,
   ADMIN_TH,
 } from "@/components/admin/admin-ui";
-import { FlagBadge } from "@/components/events/FlagBadge";
+import { FlagBadge } from "@church-site/ui";
 import type { AdminCapabilities } from "@church-site/domain";
 import { EVENT_STATUS_LABELS_AR } from "@church-site/domain";
 import {
@@ -155,12 +155,15 @@ export function EventsManager({ events, series, capabilities, locale }: EventsMa
   const seriesTerm = seriesSearch.trim().toLowerCase();
   const visibleSeries = useMemo(
     () =>
-      seriesTerm.length === 0
-        ? series
-        : series.filter(
-            (row) => row.series.titleAr.toLowerCase().includes(seriesTerm) || (row.series.titleEn ?? "").toLowerCase().includes(seriesTerm)
-          ),
-    [series, seriesTerm]
+      series.filter((row) => {
+        if (statusFilter !== "all" && row.series.status !== statusFilter) return false;
+        if (seriesTerm.length === 0) return true;
+        return (
+          row.series.titleAr.toLowerCase().includes(seriesTerm) ||
+          (row.series.titleEn ?? "").toLowerCase().includes(seriesTerm)
+        );
+      }),
+    [series, seriesTerm, statusFilter]
   );
 
   /**

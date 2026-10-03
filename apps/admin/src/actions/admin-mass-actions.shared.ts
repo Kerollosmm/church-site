@@ -45,4 +45,5 @@ export type UpdateMassInput = Partial<CreateMassInput>;
 
 export type AdminMassActionResult =
   | { success: true; message: string; data?: unknown }
-  | { success: false; message: string };
+  | { success: false; message: string; error?: string };
+

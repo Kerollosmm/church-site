@@ -4,11 +4,10 @@
 "use client";
 
 import React from "react";
-import { FlagBadge } from "@/components/events/FlagBadge";
 import { ADMIN_ERROR_TEXT, ADMIN_HINT } from "./admin-ui";
 import type { AdminTermView } from "@church-site/data-access/client";
 import type { Locale } from "@church-site/ui";
-import { localized, cn } from "@church-site/ui";
+import { FlagBadge, localized, cn } from "@church-site/ui";
 
 export interface TermMultiSelectProps {
   /** The dimension id, e.g. "event_type" — also the fieldset's DOM id. */

@@ -58,6 +58,7 @@ export function AdminSidebarNav(): React.ReactElement {
           <Link
             key={item.href}
             href={item.href}
+            data-testid={`admin-nav-${item.href.replace("/", "") || "dashboard"}`}
             aria-current={isActive ? "page" : undefined}
             className={cn(
               "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-heading font-bold transition",

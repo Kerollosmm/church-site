@@ -40,8 +40,8 @@ const STATUS_BADGE_CLASSES: Record<BookingStatusEnum, string> = {
 
 const STATUS_FILTERS = [
   { value: "all", label: "كافة الحالات" },
-  { value: "pending", label: "قيد المراجعة" },
-  { value: "approved", label: "تمت الموافقة" },
+  { value: "pending", label: "بانتظار الاعتماد" },
+  { value: "approved", label: "معتمد" },
   { value: "rejected", label: "معتذر عنه" },
   { value: "cancelled", label: "ملغى" },
 ] as const;

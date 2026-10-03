@@ -3,15 +3,28 @@ import { ASSET_ALLOWED_HOSTS } from "../../packages/data-access/src/assets/asset
 
 const isProduction = process.env.NODE_ENV === "production";
 
+let supabaseHost: string | null = null;
+if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  try {
+    supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname;
+  } catch {
+    supabaseHost = null;
+  }
+}
+
 const nextConfig: NextConfig = {
   transpilePackages: ["@church-site/domain", "@church-site/data-access", "@church-site/ui"],
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.supabase.co",
-      },
+      ...(supabaseHost
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseHost,
+            },
+          ]
+        : []),
       ...ASSET_ALLOWED_HOSTS.map((host) => ({
         protocol: "https" as const,
         hostname: host,
