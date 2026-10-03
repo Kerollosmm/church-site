@@ -6,6 +6,7 @@ vi.mock("next/headers", () => ({
 
 vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
+  unstable_cache: vi.fn((fn) => fn),
 }));
 
 vi.mock("@/lib/security/turnstile", () => ({
@@ -22,36 +23,35 @@ vi.mock("@/lib/security/rate-limit", () => ({
 }));
 
 const mockAuditLog = vi.fn().mockResolvedValue({});
-vi.mock("@church-site/data-access", () => ({
-  recordAuditLog: (...args: unknown[]) => mockAuditLog(...args),
-  snapshot: (val: unknown) => val,
-}));
-
 let mockInsertResult: { error: unknown } = { error: null };
-vi.mock("@/lib/supabase/admin", () => ({
-  createAdminClient: () => ({
-    from: () => ({
-      insert: vi.fn().mockImplementation(() => Promise.resolve(mockInsertResult)),
-    }),
-  }),
-}));
-
 let mockRpcData: unknown[] | null = null;
 let mockRpcError: unknown = null;
-vi.mock("@/lib/supabase/server", () => ({
-  createSupabaseServerClient: () => ({
-    rpc: vi.fn().mockImplementation((fn: string, args: { p_ref: string }) => {
-      if (fn === "track_condolence_booking") {
-        const ref = args.p_ref;
-        if (!ref || ref.trim().length === 0 || ref.trim().length > 20 || !/^[A-Za-z0-9_-]+$/.test(ref.trim())) {
-          return Promise.resolve({ data: [], error: null });
-        }
-        return Promise.resolve({ data: mockRpcData, error: mockRpcError });
-      }
-      return Promise.resolve({ data: null, error: null });
+
+vi.mock("@church-site/data-access", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@church-site/data-access")>();
+  return {
+    ...actual,
+    recordAuditLog: (...args: unknown[]) => mockAuditLog(...args),
+    snapshot: (val: unknown) => val,
+    createAdminClient: () => ({
+      from: () => ({
+        insert: vi.fn().mockImplementation(() => Promise.resolve(mockInsertResult)),
+      }),
     }),
-  }),
-}));
+    createSupabaseServerClient: () => ({
+      rpc: vi.fn().mockImplementation((fn: string, args: { p_ref: string }) => {
+        if (fn === "track_condolence_booking") {
+          const ref = args.p_ref;
+          if (!ref || ref.trim().length === 0 || ref.trim().length > 20 || !/^[A-Za-z0-9_-]+$/.test(ref.trim())) {
+            return Promise.resolve({ data: [], error: null });
+          }
+          return Promise.resolve({ data: mockRpcData, error: mockRpcError });
+        }
+        return Promise.resolve({ data: null, error: null });
+      }),
+    }),
+  };
+});
 
 describe("condolence-actions date collision feedback", () => {
   beforeEach(() => {

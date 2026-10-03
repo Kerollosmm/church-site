@@ -21,13 +21,13 @@
 // `emailDeliveryEnabled` flag is what the form uses to phrase that line in the visitor's language.
 
 import { headers } from "next/headers";
-import { isEventSubscriptionsEnabled } from "@/lib/env";
+import { isEventSubscriptionsEnabled } from "@church-site/data-access";
 import {
   normalizeSubscriberEmail,
   normalizeSubscriberTopics,
   resolveSubscriberTopics,
-} from "@/lib/domain/subscribers";
-import { getLocale } from "@/lib/i18n/server";
+} from "@church-site/domain";
+import { getLocale } from "@church-site/ui/server";
 import { getEventRepository, isStoreError, notifyNewSubscription } from "@church-site/data-access";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {

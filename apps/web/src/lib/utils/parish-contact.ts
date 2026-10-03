@@ -3,6 +3,17 @@
 /** Egypt country code as used by wa.me links (no leading "+"). */
 export const EGYPT_COUNTRY_CODE = "20";
 
+/** Canonical church office landline numbers from seed data. */
+export const PARISH_PHONE_LANDLINE_1 = "03-5551234";
+export const PARISH_PHONE_LANDLINE_2 = "03-5551235";
+
+/** Canonical emergency and condolence office mobile numbers from seed data. */
+export const PARISH_PHONE_EMERGENCY_1 = "01220000001";
+export const PARISH_PHONE_EMERGENCY_2 = "01220000002";
+
+/** Canonical clinic and pastoral services reception landline. */
+export const PARISH_PHONE_SERVICES = "03-5500002";
+
 /**
  * Builds a wa.me URL from a locally formatted Egyptian mobile number.
  * Strips separators and replaces the national trunk prefix "0" with "20"

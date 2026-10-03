@@ -15,24 +15,25 @@ vi.mock("@/lib/security/rate-limit", () => ({
 }));
 
 const mockAuditLog = vi.fn().mockResolvedValue({});
-vi.mock("@church-site/data-access", () => ({
-  recordAuditLog: (...args: unknown[]) => mockAuditLog(...args),
-  snapshot: (val: unknown) => val,
-}));
-
 const mockRpc = vi.fn().mockResolvedValue({ data: null, error: { message: "RPC not available" } });
 const mockSingle = vi.fn().mockResolvedValue({ data: { id: "test-uuid-msg-123" }, error: null });
 const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
 const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
 
-vi.mock("@/lib/supabase/admin", () => ({
-  createAdminClient: () => ({
-    rpc: (...args: unknown[]) => mockRpc(...args),
-    from: () => ({
-      insert: (...args: unknown[]) => mockInsert(...args),
+vi.mock("@church-site/data-access", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@church-site/data-access")>();
+  return {
+    ...actual,
+    recordAuditLog: (...args: unknown[]) => mockAuditLog(...args),
+    snapshot: (val: unknown) => val,
+    createAdminClient: () => ({
+      rpc: (...args: unknown[]) => mockRpc(...args),
+      from: () => ({
+        insert: (...args: unknown[]) => mockInsert(...args),
+      }),
     }),
-  }),
-}));
+  };
+});
 
 describe("submitContactMessage Contact Action", () => {
   beforeEach(() => {

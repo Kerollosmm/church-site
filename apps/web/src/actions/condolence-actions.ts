@@ -2,17 +2,16 @@
 
 import { revalidateTag } from "next/cache";
 import { headers } from "next/headers";
-import { nanoid } from "nanoid";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { MissingEnvVarError } from "@/lib/env";
+import { randomBytes } from "node:crypto";
+import { createAdminClient } from "@church-site/data-access";
+import { createSupabaseServerClient } from "@church-site/data-access";
+import { MissingEnvVarError } from "@church-site/data-access";
 import { CondolenceBookingSchema } from "@/lib/validations/church-schemas";
 import {
-  BOOKING_REFERENCE_BODY_LENGTH,
   makeBookingReference,
   normalizeBookingReference,
-} from "@/lib/domain/booking-reference";
-import { REVALIDATION_TAGS } from "@/lib/tags";
+} from "@church-site/domain";
+import { REVALIDATION_TAGS } from "@church-site/data-access";
 import { recordAuditLog, snapshot } from "@church-site/data-access";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {
@@ -69,7 +68,7 @@ export async function submitCondolenceBooking(rawInput: unknown) {
     return { success: false as const, message: "فشل التحقق من الروبوتات، يرجى إعادة المحاولة" };
   }
 
-  const referenceCode = makeBookingReference(nanoid(BOOKING_REFERENCE_BODY_LENGTH));
+  const referenceCode = makeBookingReference(randomBytes(3).toString("hex").toUpperCase());
 
   try {
     const admin = createAdminClient();

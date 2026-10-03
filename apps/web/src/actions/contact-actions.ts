@@ -1,8 +1,8 @@
 "use server";
 
 import { headers } from "next/headers";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { MissingEnvVarError } from "@/lib/env";
+import { createAdminClient } from "@church-site/data-access";
+import { MissingEnvVarError } from "@church-site/data-access";
 import { ContactMessageSchema } from "@/lib/validations/church-schemas";
 import { verifyTurnstile } from "@/lib/security/turnstile";
 import {
