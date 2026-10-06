@@ -32,6 +32,11 @@ const SECRET_RULES = [
   {
     name: "AWS Access Key ID",
     pattern: /\b(?:AKIA|ABIA|ACCA|ASIA)[0-9A-Z]{16}\b/,
+    ignore: (line) => {
+      // Allow expired presigned S3 test run video URLs in documentation and test summaries
+      if (/testsprite-videos\.s3[a-z0-9.-]*\.amazonaws\.com/i.test(line)) return true;
+      return false;
+    },
   },
   {
     name: "JWT Token",
