@@ -5,7 +5,7 @@
 
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
-import { getStaffSession, requireStaff, type StaffSession } from "../lib/auth/require-staff";
+import { requireStaff } from "../lib/auth/require-staff";
 import {
   CAPABILITY_DENIED_MESSAGE_AR,
   adminRoleFromStaffRole,
@@ -70,49 +70,32 @@ function safeRevalidateMasses(): void {
  * Allowed for editor and owner roles.
  */
 export async function createMassAction(payload: CreateMassInput): Promise<AdminMassActionResult> {
-  let session = null;
+  const session = await requireStaff();
+
+  const role = adminRoleFromStaffRole(session.role);
+  if (!role || !can(role, "mass:create")) {
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.fullNameAr },
+      action: "denied",
+      entityType: "mass",
+      entityId: "new",
+      before: null,
+      after: snapshot(payload as Record<string, unknown>),
+      summary: `رفض صلاحية إضافة قداس للحساب «${session.fullNameAr}» (الدور: ${session.role})`,
+    });
+    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
+  }
+
+  const parsed = WeeklyMassInputSchema.safeParse(payload);
+  if (!parsed.success) {
+    const fieldError = parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة";
+    return {
+      success: false,
+      message: fieldError,
+    };
+  }
+
   try {
-    try {
-      session = await requireStaff();
-    } catch {
-      session = await getStaffSession();
-    }
-    if (!session) {
-      await recordAuditLog({
-        actor: { id: "anonymous", name: "زائر غير مصرح" },
-        action: "denied",
-        entityType: "mass",
-        entityId: "new",
-        before: null,
-        after: snapshot(payload as Record<string, unknown>),
-        summary: "محاولة إضافة قداس بدون جلسة إدارة نشطة",
-      });
-      return { success: false, message: "انتهت جلسة تسجيل الدخول، يرجى إعادة تسجيل الدخول للمتابعة." };
-    }
-
-    const role = adminRoleFromStaffRole(session.role);
-    if (!role || !can(role, "mass:create")) {
-      await recordAuditLog({
-        actor: { id: session.userId, name: session.fullNameAr },
-        action: "denied",
-        entityType: "mass",
-        entityId: "new",
-        before: null,
-        after: snapshot(payload as Record<string, unknown>),
-        summary: `رفض صلاحية إضافة قداس للحساب «${session.fullNameAr}» (الدور: ${session.role})`,
-      });
-      return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
-    }
-
-    const parsed = WeeklyMassInputSchema.safeParse(payload);
-    if (!parsed.success) {
-      const fieldError = parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة";
-      return {
-        success: false,
-        message: fieldError,
-      };
-    }
-
     if (!hasSupabaseEnv()) {
       const generatedId = `m-${Date.now()}`;
       await recordAuditLog({
@@ -159,7 +142,8 @@ export async function createMassAction(payload: CreateMassInput): Promise<AdminM
 
       return {
         success: false,
-        message: `تعذّر حفظ القداس: ${error.message || "خطأ في قاعدة البيانات"}`,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
       };
     }
 
@@ -178,20 +162,19 @@ export async function createMassAction(payload: CreateMassInput): Promise<AdminM
   } catch (err) {
     console.error("[admin-mass] create exception", err);
     const stack = err instanceof Error ? err.stack || err.message : String(err);
-    if (session) {
-      await recordAuditLog({
-        actor: { id: (session as StaffSession).userId, name: (session as StaffSession).fullNameAr },
-        action: "denied",
-        entityType: "mass",
-        entityId: "new",
-        before: null,
-        after: snapshot({ payload, error: String(err), stack }),
-        summary: `استثناء غير متوقع أثناء إضافة القداس: ${err instanceof Error ? err.message : String(err)}`,
-      }).catch(() => {});
-    }
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.fullNameAr },
+      action: "denied",
+      entityType: "mass",
+      entityId: "new",
+      before: null,
+      after: snapshot({ payload, error: String(err), stack }),
+      summary: `استثناء غير متوقع أثناء إضافة القداس: ${err instanceof Error ? err.message : String(err)}`,
+    }).catch(() => {});
     return {
       success: false,
-      message: err instanceof Error ? err.message : "حدث خطأ غير متوقع أثناء حفظ القداس.",
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
     };
   }
 }
@@ -237,7 +220,11 @@ export async function updateMassAction(
 
     if (beforeError) {
       console.error("[admin-mass] fetch before update failed", beforeError);
-      return { success: false, message: beforeError.message, error: beforeError.message };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
     if (!beforeData) {
@@ -286,7 +273,11 @@ export async function updateMassAction(
 
     if (error) {
       console.error("[admin-mass] update failed", error);
-      return { success: false, message: error.message, error: error.message };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
     if (!data) {
@@ -299,7 +290,7 @@ export async function updateMassAction(
 
     await recordAuditLog({
       actor: { id: session.userId, name: session.email || "Admin Staff" },
-      action: "mass:update" as any,
+      action: "update",
       entityType: "mass",
       entityId: parsedId.data,
       before: snapshot(beforeData as Record<string, unknown>),
@@ -311,8 +302,11 @@ export async function updateMassAction(
     return { success: true, message: "تم حفظ القداس بنجاح", data };
   } catch (err) {
     console.error("[admin-mass] update exception", err);
-    const msg = err instanceof Error ? err.message : String(err);
-    return { success: false, message: msg, error: msg };
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
 }
 
@@ -356,7 +350,11 @@ export async function toggleMassStatusAction(
 
     if (beforeError) {
       console.error("[admin-mass] fetch before toggle failed", beforeError);
-      return { success: false, message: beforeError.message, error: beforeError.message };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
     if (!beforeData) {
@@ -379,7 +377,11 @@ export async function toggleMassStatusAction(
 
     if (error) {
       console.error("[admin-mass] toggle failed", error);
-      return { success: false, message: error.message, error: error.message };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
     if (!data) {
@@ -392,7 +394,7 @@ export async function toggleMassStatusAction(
 
     await recordAuditLog({
       actor: { id: session.userId, name: session.email || "Admin Staff" },
-      action: "mass:toggle" as any,
+      action: "update",
       entityType: "mass",
       entityId: parsedId.data,
       before: snapshot(beforeData as Record<string, unknown>),
@@ -404,8 +406,11 @@ export async function toggleMassStatusAction(
     return { success: true, message: successMessage, data };
   } catch (err) {
     console.error("[admin-mass] toggle exception", err);
-    const msg = err instanceof Error ? err.message : String(err);
-    return { success: false, message: msg, error: msg };
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
 }
 
@@ -437,7 +442,11 @@ export async function deleteMassAction(id: string): Promise<AdminMassActionResul
 
     if (beforeError) {
       console.error("[admin-mass] fetch before delete failed", beforeError);
-      return { success: false, message: beforeError.message, error: beforeError.message };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
     if (!beforeData) {
@@ -457,7 +466,11 @@ export async function deleteMassAction(id: string): Promise<AdminMassActionResul
 
     if (error) {
       console.error("[admin-mass] delete failed", error);
-      return { success: false, message: error.message, error: error.message };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
     if (!data) {
@@ -470,7 +483,7 @@ export async function deleteMassAction(id: string): Promise<AdminMassActionResul
 
     await recordAuditLog({
       actor: { id: session.userId, name: session.email || "Admin Staff" },
-      action: "mass:delete" as any,
+      action: "delete",
       entityType: "mass",
       entityId: parsedId.data,
       before: snapshot(beforeData as Record<string, unknown>),
@@ -482,7 +495,10 @@ export async function deleteMassAction(id: string): Promise<AdminMassActionResul
     return { success: true, message: "تم حذف القداس بنجاح", data };
   } catch (err) {
     console.error("[admin-mass] delete exception", err);
-    const msg = err instanceof Error ? err.message : String(err);
-    return { success: false, message: msg, error: msg };
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
 }

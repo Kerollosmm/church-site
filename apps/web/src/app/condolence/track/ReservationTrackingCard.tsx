@@ -20,6 +20,7 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TrackBookingResult | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   const handleTrack = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -91,20 +92,37 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
                     </span>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (result.booking?.booking_reference_code) {
-                          navigator.clipboard.writeText(result.booking.booking_reference_code);
+                      onClick={async () => {
+                        const refCode = result.booking?.booking_reference_code;
+                        if (!refCode) return;
+                        try {
+                          await navigator.clipboard.writeText(refCode);
                           setCopiedCode(true);
+                          setCopyError(false);
                           setTimeout(() => setCopiedCode(false), 2500);
+                        } catch (err) {
+                          console.warn("Failed to copy booking reference code to clipboard:", err);
+                          setCopyError(true);
+                          setCopiedCode(false);
+                          setTimeout(() => setCopyError(false), 3000);
                         }
                       }}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-copticGold-200/60 hover:bg-copticGold-200 text-copticNavy transition"
-                      title="نسخ رمز الحجز"
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold transition ${
+                        copyError
+                          ? "bg-red-100 hover:bg-red-200 text-red-900"
+                          : "bg-copticGold-200/60 hover:bg-copticGold-200 text-copticNavy"
+                      }`}
+                      title={copyError ? "تعذر النسخ تلقائياً، يرجى التحديد والنسخ يدوياً" : "نسخ رمز الحجز"}
                     >
                       {copiedCode ? (
                         <>
                           <Check className="w-3 h-3 text-emerald-700" />
                           <span>تم النسخ</span>
+                        </>
+                      ) : copyError ? (
+                        <>
+                          <AlertCircle className="w-3 h-3 text-red-700" />
+                          <span>تعذر النسخ</span>
                         </>
                       ) : (
                         <>

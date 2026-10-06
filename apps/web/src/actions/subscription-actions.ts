@@ -8,9 +8,9 @@
 //
 //   1. the feature guard  — `EVENTS_SUBSCRIPTIONS_ENABLED` can switch the whole capability off
 //      (`src/lib/env.ts`); a switched-off feature refuses SERVER-SIDE, not by hiding a button.
-//   2. rate limit         — `subscribe:${ip}`, the shared public-form budget.
-//   3. zod                — the payload is validated at the boundary.
-//   4. Turnstile          — verified server-side, FAIL CLOSED (no secret in production = refused).
+//   2. zod                — the payload is validated at the boundary.
+//   3. Turnstile          — verified server-side, FAIL CLOSED (no secret in production = refused).
+//   4. rate limit         — `subscribe:${ip}`, the shared public-form budget (quota consumed only for valid attempts).
 //
 // WHERE THE ROW GOES: through the repository (`src/lib/store`), not a Supabase client. That is what
 // makes the form work on BOTH drivers — including the file-backed store, which is the supported
@@ -80,14 +80,6 @@ export async function subscribeToEventsAction(rawInput: unknown): Promise<Subscr
     return { success: false, code: "disabled", message: MESSAGES.disabled };
   }
 
-  const headerList = await headers();
-  const ip = getClientIp(headerList);
-
-  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
-  if (!checkPublicWriteRateLimit("subscribe", ip).allowed) {
-    return { success: false, code: "rate-limited", message: RATE_LIMIT_MESSAGE_AR };
-  }
-
   const parsed = EventSubscriptionSchema.safeParse(rawInput);
   if (!parsed.success) {
     return {
@@ -98,8 +90,16 @@ export async function subscribeToEventsAction(rawInput: unknown): Promise<Subscr
     };
   }
 
+  const headerList = await headers();
+  const ip = getClientIp(headerList);
+
   if (!(await verifyTurnstile(parsed.data.turnstileToken, ip))) {
     return { success: false, code: "verification-failed", message: MESSAGES.verificationFailed };
+  }
+
+  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
+  if (!checkPublicWriteRateLimit("subscribe", ip).allowed) {
+    return { success: false, code: "rate-limited", message: RATE_LIMIT_MESSAGE_AR };
   }
 
   const email = normalizeSubscriberEmail(parsed.data.email);

@@ -85,6 +85,28 @@ describe("condolence-actions date collision feedback", () => {
     expect(res.success).toBe(false);
     expect(res.message).toBe("هذا الموعد محجوز مسبقاً، يرجى اختيار موعد آخر أو التواصل هاتفياً");
   });
+
+  it("validates input before verifying Turnstile or checking rate limit", async () => {
+    const { submitCondolenceBooking } = await import("../condolence-actions");
+    const { verifyTurnstile } = await import("@/lib/security/turnstile");
+    const { checkPublicWriteRateLimit } = await import("@/lib/security/rate-limit");
+
+    const invalidPayload = {
+      deceasedFullName: "",
+      applicantName: "",
+      applicantPhone: "not-a-phone",
+      eventDate: "invalid-date",
+      relationshipToDeceased: "",
+      turnstileToken: "token-bad",
+    };
+
+    const res = await submitCondolenceBooking(invalidPayload);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toContain("بيانات الاستمارة غير مكتملة");
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+    expect(checkPublicWriteRateLimit).not.toHaveBeenCalled();
+  });
 });
 
 describe("condolence-actions trackBooking bounds and PII protection", () => {

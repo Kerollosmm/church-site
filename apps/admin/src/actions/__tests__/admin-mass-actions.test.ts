@@ -151,6 +151,23 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
     vi.restoreAllMocks();
   });
 
+  it("propagates authentication redirect from requireStaff in createMassAction", async () => {
+    vi.spyOn(requireStaffModule, "requireStaff").mockRejectedValue(
+      new Error("NEXT_REDIRECT: /login")
+    );
+
+    await expect(
+      createMassAction({
+        day_of_week: "Sunday",
+        altar_id: "a1",
+        title_ar: "قداس الأحد التجريبي",
+        start_time: "06:00",
+        end_time: "08:30",
+        is_active: true,
+      })
+    ).rejects.toThrow("NEXT_REDIRECT: /login");
+  });
+
   it("denies createMassAction when user lacks mass:create capability", async () => {
     vi.spyOn(requireStaffModule, "requireStaff").mockResolvedValue({
       userId: "user-servant-1",
@@ -206,7 +223,7 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
     expect(dataAccessModule.recordAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         actor: { id: "user-secretary-1", name: "secretary@example.com" },
-        action: "mass:toggle",
+        action: "update",
         entityType: "mass",
         entityId: "mass-uuid-1",
         before: expect.objectContaining({ id: "mass-uuid-1" }),
@@ -235,7 +252,7 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
     expect(dataAccessModule.recordAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         actor: { id: "user-admin-1", name: "admin@example.com" },
-        action: "mass:delete",
+        action: "delete",
         entityType: "mass",
         entityId: "mass-uuid-1",
         before: expect.objectContaining({ id: "mass-uuid-1" }),
@@ -267,7 +284,7 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
     expect(dataAccessModule.recordAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
         actor: { id: "user-admin-1", name: "admin@example.com" },
-        action: "mass:update",
+        action: "update",
         entityType: "mass",
         entityId: "mass-uuid-1",
         before: expect.objectContaining({ id: "mass-uuid-1" }),
@@ -350,15 +367,18 @@ describe("Admin Mass Server Actions — Security & Capability Gating", () => {
 
     const updateRes = await updateMassAction("mass-uuid-1", { title_ar: "قداس جديد" });
     expect(updateRes.success).toBe(false);
-    expect((updateRes as any).error).toBe("connection timeout");
+    expect((updateRes as any).error).toBe("تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.");
+    expect(updateRes.message).toBe("تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.");
 
     const toggleRes = await toggleMassStatusAction("mass-uuid-1", false);
     expect(toggleRes.success).toBe(false);
-    expect((toggleRes as any).error).toBe("connection timeout");
+    expect((toggleRes as any).error).toBe("تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.");
+    expect(toggleRes.message).toBe("تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.");
 
     const deleteRes = await deleteMassAction("mass-uuid-1");
     expect(deleteRes.success).toBe(false);
-    expect((deleteRes as any).error).toBe("connection timeout");
+    expect((deleteRes as any).error).toBe("تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.");
+    expect(deleteRes.message).toBe("تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.");
     expect(dataAccessModule.recordAuditLog).not.toHaveBeenCalled();
   });
 

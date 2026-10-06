@@ -23,10 +23,14 @@ export function BibleVerseDaily({ verse }: BibleVerseDailyProps) {
 
   const fullCitation = `${verse.verse_text} (${verse.book_name ?? ""} ${verse.chapter_number}:${verse.verse_number})`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(fullCitation);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(fullCitation);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn("Failed to copy bible verse to clipboard:", err);
+    }
   };
 
   return (

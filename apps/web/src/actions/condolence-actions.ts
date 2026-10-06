@@ -47,14 +47,6 @@ function isUniqueViolation(error: PostgresErrorLike, constraintName: string): bo
 }
 
 export async function submitCondolenceBooking(rawInput: unknown) {
-  const headerList = await headers();
-  const ip = getClientIp(headerList);
-
-  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
-  if (!checkPublicWriteRateLimit("condolence", ip).allowed) {
-    return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
-  }
-
   const result = CondolenceBookingSchema.safeParse(rawInput);
   if (!result.success) {
     return {
@@ -64,8 +56,16 @@ export async function submitCondolenceBooking(rawInput: unknown) {
     };
   }
 
+  const headerList = await headers();
+  const ip = getClientIp(headerList);
+
   if (!(await verifyTurnstile(result.data.turnstileToken, ip))) {
     return { success: false as const, message: "فشل التحقق من الروبوتات، يرجى إعادة المحاولة" };
+  }
+
+  // Best-effort per-instance rate limit with 15s burst protection — see src/lib/security/rate-limit.ts.
+  if (!checkPublicWriteRateLimit("condolence", ip).allowed) {
+    return { success: false as const, message: RATE_LIMIT_MESSAGE_AR };
   }
 
   const referenceCode = makeBookingReference(randomBytes(3).toString("hex").toUpperCase());

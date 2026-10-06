@@ -19,6 +19,7 @@ export function CondolenceBookingForm() {
     message?: string;
   } | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
@@ -95,20 +96,36 @@ export function CondolenceBookingForm() {
                     </span>
                     <button
                       type="button"
-                      onClick={() => {
-                        if (result.bookingCode) {
-                          navigator.clipboard.writeText(result.bookingCode);
+                      onClick={async () => {
+                        if (!result.bookingCode) return;
+                        try {
+                          await navigator.clipboard.writeText(result.bookingCode);
                           setCopiedCode(true);
+                          setCopyError(false);
                           setTimeout(() => setCopiedCode(false), 2500);
+                        } catch (err) {
+                          console.warn("Failed to copy booking code to clipboard:", err);
+                          setCopyError(true);
+                          setCopiedCode(false);
+                          setTimeout(() => setCopyError(false), 3000);
                         }
                       }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-900 transition"
-                      title="نسخ رمز الحجز"
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                        copyError
+                          ? "bg-red-100 hover:bg-red-200 text-red-900"
+                          : "bg-emerald-100 hover:bg-emerald-200 text-emerald-900"
+                      }`}
+                      title={copyError ? "تعذر النسخ تلقائياً، يرجى التحديد والنسخ يدوياً" : "نسخ رمز الحجز"}
                     >
                       {copiedCode ? (
                         <>
                           <Check className="w-3.5 h-3.5 text-emerald-700" />
                           <span>تم النسخ</span>
+                        </>
+                      ) : copyError ? (
+                        <>
+                          <AlertCircle className="w-3.5 h-3.5 text-red-700" />
+                          <span>تعذر النسخ</span>
                         </>
                       ) : (
                         <>

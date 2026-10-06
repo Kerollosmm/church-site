@@ -21,10 +21,14 @@ export interface DonationAccountsListProps {
 export function DonationAccountsList({ accounts }: DonationAccountsListProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2500);
+  const copyToClipboard = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2500);
+    } catch (err) {
+      console.warn("Failed to copy account information to clipboard:", err);
+    }
   };
 
   return (

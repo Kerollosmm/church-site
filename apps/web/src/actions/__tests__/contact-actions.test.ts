@@ -15,10 +15,9 @@ vi.mock("@/lib/security/rate-limit", () => ({
 }));
 
 const mockAuditLog = vi.fn().mockResolvedValue({});
-const mockRpc = vi.fn().mockResolvedValue({ data: null, error: { message: "RPC not available" } });
-const mockSingle = vi.fn().mockResolvedValue({ data: { id: "test-uuid-msg-123" }, error: null });
-const mockSelect = vi.fn().mockReturnValue({ single: mockSingle });
-const mockInsert = vi.fn().mockReturnValue({ select: mockSelect });
+const mockRpc = vi.fn().mockResolvedValue({ data: "atomic-rpc-uuid-123", error: null });
+const mockInsert = vi.fn();
+const mockHasSupabaseAdminEnv = vi.fn().mockReturnValue(true);
 
 vi.mock("@church-site/data-access", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@church-site/data-access")>();
@@ -26,6 +25,7 @@ vi.mock("@church-site/data-access", async (importOriginal) => {
     ...actual,
     recordAuditLog: (...args: unknown[]) => mockAuditLog(...args),
     snapshot: (val: unknown) => val,
+    hasSupabaseAdminEnv: () => mockHasSupabaseAdminEnv(),
     createAdminClient: () => ({
       rpc: (...args: unknown[]) => mockRpc(...args),
       from: () => ({
@@ -38,8 +38,8 @@ vi.mock("@church-site/data-access", async (importOriginal) => {
 describe("submitContactMessage Contact Action", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockRpc.mockResolvedValue({ data: null, error: { message: "RPC not available" } });
-    mockSingle.mockResolvedValue({ data: { id: "test-uuid-msg-123" }, error: null });
+    mockHasSupabaseAdminEnv.mockReturnValue(true);
+    mockRpc.mockResolvedValue({ data: "atomic-rpc-uuid-123", error: null });
   });
 
   const validPayload = {
@@ -51,54 +51,6 @@ describe("submitContactMessage Contact Action", () => {
     turnstileToken: "token-ok",
   };
 
-  it("successful message + successful audit (entityId matches returned message ID)", async () => {
-    const { submitContactMessage } = await import("../contact-actions");
-    mockSingle.mockResolvedValueOnce({ data: { id: "returned-uuid-777" }, error: null });
-
-    const res = await submitContactMessage(validPayload);
-
-    expect(res.success).toBe(true);
-    expect(mockAuditLog).toHaveBeenCalledTimes(1);
-    expect(mockAuditLog).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: "create",
-        entityType: "contact_message",
-        entityId: "returned-uuid-777",
-        summary: expect.stringContaining("يوحنا سامي"),
-      })
-    );
-  });
-
-  it("message insert failure returns success: false", async () => {
-    const { submitContactMessage } = await import("../contact-actions");
-    mockSingle.mockResolvedValueOnce({ data: null, error: new Error("DB connection failure") });
-
-    const res = await submitContactMessage(validPayload);
-
-    expect(res.success).toBe(false);
-    expect(mockAuditLog).not.toHaveBeenCalled();
-    expect(res.message).toContain("تعذر إرسال الرسالة");
-  });
-
-  it("audit failure after message insert still returns success: true", async () => {
-    const { submitContactMessage } = await import("../contact-actions");
-    mockSingle.mockResolvedValueOnce({ data: { id: "returned-uuid-888" }, error: null });
-    mockAuditLog.mockRejectedValueOnce(new Error("Audit log storage failure"));
-
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
-    const res = await submitContactMessage(validPayload);
-
-    expect(res.success).toBe(true);
-    expect(mockAuditLog).toHaveBeenCalledTimes(1);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Audit log recording failed"),
-      expect.any(Error)
-    );
-
-    consoleErrorSpy.mockRestore();
-  });
-
   it("succeeds when atomic RPC succeeds without falling back to insert", async () => {
     const { submitContactMessage } = await import("../contact-actions");
     mockRpc.mockResolvedValueOnce({ data: "atomic-rpc-uuid-999", error: null });
@@ -106,8 +58,83 @@ describe("submitContactMessage Contact Action", () => {
     const res = await submitContactMessage(validPayload);
 
     expect(res.success).toBe(true);
+    expect(mockRpc).toHaveBeenCalledWith("submit_contact_message_atomic", expect.objectContaining({
+      p_sender_name: "يوحنا سامي",
+      p_sender_phone: "01234567890",
+      p_message_content: "رسالة استفسار روحية",
+    }));
     expect(mockInsert).not.toHaveBeenCalled();
-    // Audit log was already written atomically inside the DB function
     expect(mockAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when atomic RPC returns an error and never falls back to direct insert", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    mockRpc.mockResolvedValueOnce({ data: null, error: { message: "RPC failed" } });
+
+    const res = await submitContactMessage(validPayload);
+
+    expect(res.success).toBe(false);
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(res.message).toContain("تعذر إرسال الرسالة");
+  });
+
+  it("fails closed when atomic RPC returns no data/id", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    mockRpc.mockResolvedValueOnce({ data: null, error: null });
+
+    const res = await submitContactMessage(validPayload);
+
+    expect(res.success).toBe(false);
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(res.message).toContain("تعذر إرسال الرسالة");
+  });
+
+  it("fails closed when Supabase admin environment credentials are missing", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    mockHasSupabaseAdminEnv.mockReturnValue(false);
+
+    const res = await submitContactMessage(validPayload);
+
+    expect(res.success).toBe(false);
+    expect(mockRpc).not.toHaveBeenCalled();
+    expect(mockInsert).not.toHaveBeenCalled();
+    expect(res.message).toContain("خدمة الرسائل الإلكترونية غير مفعّلة");
+  });
+
+  it("fails closed in production when Supabase admin credentials are missing", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    try {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      const { submitContactMessage } = await import("../contact-actions");
+      mockHasSupabaseAdminEnv.mockReturnValue(false);
+
+      const res = await submitContactMessage(validPayload);
+
+      expect(res.success).toBe(false);
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(res.message).toContain("خدمة الرسائل الإلكترونية غير مفعّلة");
+    } finally {
+      (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
+    }
+  });
+
+  it("validates input before verifying Turnstile or consuming rate limit", async () => {
+    const { submitContactMessage } = await import("../contact-actions");
+    const { verifyTurnstile } = await import("@/lib/security/turnstile");
+    const { checkPublicWriteRateLimit } = await import("@/lib/security/rate-limit");
+
+    const invalidPayload = {
+      senderName: "",
+      senderPhone: "invalid",
+      messageContent: "",
+      turnstileToken: "token-bad",
+    };
+
+    const res = await submitContactMessage(invalidPayload);
+
+    expect(res.success).toBe(false);
+    expect(res.message).toContain("بيانات الرسالة غير مكتملة");
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+    expect(checkPublicWriteRateLimit).not.toHaveBeenCalled();
   });
 });
