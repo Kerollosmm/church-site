@@ -153,5 +153,13 @@ describe("audit-csv export", () => {
       expect(escapeCsvCell("line1\nline2")).toBe('"line1\nline2"');
       expect(escapeCsvCell("line1\r\nline2")).toBe('"line1\r\nline2"');
     });
+
+    it("neutralizes leading formula injection characters (=, +, -, @)", () => {
+      expect(escapeCsvCell("=HYPERLINK")).toBe("'=HYPERLINK");
+      expect(escapeCsvCell("+123")).toBe("'+123");
+      expect(escapeCsvCell("-SUM")).toBe("'-SUM");
+      expect(escapeCsvCell("@something")).toBe("'@something");
+      expect(escapeCsvCell('=CMD("calc")')).toBe('"\'=CMD(""calc"")"');
+    });
   });
 });

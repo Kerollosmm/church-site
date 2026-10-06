@@ -26,6 +26,7 @@ export function QuickActionBar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={`flex flex-col items-center justify-center gap-1 transition-colors ${
                 isActive
                   ? "text-copticNavy font-bold bg-copticGold-50"

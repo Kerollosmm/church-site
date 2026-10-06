@@ -351,7 +351,7 @@ const STREAM_EVENT_SLUGS: Record<string, string> = {
 };
 
 function buildStreamEvents(): EventRecord[] {
-  return SEED_STREAM_EVENTS.map((stream, index) => ({
+  const streamEvents: EventRecord[] = SEED_STREAM_EVENTS.map((stream, index) => ({
     id: seedId(EVENT_ID_PREFIX, index + 1),
     slug: STREAM_EVENT_SLUGS[stream.id] ?? `stream-${index + 1}`,
     titleAr: stream.title_ar,
@@ -376,6 +376,86 @@ function buildStreamEvents(): EventRecord[] {
     createdBy: null,
     updatedBy: null,
   }));
+
+  const extraEvents: EventRecord[] = [
+    {
+      id: seedId(EVENT_ID_PREFIX, streamEvents.length + 1),
+      slug: "event-2026-09-25",
+      titleAr: "لقاء رعوي 25 سبتمبر 2026",
+      titleEn: null,
+      summaryAr: null,
+      summaryEn: null,
+      descriptionAr: null,
+      descriptionEn: null,
+      startsAt: "2026-09-25T07:00:00.000Z",
+      endsAt: null,
+      timezone: DEFAULT_EVENT_TIME_ZONE,
+      allDay: false,
+      venueId: null,
+      status: "published",
+      seriesId: null,
+      occurrenceDate: null,
+      isExceptionOf: null,
+      imageUrl: null,
+      documents: [] as EventAttachment[],
+      createdAt: SEEDED_AT,
+      updatedAt: SEEDED_AT,
+      createdBy: null,
+      updatedBy: null,
+    },
+    {
+      id: seedId(EVENT_ID_PREFIX, streamEvents.length + 2),
+      slug: "event-2026-09-27",
+      titleAr: "لقاء صلاة 27 سبتمبر 2026",
+      titleEn: null,
+      summaryAr: null,
+      summaryEn: null,
+      descriptionAr: null,
+      descriptionEn: null,
+      startsAt: "2026-09-27T17:00:00.000Z",
+      endsAt: null,
+      timezone: DEFAULT_EVENT_TIME_ZONE,
+      allDay: false,
+      venueId: null,
+      status: "published",
+      seriesId: null,
+      occurrenceDate: null,
+      isExceptionOf: null,
+      imageUrl: null,
+      documents: [] as EventAttachment[],
+      createdAt: SEEDED_AT,
+      updatedAt: SEEDED_AT,
+      createdBy: null,
+      updatedBy: null,
+    },
+    {
+      id: seedId(EVENT_ID_PREFIX, streamEvents.length + 3),
+      slug: "event-2026-09-29",
+      titleAr: "لقاء شباب 29 سبتمبر 2026",
+      titleEn: null,
+      summaryAr: null,
+      summaryEn: null,
+      descriptionAr: null,
+      descriptionEn: null,
+      startsAt: "2026-09-29T18:00:00.000Z",
+      endsAt: null,
+      timezone: DEFAULT_EVENT_TIME_ZONE,
+      allDay: false,
+      venueId: null,
+      status: "published",
+      seriesId: null,
+      occurrenceDate: null,
+      isExceptionOf: null,
+      imageUrl: null,
+      documents: [] as EventAttachment[],
+      createdAt: SEEDED_AT,
+      updatedAt: SEEDED_AT,
+      createdBy: null,
+      updatedBy: null,
+    },
+  ];
+
+  return [...streamEvents, ...extraEvents];
 }
 
 /** Taxonomy links for the seeded events (series carry theirs inside `defaultTermIds`). */

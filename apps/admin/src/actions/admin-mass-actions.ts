@@ -17,53 +17,20 @@ import {
   hasSupabaseEnv,
   createSupabaseServerClient,
   REVALIDATION_TAGS,
+  recordAuditLog,
+  snapshot,
 } from "@church-site/data-access";
 
 type MassScheduleUpdate = Database["public"]["Tables"]["mass_schedules"]["Update"];
 
-export const WeeklyMassInputSchema = z.object({
-  day_of_week: z.enum([
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ]),
-  altar_id: z.string().min(1, "يرجى اختيار المذبح"),
-  title_ar: z
-    .string()
-    .trim()
-    .min(3, "عنوان القداس يجب ألا يقل عن 3 أحرف")
-    .max(150, "عنوان القداس لا يتجاوز 150 حرفاً"),
-  start_time: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "توقيت البدء غير صالح (HH:mm)"),
-  end_time: z
-    .string()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, "توقيت الانتهاء غير صالح (HH:mm)"),
-  target_group_ar: z
-    .string()
-    .trim()
-    .max(150, "الفئة المستهدفة لا تتجاوز 150 حرفاً")
-    .optional()
-    .nullable(),
-  notes_ar: z
-    .string()
-    .trim()
-    .max(500, "الملاحظات لا تتجاوز 500 حرف")
-    .optional()
-    .nullable(),
-  is_active: z.boolean().default(true),
-});
+import {
+  WeeklyMassInputSchema,
+  type CreateMassInput,
+  type UpdateMassInput,
+  type AdminMassActionResult,
+} from "./admin-mass-actions.shared";
 
-export type CreateMassInput = z.infer<typeof WeeklyMassInputSchema>;
-export type UpdateMassInput = Partial<CreateMassInput>;
-
-export type AdminMassActionResult =
-  | { success: true; message: string; data?: unknown }
-  | { success: false; message: string };
+export type { CreateMassInput, UpdateMassInput, AdminMassActionResult };
 
 const IdSchema = z.string().min(1, "معرّف القداس غير صالح");
 
@@ -104,26 +71,46 @@ function safeRevalidateMasses(): void {
  */
 export async function createMassAction(payload: CreateMassInput): Promise<AdminMassActionResult> {
   const session = await requireStaff();
-  const role = adminRoleFromStaffRole(session.role);
 
-  if (!can(role, "mass:create")) {
+  const role = adminRoleFromStaffRole(session.role);
+  if (!role || !can(role, "mass:create")) {
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.fullNameAr },
+      action: "denied",
+      entityType: "mass",
+      entityId: "new",
+      before: null,
+      after: snapshot(payload as Record<string, unknown>),
+      summary: `رفض صلاحية إضافة قداس للحساب «${session.fullNameAr}» (الدور: ${session.role})`,
+    });
     return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
   }
 
   const parsed = WeeklyMassInputSchema.safeParse(payload);
   if (!parsed.success) {
+    const fieldError = parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة";
     return {
       success: false,
-      message: parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة",
+      message: fieldError,
     };
   }
 
-  if (!hasSupabaseEnv()) {
-    safeRevalidateMasses();
-    return { success: true, message: "تم حفظ القداس بنجاح" };
-  }
-
   try {
+    if (!hasSupabaseEnv()) {
+      const generatedId = `m-${Date.now()}`;
+      await recordAuditLog({
+        actor: { id: session.userId, name: session.fullNameAr },
+        action: "create",
+        entityType: "mass",
+        entityId: generatedId,
+        before: null,
+        after: snapshot({ ...parsed.data, id: generatedId }),
+        summary: `إضافة قداس في مخزن الملفات: «${parsed.data.title_ar}»`,
+      });
+      safeRevalidateMasses();
+      return { success: true, message: "تم حفظ القداس بنجاح", data: { id: generatedId, ...parsed.data } };
+    }
+
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
       .from("mass_schedules")
@@ -142,19 +129,53 @@ export async function createMassAction(payload: CreateMassInput): Promise<AdminM
 
     if (error) {
       console.error("[admin-mass] create failed", error);
-      if (isDatabaseUnavailable(error)) {
-        safeRevalidateMasses();
-        return { success: true, message: "تم حفظ القداس بنجاح" };
-      }
-      return { success: false, message: "تعذّر إضافة القداس، يرجى مراجعة البيانات المدخلة." };
+      const stack = new Error().stack || "";
+      await recordAuditLog({
+        actor: { id: session.userId, name: session.fullNameAr },
+        action: "denied",
+        entityType: "mass",
+        entityId: "new",
+        before: null,
+        after: snapshot({ payload, error: error.message, code: error.code, stack }),
+        summary: `فشل إدراج القداس في قاعدة البيانات: ${error.message}`,
+      });
+
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
+
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.fullNameAr },
+      action: "create",
+      entityType: "mass",
+      entityId: (data as { id?: string })?.id || "new",
+      before: null,
+      after: snapshot(data as Record<string, unknown>),
+      summary: `إضافة قداس: «${parsed.data.title_ar}»`,
+    });
 
     safeRevalidateMasses();
     return { success: true, message: "تم حفظ القداس بنجاح", data };
   } catch (err) {
     console.error("[admin-mass] create exception", err);
-    safeRevalidateMasses();
-    return { success: true, message: "تم حفظ القداس بنجاح" };
+    const stack = err instanceof Error ? err.stack || err.message : String(err);
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.fullNameAr },
+      action: "denied",
+      entityType: "mass",
+      entityId: "new",
+      before: null,
+      after: snapshot({ payload, error: String(err), stack }),
+      summary: `استثناء غير متوقع أثناء إضافة القداس: ${err instanceof Error ? err.message : String(err)}`,
+    }).catch(() => {});
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
 }
 
@@ -170,29 +191,50 @@ export async function updateMassAction(
   const role = adminRoleFromStaffRole(session.role);
 
   if (!can(role, "mass:update")) {
-    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
+    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR, error: CAPABILITY_DENIED_MESSAGE_AR };
   }
 
   const parsedId = IdSchema.safeParse(id);
   if (!parsedId.success) {
-    return { success: false, message: "معرّف القداس غير صالح" };
+    return { success: false, message: "معرّف القداس غير صالح", error: "معرّف القداس غير صالح" };
   }
 
   const parsed = WeeklyMassInputSchema.partial().safeParse(payload);
   if (!parsed.success) {
+    const errorMsg = parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة";
     return {
       success: false,
-      message: parsed.error.issues[0]?.message ?? "بيانات القداس غير صالحة",
+      message: errorMsg,
+      error: errorMsg,
     };
-  }
-
-  if (!hasSupabaseEnv()) {
-    safeRevalidateMasses();
-    return { success: true, message: "تم حفظ القداس بنجاح" };
   }
 
   try {
     const supabase = await createSupabaseServerClient();
+
+    const { data: beforeData, error: beforeError } = await supabase
+      .from("mass_schedules")
+      .select("*")
+      .eq("id", parsedId.data)
+      .maybeSingle();
+
+    if (beforeError) {
+      console.error("[admin-mass] fetch before update failed", beforeError);
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
+    }
+
+    if (!beforeData) {
+      return {
+        success: false,
+        message: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+        error: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+      };
+    }
+
     const updatePayload: MassScheduleUpdate = {
       updated_at: new Date().toISOString(),
     };
@@ -231,20 +273,48 @@ export async function updateMassAction(
 
     if (error) {
       console.error("[admin-mass] update failed", error);
-      if (isDatabaseUnavailable(error)) {
-        safeRevalidateMasses();
-        return { success: true, message: "تم حفظ القداس بنجاح" };
-      }
-      return { success: false, message: "تعذّر تعديل القداس، يرجى المحاولة لاحقاً." };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
+
+    if (!data) {
+      return {
+        success: false,
+        message: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+        error: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+      };
+    }
+
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.email || "Admin Staff" },
+      action: "update",
+      entityType: "mass",
+      entityId: parsedId.data,
+      before: snapshot(beforeData as Record<string, unknown>),
+      after: snapshot(data as Record<string, unknown>),
+      summary: `تعديل قداس: «${(data as any)?.title_ar || parsed.data.title_ar || parsedId.data}»`,
+    });
 
     safeRevalidateMasses();
     return { success: true, message: "تم حفظ القداس بنجاح", data };
   } catch (err) {
     console.error("[admin-mass] update exception", err);
-    safeRevalidateMasses();
-    return { success: true, message: "تم حفظ القداس بنجاح" };
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
+}
+
+export async function updateMassScheduleAction(
+  id: string,
+  payload: UpdateMassInput
+): Promise<AdminMassActionResult> {
+  return updateMassAction(id, payload);
 }
 
 /**
@@ -259,46 +329,88 @@ export async function toggleMassStatusAction(
   const role = adminRoleFromStaffRole(session.role);
 
   if (!can(role, "mass:toggle")) {
-    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
+    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR, error: CAPABILITY_DENIED_MESSAGE_AR };
   }
 
   const parsedId = IdSchema.safeParse(id);
   if (!parsedId.success) {
-    return { success: false, message: "معرّف القداس غير صالح" };
+    return { success: false, message: "معرّف القداس غير صالح", error: "معرّف القداس غير صالح" };
   }
 
   const successMessage = isActive ? "تم تفعيل القداس بنجاح" : "تم إلغاء تفعيل القداس بنجاح";
 
-  if (!hasSupabaseEnv()) {
-    safeRevalidateMasses();
-    return { success: true, message: successMessage };
-  }
-
   try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase
+
+    const { data: beforeData, error: beforeError } = await supabase
+      .from("mass_schedules")
+      .select("*")
+      .eq("id", parsedId.data)
+      .maybeSingle();
+
+    if (beforeError) {
+      console.error("[admin-mass] fetch before toggle failed", beforeError);
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
+    }
+
+    if (!beforeData) {
+      return {
+        success: false,
+        message: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+        error: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+      };
+    }
+
+    const { data, error } = await supabase
       .from("mass_schedules")
       .update({
         is_active: isActive,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", parsedId.data);
+      .eq("id", parsedId.data)
+      .select()
+      .maybeSingle();
 
     if (error) {
       console.error("[admin-mass] toggle failed", error);
-      if (isDatabaseUnavailable(error)) {
-        safeRevalidateMasses();
-        return { success: true, message: successMessage };
-      }
-      return { success: false, message: "تعذّر تغيير حالة القداس، يرجى المحاولة لاحقاً." };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
+    if (!data) {
+      return {
+        success: false,
+        message: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+        error: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+      };
+    }
+
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.email || "Admin Staff" },
+      action: "update",
+      entityType: "mass",
+      entityId: parsedId.data,
+      before: snapshot(beforeData as Record<string, unknown>),
+      after: snapshot(data as Record<string, unknown>),
+      summary: `${isActive ? "تفعيل" : "إلغاء تفعيل"} قداس: «${(data as any)?.title_ar || (beforeData as any)?.title_ar || parsedId.data}»`,
+    });
+
     safeRevalidateMasses();
-    return { success: true, message: successMessage };
+    return { success: true, message: successMessage, data };
   } catch (err) {
     console.error("[admin-mass] toggle exception", err);
-    safeRevalidateMasses();
-    return { success: true, message: successMessage };
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
 }
 
@@ -311,40 +423,82 @@ export async function deleteMassAction(id: string): Promise<AdminMassActionResul
   const role = adminRoleFromStaffRole(session.role);
 
   if (!can(role, "mass:delete")) {
-    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR };
+    return { success: false, message: CAPABILITY_DENIED_MESSAGE_AR, error: CAPABILITY_DENIED_MESSAGE_AR };
   }
 
   const parsedId = IdSchema.safeParse(id);
   if (!parsedId.success) {
-    return { success: false, message: "معرّف القداس غير صالح" };
-  }
-
-  if (!hasSupabaseEnv()) {
-    safeRevalidateMasses();
-    return { success: true, message: "تم حذف القداس بنجاح" };
+    return { success: false, message: "معرّف القداس غير صالح", error: "معرّف القداس غير صالح" };
   }
 
   try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase
+
+    const { data: beforeData, error: beforeError } = await supabase
+      .from("mass_schedules")
+      .select("*")
+      .eq("id", parsedId.data)
+      .maybeSingle();
+
+    if (beforeError) {
+      console.error("[admin-mass] fetch before delete failed", beforeError);
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
+    }
+
+    if (!beforeData) {
+      return {
+        success: false,
+        message: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+        error: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+      };
+    }
+
+    const { data, error } = await supabase
       .from("mass_schedules")
       .delete()
-      .eq("id", parsedId.data);
+      .eq("id", parsedId.data)
+      .select()
+      .maybeSingle();
 
     if (error) {
       console.error("[admin-mass] delete failed", error);
-      if (isDatabaseUnavailable(error)) {
-        safeRevalidateMasses();
-        return { success: true, message: "تم حذف القداس بنجاح" };
-      }
-      return { success: false, message: "تعذّر حذف القداس، يرجى المحاولة لاحقاً." };
+      return {
+        success: false,
+        message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+        error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      };
     }
 
+    if (!data) {
+      return {
+        success: false,
+        message: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+        error: "تغيّرت الحالة من جهاز آخر أو تعذر العثور على القداس",
+      };
+    }
+
+    await recordAuditLog({
+      actor: { id: session.userId, name: session.email || "Admin Staff" },
+      action: "delete",
+      entityType: "mass",
+      entityId: parsedId.data,
+      before: snapshot(beforeData as Record<string, unknown>),
+      after: null,
+      summary: `حذف قداس: «${(beforeData as any)?.title_ar || parsedId.data}»`,
+    });
+
     safeRevalidateMasses();
-    return { success: true, message: "تم حذف القداس بنجاح" };
+    return { success: true, message: "تم حذف القداس بنجاح", data };
   } catch (err) {
     console.error("[admin-mass] delete exception", err);
-    safeRevalidateMasses();
-    return { success: true, message: "تم حذف القداس بنجاح" };
+    return {
+      success: false,
+      message: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+      error: "تعذر إتمام العملية في قاعدة البيانات، يرجى المحاولة مرة أخرى.",
+    };
   }
 }

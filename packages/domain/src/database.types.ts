@@ -1972,6 +1972,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: boolean;
       };
+      is_editor: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
       is_admin: {
         Args: Record<string, never>;
         Returns: boolean;
@@ -1979,6 +1983,17 @@ export interface Database {
       normalize_arabic: {
         Args: {
           txt: string;
+        };
+        Returns: string;
+      };
+      submit_contact_message_atomic: {
+        Args: {
+          p_sender_name: string;
+          p_sender_phone: string;
+          p_sender_email: string | null;
+          p_urgency: ContactUrgencyEnum;
+          p_assigned_priest_id: string | null;
+          p_message_content: string;
         };
         Returns: string;
       };

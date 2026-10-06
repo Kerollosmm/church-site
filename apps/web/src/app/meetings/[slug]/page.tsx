@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { ContactLinks } from "@/components/contact/ContactLinks";
 import { Users, Clock, MapPin, UserCheck, BookOpen, ChevronLeft, Heart, CheckCircle2 } from "lucide-react";
-import { getMeetingBySlug, SEED_CHURCH_MEETINGS } from "@/lib/queries";
+import { getMeetingBySlug, SEED_CHURCH_MEETINGS } from "@church-site/data-access";
 
 export const revalidate = 86400;
 

@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   Receipt,
 } from "lucide-react";
-import type { Tables } from "@/types/database.types";
+import type { Tables } from "@church-site/domain";
+import { toWhatsAppUrl, PARISH_PHONE_EMERGENCY_1 } from "@/lib/utils/parish-contact";
 
 export interface DonationAccountsListProps {
   /** Official bank accounts from `getDonationAccounts()` (database or seeded fallback). */
@@ -20,10 +21,14 @@ export interface DonationAccountsListProps {
 export function DonationAccountsList({ accounts }: DonationAccountsListProps) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2500);
+  const copyToClipboard = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2500);
+    } catch (err) {
+      console.warn("Failed to copy account information to clipboard:", err);
+    }
   };
 
   return (
@@ -179,12 +184,12 @@ export function DonationAccountsList({ accounts }: DonationAccountsListProps) {
               <span>للحصول على إيصال استلام رسمي، يرجى إرسال صورة التحويل البنكي لواتساب الإدارة المالية.</span>
             </div>
             <a
-              href="https://wa.me/201200000000"
+              href={toWhatsAppUrl(PARISH_PHONE_EMERGENCY_1)}
               target="_blank"
               rel="noopener noreferrer"
               className="font-bold text-copticGold-300 hover:text-white"
             >
-              واتساب السكرتارية المالية: 01200000000
+              واتساب السكرتارية المالية: {PARISH_PHONE_EMERGENCY_1}
             </a>
           </div>
         </div>

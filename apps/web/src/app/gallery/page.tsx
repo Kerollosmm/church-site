@@ -25,11 +25,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, Images, Image as ImageIcon, ExternalLink, FileText, Video } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { getPublicGalleryMedia, type PublicMediaView } from "@/lib/events/feed";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { localized } from "@/lib/i18n/localized";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
+import { getPublicGalleryMedia, type PublicMediaView } from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { localized } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 import { getSafeRenderableImageUrl } from "@church-site/data-access/client";
 
 export const revalidate = 3600; // 1h ISR

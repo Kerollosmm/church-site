@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/env";
-import { getEventFeed } from "@/lib/events/feed";
-import { listWindowRange } from "@/lib/events/format";
+import { getSiteUrl } from "@church-site/data-access";
+import { getEventFeed } from "@church-site/data-access";
+import { listWindowRange } from "@church-site/data-access";
 
 // src/app/sitemap.ts
 // The public sitemap: the parish's static pages plus every event a visitor can currently reach.

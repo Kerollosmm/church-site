@@ -73,14 +73,16 @@ export function jdnToCoptic(jdn: number): CopticDate {
 }
 
 /**
- * Converts any JS Date (Gregorian) to CopticDate object
+ * Converts any JS Date (Gregorian) or Cairo wall clock date to CopticDate object
  */
-export function gregorianToCoptic(date: Date = new Date()): CopticDate {
-  const jdn = gregorianToJdn(
-    date.getFullYear(),
-    date.getMonth() + 1,
-    date.getDate()
-  );
+export function gregorianToCoptic(
+  date: Date | { year: number; month: number; day: number } = new Date()
+): CopticDate {
+  const isDate = date instanceof Date;
+  const year = isDate ? date.getFullYear() : date.year;
+  const month = isDate ? date.getMonth() + 1 : date.month;
+  const day = isDate ? date.getDate() : date.day;
+  const jdn = gregorianToJdn(year, month, day);
   return jdnToCoptic(jdn);
 }
 
@@ -88,7 +90,10 @@ export function gregorianToCoptic(date: Date = new Date()): CopticDate {
  * Returns a localized Arabic string of the Coptic Date
  * e.g. "١٧ طوبة ١٧٤٢ ش" or "17 طوبة 1742 للشهداء"
  */
-export function getCopticDateString(date: Date = new Date(), options?: { westernDigits?: boolean }): string {
+export function getCopticDateString(
+  date: Date | { year: number; month: number; day: number } = new Date(),
+  options?: { westernDigits?: boolean }
+): string {
   const coptic = gregorianToCoptic(date);
   if (options?.westernDigits) {
     return `${coptic.day} ${coptic.monthNameAr} ${coptic.year} ش`;

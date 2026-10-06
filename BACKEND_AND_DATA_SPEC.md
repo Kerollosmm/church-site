@@ -63,12 +63,12 @@ CREATE TABLE profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- إنشاء ملف تلقائي عند أول تسجيل مستخدم (الافتراضي: servant بلا أي صلاحيات كتابة حتى يرقّيه admin)
+-- إنشاء ملف تلقائي عند أول تسجيل مستخدم (الافتراضي: servant **غير نشط** is_active = FALSE فلا يمنح تسجيل عابر أي صلاحية حتى يفعّله admin)
 CREATE OR REPLACE FUNCTION handle_new_user() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO profiles (id, full_name_ar, role)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name_ar', 'خادم جديد'), 'servant');
+  INSERT INTO profiles (id, full_name_ar, role, is_active)
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name_ar', 'خادم جديد'), 'servant', FALSE);
   RETURN NEW;
 END; $$;
 
@@ -84,7 +84,16 @@ LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public AS $$
   SELECT EXISTS (
     SELECT 1 FROM profiles
     WHERE id = auth.uid() AND is_active
-      AND role IN ('admin', 'secretary', 'servant', 'priest')
+      AND role IN ('admin', 'secretary')
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION is_editor() RETURNS boolean
+LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND is_active
+      AND role IN ('admin', 'secretary')
   );
 $$;
 
@@ -97,7 +106,7 @@ $$;
 ```
 
 > **Bootstrap إلزامي (خطوة نشر يدوية):** بعد إنشاء أول حساب مدير عبر Supabase Auth، نفّذ في SQL Editor:
-> `UPDATE profiles SET role = 'admin' WHERE id = '<uuid-of-first-admin>';`
+> `UPDATE profiles SET role = 'admin', is_active = TRUE WHERE id = '<uuid-of-first-admin>';`
 > لا يوجد أي مسار آخر لترقية مدير أول — قرارات ترقية الأدوار قرار روحي إداري (`ready-for-human`).
 
 ---
@@ -559,7 +568,7 @@ CREATE INDEX idx_verses_book_chapter ON bible_verses (book_id, chapter, verse);
 
 ## 5. سياسات الأمان على مستوى الصفوف (Row Level Security - RLS v1.1)
 
-> **قاعدة v1.1 الحاكمة**: لا توجد أي سياسة `TO authenticated USING (TRUE)` في هذا المشروع. كل كتابة إدارية تمر عبر `is_staff()` / `is_admin()`.
+> **قاعدة v1.1 الحاكمة**: لا توجد أي سياسة `TO authenticated USING (TRUE)` في هذا المشروع. كل كتابة إدارية تمر عبر `is_editor()` وكل قراءة إدارية عبر `is_staff()` / `is_admin()`.
 
 ```sql
 -- تفعيل RLS على كافة الجداول بدون استثناء
@@ -644,26 +653,26 @@ WITH CHECK (phone IS NOT NULL);
 -- لا وجود لأي سياسة UPDATE/DELETE عامة في النظام كله.
 
 -- -----------------------------------------------------------------------------
--- 5.4 صلاحيات الطاقم الكنسي (Staff = admin/secretary/servant/priest عبر is_staff())
+-- 5.4 صلاحيات الطاقم الكنسي (Staff = admin/secretary عبر is_staff() قراءةً و is_editor() كتابةً)
 -- -----------------------------------------------------------------------------
-CREATE POLICY "Staff manage altars" ON altars FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage clergy" ON clergy FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage mass_schedules" ON mass_schedules FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage mass_exceptions" ON mass_exceptions FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage site_alerts" ON site_alerts FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage stream_events" ON stream_events FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage specialties" ON clinic_specialties FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage meetings" ON church_meetings FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage schools" ON schools_academies FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage activities" ON activities FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage public_services" ON public_services FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage condolence_bookings" ON condolence_bookings FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage contact_messages" ON contact_messages FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage news_articles" ON news_articles FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage donation_accounts" ON donation_accounts FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage program_applications" ON program_applications FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage job_applications" ON job_applications FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
-CREATE POLICY "Staff manage clinic_alert_subscriptions" ON clinic_alert_subscriptions FOR ALL TO authenticated USING (is_staff()) WITH CHECK (is_staff());
+CREATE POLICY "Staff manage altars" ON altars FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage clergy" ON clergy FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage mass_schedules" ON mass_schedules FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage mass_exceptions" ON mass_exceptions FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage site_alerts" ON site_alerts FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage stream_events" ON stream_events FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage specialties" ON clinic_specialties FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage meetings" ON church_meetings FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage schools" ON schools_academies FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage activities" ON activities FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage public_services" ON public_services FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage condolence_bookings" ON condolence_bookings FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage contact_messages" ON contact_messages FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage news_articles" ON news_articles FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage donation_accounts" ON donation_accounts FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage program_applications" ON program_applications FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage job_applications" ON job_applications FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
+CREATE POLICY "Staff manage clinic_alert_subscriptions" ON clinic_alert_subscriptions FOR ALL TO authenticated USING (is_editor()) WITH CHECK (is_editor());
 ```
 
 ---

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, ArrowLeft } from "lucide-react";
-import type { NextMass } from "@/lib/utils/mass-schedule";
+import type { NextMass } from "@church-site/data-access/client";
 
 interface Remaining {
   days: number;

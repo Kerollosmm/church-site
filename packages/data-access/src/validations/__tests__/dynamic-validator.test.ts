@@ -40,6 +40,74 @@ describe("sanitizeHtml", () => {
     expect(output).not.toContain("javascript:");
     expect(output).toContain("<a>رابط خطير</a>");
   });
+
+  // --- Regression guard for the four confirmed bypasses of the previous regex sanitizer ---
+
+  it("rejects a scheme hidden behind a character reference (bypass A)", () => {
+    expect(sanitizeHtml(`<a href="&#106;avascript:alert(1)">x</a>`)).toBe("<a>x</a>");
+    expect(sanitizeHtml(`<a href="&#106avascript:alert(1)">x</a>`)).toBe("<a>x</a>");
+    expect(sanitizeHtml(`<a href="javascript&#58;alert(1)">x</a>`)).toBe("<a>x</a>");
+    expect(sanitizeHtml(`<a href="&#x6a;avascript:alert(1)">x</a>`)).toBe("<a>x</a>");
+  });
+
+  it("rejects a scheme broken up by whitespace or control characters (bypass B)", () => {
+    const hostile = [
+      `<a href="java\tscript:alert(1)">x</a>`,
+      `<a href="java\nscript:alert(1)">x</a>`,
+      `<a href="java\rscript:alert(1)">x</a>`,
+      `<a href=" javascript:alert(1)">x</a>`,
+      `<a href="JaVaScRiPt:alert(1)">x</a>`,
+    ];
+    for (const input of hostile) {
+      expect(sanitizeHtml(input)).toBe("<a>x</a>");
+    }
+  });
+
+  it("adds rel=noopener noreferrer to every target=_blank link (bypass C)", () => {
+    const output = sanitizeHtml(`<a href="https://evil.example" target="_blank">x</a>`);
+    expect(output).toContain('rel="noopener noreferrer"');
+    expect(output).toContain('target="_blank"');
+  });
+
+  it("overrides an author-supplied rel on a target=_blank link", () => {
+    const output = sanitizeHtml('<a href="https://evil.example" target="_blank" rel="opener">x</a>');
+    expect(output).toContain('rel="noopener noreferrer"');
+    expect(output).not.toContain('rel="opener"');
+  });
+
+  it("rejects data: URLs and keeps only safe schemes (bypass D)", () => {
+    expect(sanitizeHtml(`<a href="data:text/html,<b>x</b>">y</a>`)).toBe("<a>y</a>");
+    expect(sanitizeHtml(`<a href="vbscript:msgbox(1)">y</a>`)).toBe("<a>y</a>");
+    expect(sanitizeHtml(`<img src="javascript:alert(1)" alt="a">`)).toBe('<img alt="a">');
+    expect(sanitizeHtml(`<img src="data:image/svg+xml,<svg/>" alt="a">`)).toBe('<img alt="a">');
+  });
+
+  it("keeps safe absolute, relative, mailto and tel links", () => {
+    expect(sanitizeHtml('<a href="https://coptic.org">x</a>')).toBe('<a href="https://coptic.org">x</a>');
+    expect(sanitizeHtml('<a href="/masses">x</a>')).toBe('<a href="/masses">x</a>');
+    expect(sanitizeHtml('<a href="#top">x</a>')).toBe('<a href="#top">x</a>');
+    expect(sanitizeHtml('<a href="mailto:info@coptic.org">x</a>')).toBe('<a href="mailto:info@coptic.org">x</a>');
+    expect(sanitizeHtml('<a href="tel:+201234567">x</a>')).toBe('<a href="tel:+201234567">x</a>');
+  });
+
+  it("removes disallowed elements together with their content", () => {
+    const output = sanitizeHtml('<p>قبل</p><script>alert(1)</script><style>p{}</style><p>بعد</p>');
+    expect(output).toBe("<p>قبل</p><p>بعد</p>");
+    expect(output).not.toContain("alert(1)");
+  });
+
+  it("drops event handlers, style and every attribute outside the allowlist", () => {
+    const output = sanitizeHtml('<p class="prose" style="color:red" onclick="alert(1)" data-x="1">نص</p>');
+    expect(output).toBe('<p class="prose">نص</p>');
+  });
+
+  it("drops an unterminated comment rather than exposing its body", () => {
+    expect(sanitizeHtml("<p>أ</p><!-- <script>alert(1)</script> -->ب")).toBe("<p>أ</p>ب");
+  });
+
+  it("keeps a bare `<` in prose visible instead of mangling the text", () => {
+    expect(sanitizeHtml("<p>5 < 6</p>")).toBe("<p>5 &lt; 6</p>");
+  });
 });
 
 describe("buildFieldValidator", () => {

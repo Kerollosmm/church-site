@@ -15,9 +15,10 @@ import {
   Clock,
 } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { getContentTypeRepository } from "@/lib/store";
+import { getContentTypeRepository } from "@church-site/data-access";
 import { getSafeRenderableImageUrl } from "@church-site/data-access";
 
+export const dynamicParams = false;
 export const revalidate = 3600;
 
 interface ContentTypePageProps {

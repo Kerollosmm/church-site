@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogIn, Loader2, AlertCircle, CheckCircle2, Mail, KeyRound } from "lucide-react";
 import { signIn } from "@/actions/auth-actions";
 import { StaffSignInSchema } from "@/lib/validations/auth-schema";
 
 export function AdminLoginForm() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -30,8 +28,8 @@ export function AdminLoginForm() {
         setError(res.message ?? "تعذر تسجيل الدخول، يرجى المحاولة مرة أخرى");
         return;
       }
-      router.replace("/masses");
-      router.refresh();
+      const target = res.targetUrl || "/masses";
+      window.location.assign(target);
     } catch {
       setError("تعذر الاتصال بخدمة الدخول حالياً، يرجى المحاولة لاحقاً");
     } finally {
@@ -56,6 +54,7 @@ export function AdminLoginForm() {
           <Mail className="w-4 h-4 text-copticGold-700 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="staff-email"
+            name="email"
             type="email"
             dir="ltr"
             autoComplete="username"
@@ -76,6 +75,7 @@ export function AdminLoginForm() {
           <KeyRound className="w-4 h-4 text-copticGold-700 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
             id="staff-password"
+            name="password"
             type="password"
             dir="ltr"
             autoComplete="current-password"

@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { HeartHandshake, Clock, MapPin, ChevronLeft, Building2 } from "lucide-react";
-import { getPublicServices } from "@/lib/queries";
+import { getPublicServices } from "@church-site/data-access";
 
 export const metadata: Metadata = {
   title: "المرافق والخدمات المجتمعية",

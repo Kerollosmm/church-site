@@ -2,11 +2,15 @@
 
 // apps/admin/src/actions/admin-booking-actions.ts
 // Authenticated mutations for the condolence-hall bookings inbox.
+//
+// These obey the same single contract as every other admin action module:
+//   requireStaff() → can(role, "bookings:write") → zod → repository.
 
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { createSupabaseServerClient, REVALIDATION_TAGS } from "@church-site/data-access";
+import { CAPABILITY_DENIED_MESSAGE_AR, adminRoleFromStaffRole, can } from "@church-site/domain";
 
 /** Partial unique index from BACKEND_AND_DATA_SPEC.md §4: one live booking per calendar day. */
 const ACTIVE_DATE_CONSTRAINT = "uq_condolence_active_date";
@@ -35,6 +39,17 @@ interface PostgresErrorLike {
 function isUniqueViolation(error: PostgresErrorLike, constraintName: string): boolean {
   if (error.code !== "23505") return false;
   return `${error.message ?? ""} ${error.details ?? ""}`.includes(constraintName);
+}
+
+/**
+ * The identity + capability gate. Returns a refusal message when the signed-in staff member may not
+ * decide bookings, or null when they may. `requireStaff()` fails closed to /login; `can()` narrows
+ * further, so a future role change cannot silently keep booking decisions open.
+ */
+async function bookingWriteRefusal(): Promise<string | null> {
+  const staff = await requireStaff();
+  const role = adminRoleFromStaffRole(staff.role);
+  return role && can(role, "bookings:write") ? null : CAPABILITY_DENIED_MESSAGE_AR;
 }
 
 /**
@@ -104,9 +119,10 @@ async function decideBooking(
   }
 }
 
-/** Approves a pending condolence-hall booking. Staff-only. */
+/** Approves a pending condolence-hall booking. Staff-only, needs `bookings:write`. */
 export async function approveCondolenceBooking(bookingId: string): Promise<AdminBookingActionResult> {
-  await requireStaff();
+  const refusal = await bookingWriteRefusal();
+  if (refusal) return { success: false, message: refusal };
 
   const parsed = BookingIdSchema.safeParse(bookingId);
   if (!parsed.success) {
@@ -121,12 +137,13 @@ export async function approveCondolenceBooking(bookingId: string): Promise<Admin
   );
 }
 
-/** Rejects a pending condolence-hall booking WITH a reason. Staff-only. */
+/** Rejects a pending condolence-hall booking WITH a reason. Staff-only, needs `bookings:write`. */
 export async function rejectCondolenceBooking(
   bookingId: string,
   reason: string
 ): Promise<AdminBookingActionResult> {
-  await requireStaff();
+  const refusal = await bookingWriteRefusal();
+  if (refusal) return { success: false, message: refusal };
 
   const parsedId = BookingIdSchema.safeParse(bookingId);
   if (!parsedId.success) {

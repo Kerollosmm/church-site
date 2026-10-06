@@ -14,15 +14,14 @@
 import React from "react";
 import Link from "next/link";
 import { FilterX } from "lucide-react";
-import { FlagBadge } from "@/components/events/FlagBadge";
-import { DIMENSION_ACCENT, DIMENSION_LABEL_KEY } from "@/components/events/flag-styles";
-import type { TermCount } from "@/lib/events/feed";
-import type { EventFilterSelection, EventViewMode } from "@/lib/events/filters";
-import { FILTER_DIMENSIONS, buildEventsHref, countSelectedTerms, toggleFilterValue } from "@/lib/events/filters";
-import type { TaxonomyDimension } from "@/lib/domain/types";
-import type { Locale } from "@/lib/i18n/locales";
-import { t } from "@/lib/i18n/messages";
-import { cn } from "@/lib/utils";
+import { FlagBadge, DIMENSION_ACCENT, DIMENSION_LABEL_KEY } from "@church-site/ui";
+import type { TermCount } from "@church-site/data-access";
+import type { EventFilterSelection, EventViewMode } from "@church-site/data-access";
+import { FILTER_DIMENSIONS, buildEventsHref, countSelectedTerms, toggleFilterValue } from "@church-site/data-access";
+import type { TaxonomyDimension } from "@church-site/domain";
+import type { Locale } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 
 /** The project-wide visible focus ring — one string, so every events control focuses identically. */
 const FOCUS_RING =

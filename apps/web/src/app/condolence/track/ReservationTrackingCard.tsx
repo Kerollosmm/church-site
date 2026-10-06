@@ -5,8 +5,8 @@ import { trackBooking } from "@/actions/condolence-actions";
 import {
   BOOKING_REFERENCE_PLACEHOLDER,
   normalizeBookingReference,
-} from "@/lib/domain/booking-reference";
-import { Search, Loader2, CheckCircle2, Clock, XCircle, AlertCircle, Building2, Calendar } from "lucide-react";
+} from "@church-site/domain";
+import { Search, Loader2, CheckCircle2, Clock, XCircle, AlertCircle, Building2, Calendar, Copy, Check } from "lucide-react";
 
 interface Props {
   initialCode?: string;
@@ -19,6 +19,8 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
   const [code, setCode] = useState(initialCode);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TrackBookingResult | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   const handleTrack = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -85,9 +87,50 @@ export function ReservationTrackingCard({ initialCode = "" }: Props) {
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-copticGold-200">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slateText-secondary">رمز الحجز:</span>
-                    <span className="font-english font-bold text-copticNavy text-base">
+                    <span className="font-english font-bold text-copticNavy text-base select-all">
                       {result.booking.booking_reference_code}
                     </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const refCode = result.booking?.booking_reference_code;
+                        if (!refCode) return;
+                        try {
+                          await navigator.clipboard.writeText(refCode);
+                          setCopiedCode(true);
+                          setCopyError(false);
+                          setTimeout(() => setCopiedCode(false), 2500);
+                        } catch (err) {
+                          console.warn("Failed to copy booking reference code to clipboard:", err);
+                          setCopyError(true);
+                          setCopiedCode(false);
+                          setTimeout(() => setCopyError(false), 3000);
+                        }
+                      }}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold transition ${
+                        copyError
+                          ? "bg-red-100 hover:bg-red-200 text-red-900"
+                          : "bg-copticGold-200/60 hover:bg-copticGold-200 text-copticNavy"
+                      }`}
+                      title={copyError ? "تعذر النسخ تلقائياً، يرجى التحديد والنسخ يدوياً" : "نسخ رمز الحجز"}
+                    >
+                      {copiedCode ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-700" />
+                          <span>تم النسخ</span>
+                        </>
+                      ) : copyError ? (
+                        <>
+                          <AlertCircle className="w-3 h-3 text-red-700" />
+                          <span>تعذر النسخ</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 text-copticNavy" />
+                          <span>نسخ</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   <div className="flex items-center gap-2">

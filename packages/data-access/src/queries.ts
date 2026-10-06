@@ -50,7 +50,7 @@ import {
 /** Every public read talks to this cookie-free client (see the header). */
 type PublicClient = ReturnType<typeof createPublicSupabaseClient>;
 
-/** Minimal shape of a PostgREST error â€” enough to identify it in a log line. */
+/** Minimal shape of a PostgREST error — enough to identify it in a log line. */
 interface PostgrestErrorLike {
   message: string;
   code?: string | null;
@@ -80,9 +80,10 @@ function logQueryEvent(
   level: "warn" | "error",
   queryName: string,
   reason: FallbackReason,
-  detail: Record<string, unknown> = {}
+  detail: Record<string, unknown> = {},
+  served: "seed-data" | "none" = "seed-data"
 ) {
-  const payload = { query: queryName, served: "seed-data", reason, ...detail };
+  const payload = { query: queryName, served, reason, ...detail };
   if (level === "error") {
     console.error("[queries] database read failed", payload);
   } else {
@@ -108,7 +109,7 @@ export async function readOrSeed<T>(
   if (!hasSupabaseEnv()) {
     if (!reportedMissingEnv) {
       reportedMissingEnv = true;
-      logQueryEvent("warn", queryName, "environment_not_configured");
+      logQueryEvent("warn", queryName, "environment_not_configured", {}, "seed-data");
     }
     return [...seed];
   }
@@ -119,10 +120,16 @@ export async function readOrSeed<T>(
     const { data, error } = await read(createPublicSupabaseClient());
 
     if (error) {
-      logQueryEvent("error", queryName, "query_error", {
-        code: error.code ?? null,
-        message: error.message,
-      });
+      logQueryEvent(
+        "error",
+        queryName,
+        "query_error",
+        {
+          code: error.code ?? null,
+          message: error.message,
+        },
+        isProduction ? "none" : "seed-data"
+      );
 
       if (isProduction) {
         throw new Error(
@@ -134,7 +141,13 @@ export async function readOrSeed<T>(
     }
 
     if (!data || data.length === 0) {
-      logQueryEvent("warn", queryName, "empty_result");
+      logQueryEvent(
+        "warn",
+        queryName,
+        "empty_result",
+        {},
+        isProduction ? "none" : "seed-data"
+      );
 
       if (isProduction) {
         throw new Error(
@@ -155,18 +168,30 @@ export async function readOrSeed<T>(
         throw err;
       }
 
-      logQueryEvent("error", queryName, "unexpected_error", {
-        message: err instanceof Error ? err.message : String(err),
-      });
+      logQueryEvent(
+        "error",
+        queryName,
+        "unexpected_error",
+        {
+          message: err instanceof Error ? err.message : String(err),
+        },
+        "none"
+      );
 
       throw new Error(
         `[data-access] ${queryName}: live query failed or returned no rows in production — refusing to serve seed data; check DB connectivity.`
       );
     }
 
-    logQueryEvent("error", queryName, "unexpected_error", {
-      message: err instanceof Error ? err.message : String(err),
-    });
+    logQueryEvent(
+      "error",
+      queryName,
+      "unexpected_error",
+      {
+        message: err instanceof Error ? err.message : String(err),
+      },
+      "seed-data"
+    );
     return [...seed];
   }
 }
@@ -381,15 +406,15 @@ export const getDailyVerse = async () => {
   return {
     ...v,
     verse_text: v.text_ar,
-    book_name: v.book_name ?? "Ø¥Ù†Ø¬ÙŠÙ„ ÙŠÙˆØ­Ù†Ø§",
+    book_name: v.book_name ?? "إنجيل يوحنا",
     chapter_number: v.chapter,
     verse_number: v.verse,
-    theme_tags: ["Ø§Ù„Ù…Ø­Ø¨Ø©", "Ø§Ù„Ø®Ù„Ø§Øµ", "Ø§Ù„ÙØ¯Ø§Ø¡"],
+    theme_tags: ["المحبة", "الخلاص", "الفداء"],
   };
 };
 
 // ============================================================================
-// 4. STAFF-ONLY READS (session-scoped â€” deliberately NOT cached)
+// 4. STAFF-ONLY READS (session-scoped — deliberately NOT cached)
 // ============================================================================
 
 export interface CondolenceBookingsRead {
@@ -401,19 +426,19 @@ export interface CondolenceBookingsRead {
 /**
  * Bookings for the secretariat.
  *
- * `condolence_bookings` has NO public SELECT policy (BACKEND Â§5.2 â€” tracking is done through the
+ * `condolence_bookings` has NO public SELECT policy (BACKEND §5.2 — tracking is done through the
  * `track_condolence_booking` RPC), so this read requires the staff SESSION and therefore the
  * cookie-aware client. It is intentionally NOT wrapped in `unstable_cache`: a session-scoped,
  * private read has no business sitting in a shared cache scope, and its only caller (`/admin`) is
- * `force-dynamic`. There is no seeded fallback for this table â€” fabricated bookings are never
+ * `force-dynamic`. There is no seeded fallback for this table — fabricated bookings are never
  * shown, an empty list with an explicit error message is the honest failure mode.
  */
 export async function getCondolenceBookings(): Promise<CondolenceBookingsRead> {
   if (!hasSupabaseEnv()) {
-    logQueryEvent("error", "getCondolenceBookings", "environment_not_configured");
+    logQueryEvent("error", "getCondolenceBookings", "environment_not_configured", {}, "none");
     return {
       bookings: [],
-      errorMessageAr: "Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ØºÙŠØ± Ù…Ù‡ÙŠØ£Ø© Ø¹Ù„Ù‰ Ù‡Ø°Ø§ Ø§Ù„Ù…ÙˆÙ‚Ø¹ØŒ ØªØ¹Ø°Ù‘Ø± Ø¬Ù„Ø¨ Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ø­Ø¬Ø².",
+      errorMessageAr: "قاعدة البيانات غير مهيأة على هذا الموقع، تعذّر جلب طلبات الحجز.",
     };
   }
 
@@ -428,10 +453,10 @@ export async function getCondolenceBookings(): Promise<CondolenceBookingsRead> {
       logQueryEvent("error", "getCondolenceBookings", "query_error", {
         code: error.code ?? null,
         message: error.message,
-      });
+      }, "none");
       return {
         bookings: [],
-        errorMessageAr: "ØªØ¹Ø°Ù‘Ø± Ø¬Ù„Ø¨ Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ø­Ø¬Ø² Ù…Ù† Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§ØªØŒ ÙŠØ±Ø¬Ù‰ Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©.",
+        errorMessageAr: "تعذّر جلب طلبات الحجز من قاعدة البيانات، يرجى إعادة المحاولة.",
       };
     }
 
@@ -439,10 +464,10 @@ export async function getCondolenceBookings(): Promise<CondolenceBookingsRead> {
   } catch (err) {
     logQueryEvent("error", "getCondolenceBookings", "unexpected_error", {
       message: err instanceof Error ? err.message : String(err),
-    });
+    }, "none");
     return {
       bookings: [],
-      errorMessageAr: "ØªØ¹Ø°Ù‘Ø± Ø¬Ù„Ø¨ Ø·Ù„Ø¨Ø§Øª Ø§Ù„Ø­Ø¬Ø² Ù…Ù† Ù‚Ø§Ø¹Ø¯Ø© Ø§Ù„Ø¨ÙŠØ§Ù†Ø§ØªØŒ ÙŠØ±Ø¬Ù‰ Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ù…Ø­Ø§ÙˆÙ„Ø©.",
+      errorMessageAr: "تعذّر جلب طلبات الحجز من قاعدة البيانات، يرجى إعادة المحاولة.",
     };
   }
 }

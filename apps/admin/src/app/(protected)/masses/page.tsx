@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FileClock } from "lucide-react";
 import { requireStaff } from "@/lib/auth/require-staff";
 import { ADMIN_ROLE_LABELS_AR, adminRoleFromStaffRole, can } from "@church-site/domain";
-import { getAltars, getWeeklyMasses } from "@church-site/data-access";
+import { getAltars, listAdminWeeklyMasses } from "@church-site/data-access";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { ADMIN_BUTTON_SECONDARY } from "@/components/admin/admin-ui";
 import { AdminMassesTable } from "./AdminMassesTable";
@@ -20,7 +20,7 @@ export const metadata = {
 export default async function AdminMassesPage() {
   const [session, masses, altars] = await Promise.all([
     requireStaff(),
-    getWeeklyMasses(),
+    listAdminWeeklyMasses(),
     getAltars(),
   ]);
 

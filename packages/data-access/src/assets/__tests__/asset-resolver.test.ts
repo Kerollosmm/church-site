@@ -303,11 +303,26 @@ describe("getSafeRenderableImageUrl", () => {
     expect(getSafeRenderableImageUrl("/\\\\evil.com/pic.jpg")).toBeNull();
   });
 
-  it("allows Supabase storage URLs", () => {
-    const supabaseUrl = "https://xyzcompany.supabase.co/storage/v1/object/public/media/photo.jpg";
-    expect(getSafeRenderableImageUrl(supabaseUrl)).toBe(supabaseUrl);
-    const apexSupabase = "https://supabase.co/storage/v1/pic.jpg";
-    expect(getSafeRenderableImageUrl(apexSupabase)).toBe(apexSupabase);
+  it("allows Supabase storage URLs only when matching configured project host", () => {
+    const originalEnv = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://xyzcompany.supabase.co";
+    try {
+      const supabaseUrl = "https://xyzcompany.supabase.co/storage/v1/object/public/media/photo.jpg";
+      expect(getSafeRenderableImageUrl(supabaseUrl)).toBe(supabaseUrl);
+
+      // Rejects apex or untrusted third-party Supabase hosts
+      const apexSupabase = "https://supabase.co/storage/v1/pic.jpg";
+      expect(getSafeRenderableImageUrl(apexSupabase)).toBeNull();
+
+      const otherSupabase = "https://attacker.supabase.co/storage/v1/pic.jpg";
+      expect(getSafeRenderableImageUrl(otherSupabase)).toBeNull();
+    } finally {
+      if (originalEnv !== undefined) {
+        process.env.NEXT_PUBLIC_SUPABASE_URL = originalEnv;
+      } else {
+        delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+      }
+    }
   });
 
   it("resolves raw YouTube watch, shorts, and youtu.be URLs to i.ytimg.com thumbnails", () => {

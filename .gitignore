@@ -51,4 +51,24 @@ phase1-split-agent-prompt*.md
 test-results/
 playwright-report/
 blob-report/
+test_result/
+*.log
 
+# Python & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# QA run artifacts & archives
+QA-run-*.zip
+*.zip
+qa-kit/
+qa-run-*/
+parish-portal-qa-local-kit*/
+test-login.png
+screenshots/
+testsprite_tests/tmp/
+testsprite_tests/tmp/config.json
+testsprite_tests/*.html
+.testsprite/runs/

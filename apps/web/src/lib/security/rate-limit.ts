@@ -13,6 +13,10 @@
 export const PUBLIC_FORM_LIMIT = 5;
 export const PUBLIC_FORM_WINDOW_MS = 60_000;
 
+/** Tightened burst protection: at most 1 submission per 15s per IP. */
+export const PUBLIC_BURST_LIMIT = 1;
+export const PUBLIC_BURST_WINDOW_MS = 15_000;
+
 /** Booking tracking needs a few more attempts than a form (typos), but still rate-limited to prevent code enumeration. */
 export const TRACKING_LIMIT = 10;
 
@@ -77,6 +81,24 @@ export function checkRateLimit(key: string, options: RateLimitOptions): RateLimi
 /** Test/ops helper: clears every bucket. */
 export function resetRateLimits(): void {
   buckets.clear();
+}
+
+/**
+ * Checks rate limiting for public write actions with burst protection (1 submission per 15s)
+ * and sliding window (5 submissions per 60s).
+ */
+export function checkPublicWriteRateLimit(action: string, ip: string): RateLimitResult {
+  const burstResult = checkRateLimit(`burst:${action}:${ip}`, {
+    limit: PUBLIC_BURST_LIMIT,
+    windowMs: PUBLIC_BURST_WINDOW_MS,
+  });
+  if (!burstResult.allowed) {
+    return burstResult;
+  }
+  return checkRateLimit(`${action}:${ip}`, {
+    limit: PUBLIC_FORM_LIMIT,
+    windowMs: PUBLIC_FORM_WINDOW_MS,
+  });
 }
 
 /** Minimal shape shared by the Web `Headers` and Next.js `ReadonlyHeaders`. */

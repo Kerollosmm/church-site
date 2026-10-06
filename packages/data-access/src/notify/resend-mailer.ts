@@ -114,19 +114,19 @@ export async function recordDeliveryAuditNote(
   subscriber: { id: string; email: string },
   result: MailSendResult
 ): Promise<boolean> {
-  const { getEventRepository } = await import("../store");
+  const { recordAuditLog } = await import("../store/audit");
   const actor = { id: null, name: DELIVERY_ACTOR_NAME_AR };
 
   try {
-    await getEventRepository().recordAuditNote(
-      {
-        action: "notify",
-        entityType: "subscriber",
-        entityId: subscriber.id,
-        summary: `${result.note} — البريد: ${subscriber.email}`,
-      },
-      actor
-    );
+    await recordAuditLog({
+      actor,
+      action: "notify",
+      entityType: "subscriber",
+      entityId: subscriber.id,
+      before: null,
+      after: null,
+      summary: `${result.note} — البريد: ${subscriber.email}`,
+    });
     return true;
   } catch (error) {
     console.error("[notify] could not record delivery audit note", {

@@ -37,6 +37,20 @@ exist, where each one is used, how to rotate it, and what breaks while it is bei
 | 13 | `RESEND_API_KEY` | Resend → API Keys | authenticates transactional email via built-in `fetch` | **SECRET — server only** | on suspicion or operator change |
 | 14 | `RESEND_FROM_EMAIL` | Resend → Domains | verified sender address (e.g. `alerts@stmaximus.church`) | server-side config | when sender address changes |
 
+### Immediate Secret Rotation Procedure (Post-Audit / Post-Remediation)
+When credentials or test tokens were previously committed to git history or exposed in logs:
+1. **Supabase Database & API Keys**:
+   - Go to Supabase Dashboard → **Project Settings** → **Database** → **Database Password** → click **Reset Database Password**.
+   - Go to Supabase Dashboard → **Project Settings** → **API** → click **Roll Keys** for `SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+   - Update `SUPABASE_SERVICE_ROLE_KEY` in deployment environment variables (Vercel/host).
+2. **Staff & Admin User Passwords**:
+   - Go to Supabase Dashboard → **Authentication** → **Users**.
+   - Send password reset emails or update passwords for all existing administrator and staff accounts.
+3. **Cloudflare & Turnstile**:
+   - In Cloudflare Dashboard → Turnstile, rotate the `TURNSTILE_SECRET_KEY` and `NEXT_PUBLIC_TURNSTILE_SITE_KEY` pair if ever tested outside local dummy keys.
+4. **Third-Party Integrations**:
+   - If Resend API keys or S3 buckets were accessed in test runs, regenerate the API tokens and update hosting secrets.
+
 ### Also hand over (not secrets, but you cannot run the site without them)
 
 - The **first-admin bootstrap step**: `UPDATE profiles SET role = 'admin' WHERE id = '<uuid>';`

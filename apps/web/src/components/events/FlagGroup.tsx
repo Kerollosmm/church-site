@@ -11,15 +11,14 @@
 // URL writer — so a browse link and the page's own filter state can never disagree.
 
 import React from "react";
-import { FlagBadge } from "@/components/events/FlagBadge";
-import { DIMENSION_LABEL_KEY } from "@/components/events/flag-styles";
-import type { EventFeedTermView } from "@/lib/events/feed";
-import type { EventFilterSelection } from "@/lib/events/filters";
-import { FILTER_DIMENSIONS, buildEventsHref } from "@/lib/events/filters";
-import type { TaxonomyDimension } from "@/lib/domain/types";
-import type { Locale } from "@/lib/i18n/locales";
-import { t } from "@/lib/i18n/messages";
-import { cn } from "@/lib/utils";
+import { FlagBadge, DIMENSION_LABEL_KEY } from "@church-site/ui";
+import type { EventFeedTermView } from "@church-site/data-access";
+import type { EventFilterSelection } from "@church-site/data-access";
+import { FILTER_DIMENSIONS, buildEventsHref } from "@church-site/data-access";
+import type { TaxonomyDimension } from "@church-site/domain";
+import type { Locale } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 
 /** A selection holding exactly one term — the browse link a single chip navigates to. */
 function singleTermSelection(dimension: TaxonomyDimension, slug: string): EventFilterSelection {

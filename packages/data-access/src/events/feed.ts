@@ -42,6 +42,8 @@ import {
 } from "./filters";
 import { getZoneDateKey } from "./format";
 import { getEventRepository } from "../store";
+import { unstable_cache } from "next/cache";
+import { REVALIDATION_TAGS } from "../tags";
 
 // ============================================================================
 // 1. View models
@@ -565,7 +567,7 @@ export interface PublicMediaView {
  * (see `src/lib/store/seed.ts`, which seeds no media on purpose), so a caller must never assume that
  * `url` resolves to a servable file — the gallery renders a link, not a picture.
  */
-export async function getPublicGalleryMedia(): Promise<PublicMediaView[]> {
+async function fetchPublicGalleryMedia(): Promise<PublicMediaView[]> {
   const media = await getEventRepository().listMedia({ publicOnly: true });
 
   return media.map((item) => ({
@@ -576,4 +578,25 @@ export async function getPublicGalleryMedia(): Promise<PublicMediaView[]> {
     altAr: item.altAr,
     altEn: item.altEn,
   }));
+}
+
+const cachedPublicGalleryMedia = typeof unstable_cache === "function"
+  ? unstable_cache(fetchPublicGalleryMedia, ["public-gallery-media"], {
+      tags: [REVALIDATION_TAGS.eventMedia],
+      revalidate: 3600,
+    })
+  : fetchPublicGalleryMedia;
+
+export async function getPublicGalleryMedia(): Promise<PublicMediaView[]> {
+  try {
+    return await cachedPublicGalleryMedia();
+  } catch (err: any) {
+    if (
+      err?.message?.includes("incrementalCache missing") ||
+      err?.message?.includes("Dynamic server usage")
+    ) {
+      return await fetchPublicGalleryMedia();
+    }
+    throw err;
+  }
 }

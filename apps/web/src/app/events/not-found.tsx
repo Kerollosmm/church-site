@@ -13,8 +13,8 @@
 import React from "react";
 import Link from "next/link";
 import { CalendarDays, ChevronLeft } from "lucide-react";
-import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
-import { t } from "@/lib/i18n/messages";
+import { DEFAULT_LOCALE } from "@church-site/ui";
+import { t } from "@church-site/ui";
 
 export default function EventsNotFound() {
   const arabicTitle = t(DEFAULT_LOCALE, "events.notFoundTitle");

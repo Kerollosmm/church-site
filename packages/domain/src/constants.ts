@@ -34,7 +34,7 @@ export const ALLOWED_MEDIA_MIME_TYPES = [
   "image/png",
   "image/webp",
   "image/gif",
-  "image/svg+xml",
+  "image/avif",
   "video/mp4",
   "application/pdf",
 ] as const;
@@ -42,6 +42,14 @@ export const ALLOWED_MEDIA_MIME_TYPES = [
 export type AllowedMediaMimeType = (typeof ALLOWED_MEDIA_MIME_TYPES)[number];
 
 export function isAllowedMediaMimeType(mime: string): boolean {
-  if (mime.startsWith("image/")) return true;
-  return mime === "video/mp4" || mime === "application/pdf";
+  if (mime === "image/svg+xml") return false;
+  return (
+    mime === "image/jpeg" ||
+    mime === "image/png" ||
+    mime === "image/webp" ||
+    mime === "image/gif" ||
+    mime === "image/avif" ||
+    mime === "video/mp4" ||
+    mime === "application/pdf"
+  );
 }

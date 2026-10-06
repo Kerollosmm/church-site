@@ -1,5 +1,5 @@
 import React from "react";
-import { Skeleton, MassCardSkeleton } from "@/components/ui/Skeleton";
+import { Skeleton, MassCardSkeleton } from "@church-site/ui";
 
 export default function MassesLoading() {
   return (

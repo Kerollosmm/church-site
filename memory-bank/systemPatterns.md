@@ -74,6 +74,7 @@
 - كل قراءة عامة في `src/lib/queries.ts` تمر عبر `readOrSeed(queryName, seed, read)` وتستعمل `createPublicSupabaseClient()` من `src/lib/supabase/public.ts` — عميل anon **بلا جلسة وبلا `cookies()`**، لأن `unstable_cache` يعمل خارج نطاق الطلب: استدعاء `cookies()` داخل نطاق الكاش يرمي استثناءً كان يُبتلع سابقاً فتُخزَّن نسخة البذرة بدل بيانات القاعدة (الكاش كان معطّلاً فعلياً).
 - **لا تراجع صامت**: كل حالة تراجع تُسجَّل ببنية ثابتة `[queries] database read failed|skipped { query, served: 'seed-data', reason }` والأسباب محصورة في `environment_not_configured` (تُسجَّل مرة لكل عملية) و`query_error` و`empty_result` و`unexpected_error`. البذرة تبقى استراتيجية SSG/offline مقصودة لكنها مرئية دائماً في السجلات.
 - القراءات الخاصة بالطاقم (`getCondolenceBookings`) استثناء مقصود: تحتاج الجلسة (`createSupabaseServerClient`) فتُنفَّذ **بلا كاش** ولا تُستدعى إلا من منطقة `/admin` الديناميكية، وبلا أي بذرة بديلة (لا صفوف ملفقة).
+- ينطبق النمط ذاته على مستودع المحتوى الديناميكي `SupabaseContentTypeRepository`: عميل القراءة `client()` يستخدم `createPublicSupabaseClient()` حصراً (دون كوكيز، صالح للرندرة الثابتة وISR)، وعميل التعديل والإدارة `adminClient()` يستخدم `createAdminClient()` لتسجيل سجلات التدقيق `audit_log` وحفظ التغييرات.
 
 ## 15. صفحات تعتمد البيانات: غلاف خادمي + طفل عميل
 - الصفحات التي تحتاج تفاعلاً (فلاتر/تبويبات/نسخ/طباعة/إجراءات) تُقسَم إلى `page.tsx` خادمي (يقرأ عبر `src/lib/queries.ts` ويصدّر `metadata`) + مكوّن عميل في نفس المجلد يستقبل البيانات كخصائص (`MassesExplorer`, `BibleReaderClient`, `DonationAccountsList`, `AdminMassesTable`, `AdminClinicsGrid`, `BookingsManager`). لا تُستورد `SEED_*` في الصفحات المحوَّلة إطلاقاً.
@@ -335,4 +336,20 @@
   * يمنع تباين واجهات الإدارة ويضمن تناغم الألوان القبطية والدرجات الوظيفية عبر كامل مساحة لوحة التحكم.
 - **صيانة حارس المصادقة الصارم وثابت INV-01**:
   * استمرار فرض `requireStaff()` على كافة المسارات المحمية في `(protected)`، مع فشل مغلق حتمي نحو `/login` عند غياب الجلسة، وصفر تسريب لبيانات الإدارة أو الصلاحيات إلى النطاق العام.
+
+## 42. معمارية تحصين الأمان والاعتمادية المعمارية (Security & Reliability Hardening Architecture — Commit 18eeb70)
+- **نمط الإرسال الذري لرسائل التواصل والتدقيق (Atomic Contact Form & Audit Submission Pattern)**:
+  * دالة `submit_contact_message_atomic` تنفذ إدراج رسالة التواصل وسجل التدقيق في معاملة واحدة ذرية (`SECURITY DEFINER`, `SET search_path = public, pg_temp`) وترجع المعرف الحقيقي `id`.
+  * تحصين مسار التراجع (Fallback): في حال تعذر استدعاء RPC، يتم استرجاع المعرف الحقيقي عبر `.select("id").single()` وعزل خطوة تسجيل التدقيق `recordAuditLog` في `try/catch` مستقل حتى لا يُبلغ الزائر بفشل رسالة حُفظت فعلاً في قاعدة البيانات.
+- **ثوابت تحصين دوال RPC وسياسات RLS (RPC & RLS Security Invariants)**:
+  * حظر `EXECUTE` لدوال التريجر مثل `handle_new_user` على `PUBLIC, anon, authenticated`.
+  * حظر `EXECUTE` لدوال الطاقم `is_admin`, `is_editor`, `is_staff` على `anon, PUBLIC` وقصرها على `authenticated`.
+  * تثبيت مسار البحث `SET search_path = public, pg_temp` لكافة الدوال لمنع هجمات انتحال المسار، وضبط `normalize_arabic` بمسار `pg_catalog, public, pg_temp`.
+  * فرض حدود صارمة على وسائط دوال RPC العامة (`search_bible` مقيدة بحد أقصى 100 نتيجة وطول استعلام <= 200).
+- **تحسين أداء سياسات RLS بنمط InitPlan (RLS InitPlan Optimization)**:
+  * استبدال استدعاء `auth.uid()` المتكرر في كل صف بنمط `(select auth.uid())` لتقييمه مرة واحدة كـ InitPlan في `profiles` ودوال فحص الطاقم.
+- **فهارس التغطية للمفاتيح الأجنبية (Covering Indexes for Foreign Keys)**:
+  * إضافة فهارس تغطية لكافة المفاتيح الأجنبية النشطة في الجداول الأكثر استخداماً (`mass_schedules.altar_id`, `contact_messages.assigned_priest_id`, `events.venue_id`, `events.created_by`, `events.updated_by`, `media.uploaded_by`, `mass_exceptions.original_schedule_id`, `event_exceptions.series_id`, إلخ). (ملاحظة: جدول `public.events` لا يحتوي على `category_id`).
+- **تحصين نطاقات إجراءات الخادم (Server Actions Origin Lockdown)**:
+  * حصر نطاقات أنفاق كلودفلير `*.trycloudflare.com` في `serverActions.allowedOrigins` ببيئة التطوير فقط (`!isProduction`) لمنع استغلال الأنفاق في الإنتاج.
 

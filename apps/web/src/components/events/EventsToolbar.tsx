@@ -11,12 +11,12 @@
 import React from "react";
 import Link from "next/link";
 import { CalendarDays, ChevronLeft, ChevronRight, List } from "lucide-react";
-import type { EventFilterSelection, EventViewMode } from "@/lib/events/filters";
-import { buildEventsHref } from "@/lib/events/filters";
-import { currentMonthKey, formatEventMonthLabel, shiftMonthKey } from "@/lib/events/format";
-import type { Locale } from "@/lib/i18n/locales";
-import { t } from "@/lib/i18n/messages";
-import { cn } from "@/lib/utils";
+import type { EventFilterSelection, EventViewMode } from "@church-site/data-access";
+import { buildEventsHref } from "@church-site/data-access";
+import { currentMonthKey, formatEventMonthLabel, shiftMonthKey } from "@church-site/data-access";
+import type { Locale } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 
 /** The project-wide visible focus ring — one string, so every events control focuses identically. */
 const FOCUS_RING =

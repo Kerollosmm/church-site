@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getBibleBooks } from "@/lib/queries";
+import { getBibleBooks } from "@church-site/data-access";
 import { BibleReaderClient } from "./BibleReaderClient";
 
 export const metadata: Metadata = {
@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description:
     "تصفح أسفار الكتاب المقدس بعهديه القديم (بما فيه الأسفار القانونية الثانية) والعهد الجديد باللغة العربية من بوابة كنيسة القديسين مكسيموس ودوماديوس والأنبا موسى الأسود بالعصافرة.",
 };
+
+export const revalidate = 86400;
 
 /**
  * `/bible` — the canon comes from the typed data layer (`getBibleBooks()`), which reads

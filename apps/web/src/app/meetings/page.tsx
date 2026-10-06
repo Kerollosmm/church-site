@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
 import { Users, Clock, MapPin, ChevronLeft, Heart, Sparkles } from "lucide-react";
-import { getChurchMeetings } from "@/lib/queries";
+import { getChurchMeetings } from "@church-site/data-access";
 
 export const metadata: Metadata = {
   title: "التربية الكنسية والاجتماعات الروحية",

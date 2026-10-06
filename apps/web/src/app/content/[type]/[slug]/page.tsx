@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { BookOpen } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { getContentTypeRepository } from "@/lib/store";
+import { getContentTypeRepository } from "@church-site/data-access";
 import { getTemplate } from "./templates";
 
 export const revalidate = 3600;

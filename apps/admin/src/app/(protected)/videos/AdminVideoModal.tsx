@@ -8,6 +8,11 @@ import { X, Video, Loader2, AlertCircle, CheckCircle, ExternalLink } from "lucid
 import type { ParishVideo, VideoProvider } from "@church-site/domain";
 import { normalizeVideoUrl } from "@church-site/data-access/client";
 import { upsertVideoAction } from "@/actions/admin-video-actions";
+import {
+  ParishVideoInputSchema,
+  type ParishVideoFormInput,
+  type AdminVideoActionResult,
+} from "@/actions/admin-video-actions.shared";
 
 export interface AdminVideoModalProps {
   isOpen: boolean;
@@ -71,6 +76,18 @@ export function AdminVideoModal({
     }
   }, [isOpen, initialData]);
 
+  // Keyboard Escape key handler to close modal
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,7 +144,12 @@ export function AdminVideoModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="video-modal-title"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden animate-fade-in">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
@@ -136,7 +158,10 @@ export function AdminVideoModal({
               <Video className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-heading font-bold text-base text-slate-900">
+              <h3
+                id="video-modal-title"
+                className="font-heading font-bold text-base text-slate-900"
+              >
                 {isEditing ? "تعديل فيديو كنسي" : "إضافة فيديو كنسي جديد"}
               </h3>
               <p className="text-xs text-slate-500">
@@ -147,6 +172,7 @@ export function AdminVideoModal({
           <button
             type="button"
             onClick={onClose}
+            aria-label="إغلاق"
             className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
@@ -164,10 +190,12 @@ export function AdminVideoModal({
 
           {/* URL Input with Live Detection */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-slate-700">
+            <label htmlFor="video-source-url" className="block text-xs font-bold text-slate-700">
               رابط الفيديو الأصلي <span className="text-red-500">*</span>
             </label>
             <input
+              id="video-source-url"
+              name="source_url"
               type="url"
               dir="ltr"
               placeholder="https://www.youtube.com/watch?v=... أو https://facebook.com/..."
@@ -225,10 +253,12 @@ export function AdminVideoModal({
 
           {/* Arabic Title */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">
+            <label htmlFor="video-title-ar" className="block text-xs font-bold text-slate-700">
               عنوان الفيديو (بالعربية) <span className="text-red-500">*</span>
             </label>
             <input
+              id="video-title-ar"
+              name="title_ar"
               type="text"
               placeholder="مثال: قداس عيد القيامة المجيد 2026"
               value={titleAr}
@@ -240,10 +270,12 @@ export function AdminVideoModal({
 
           {/* English Title */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">
+            <label htmlFor="video-title-en" className="block text-xs font-bold text-slate-700">
               العنوان (بالإنجليزية - اختياري)
             </label>
             <input
+              id="video-title-en"
+              name="title_en"
               type="text"
               dir="ltr"
               placeholder="e.g. Resurrection Feast Divine Liturgy 2026"
@@ -255,10 +287,12 @@ export function AdminVideoModal({
 
           {/* Arabic Description */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">
+            <label htmlFor="video-description-ar" className="block text-xs font-bold text-slate-700">
               وصف مختصر للفيديو (اختياري)
             </label>
             <textarea
+              id="video-description-ar"
+              name="description_ar"
               rows={3}
               placeholder="تفاصيل ونبذة عن مناسبة الفيديو..."
               value={descriptionAr}
@@ -269,10 +303,12 @@ export function AdminVideoModal({
 
           {/* English Description */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-700">
+            <label htmlFor="video-description-en" className="block text-xs font-bold text-slate-700">
               الوصف بالإنجليزية (اختياري)
             </label>
             <textarea
+              id="video-description-en"
+              name="description_en"
               rows={2}
               dir="ltr"
               placeholder="English description..."
@@ -285,10 +321,12 @@ export function AdminVideoModal({
           {/* Settings Grid: Sort Order, Public, Active */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label htmlFor="video-sort-order" className="block text-xs font-bold text-slate-700 mb-1.5">
                 ترتيب الظهور
               </label>
               <input
+                id="video-sort-order"
+                name="sort_order"
                 type="number"
                 min="0"
                 value={sortOrder}
@@ -299,9 +337,11 @@ export function AdminVideoModal({
             </div>
 
             <div className="flex flex-col justify-center space-y-1">
-              <label className="text-xs font-bold text-slate-700">الظهور في الموقع العام</label>
+              <label htmlFor="video-is-public" className="text-xs font-bold text-slate-700 cursor-pointer">الظهور في الموقع العام</label>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
+                  id="video-is-public"
+                  name="is_public"
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
@@ -315,9 +355,11 @@ export function AdminVideoModal({
             </div>
 
             <div className="flex flex-col justify-center space-y-1">
-              <label className="text-xs font-bold text-slate-700">تفعيل السجل</label>
+              <label htmlFor="video-is-active" className="text-xs font-bold text-slate-700 cursor-pointer">تفعيل السجل</label>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
+                  id="video-is-active"
+                  name="is_active"
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}

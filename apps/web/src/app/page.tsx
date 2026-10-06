@@ -8,7 +8,7 @@ import { SanctuaryAltarsShowcase } from "@/components/home/SanctuaryAltarsShowca
 import { BibleVerseDaily } from "@/components/home/BibleVerseDaily";
 import { LatestNewsCarousel } from "@/components/home/LatestNewsCarousel";
 import { WelcomeFromClergy } from "@/components/home/WelcomeFromClergy";
-import { getDailyVerse, getNewsArticles } from "@/lib/queries";
+import { getDailyVerse, getNewsArticles } from "@church-site/data-access";
 
 export const revalidate = 300; // 5 minutes ISR cache
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { SEED_PROGRAM_SLUGS } from "@/lib/data/seed-data";
-import { SUBSCRIBER_EMAIL_MAX_LENGTH, SUBSCRIBER_NAME_MAX_LENGTH, SUBSCRIBER_TOPICS_MAX } from "@/lib/domain/subscribers";
+import { SEED_PROGRAM_SLUGS, getCairoWallClock } from "@church-site/data-access/client";
+import { SUBSCRIBER_EMAIL_MAX_LENGTH, SUBSCRIBER_NAME_MAX_LENGTH, SUBSCRIBER_TOPICS_MAX } from "@church-site/domain";
 
 export const egyptianPhone = z
   .string()
@@ -35,11 +35,18 @@ export const CondolenceBookingSchema = z.object({
   relationshipToDeceased: z.string().min(2, "يرجى تحديد صلة القرابة بالمتوفى"),
   eventDate: z.string().refine(
     (date) => {
-      const parsed = new Date(date);
+      const trimmed = date.trim();
+      const wall = getCairoWallClock();
+      const cairoTodayStr = `${wall.year}-${String(wall.month).padStart(2, "0")}-${String(wall.day).padStart(2, "0")}`;
+      const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+      if (match) {
+        return trimmed >= cairoTodayStr;
+      }
+      const parsed = new Date(trimmed);
       if (isNaN(parsed.getTime())) return false;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return parsed >= today;
+      const parsedWall = getCairoWallClock(parsed);
+      const parsedCairoStr = `${parsedWall.year}-${String(parsedWall.month).padStart(2, "0")}-${String(parsedWall.day).padStart(2, "0")}`;
+      return parsedCairoStr >= cairoTodayStr;
     },
     { message: "لا يمكن حجز موعد في تاريخ ماضٍ" }
   ),
@@ -98,14 +105,8 @@ export const JobApplicationSchema = z.object({
   turnstileToken,
 });
 
-// 6. تسجيل دخول الطاقم الإداري (سكرتارية الكنيسة)
-export const StaffSignInSchema = z.object({
-  email: z.string().email("يرجى إدخال بريد إلكتروني صحيح"),
-  password: z.string().min(1, "كلمة المرور مطلوبة"),
-});
-
 /**
- * 7. الاشتراك في تنبيهات الفعاليات (نموذج عام).
+ * 6. الاشتراك في تنبيهات الفعاليات (نموذج عام).
  *
  * `topics` are taxonomy term SLUGS. The shape is checked here; whether a slug exists in the live
  * vocabulary is checked by the action against the store (`resolveSubscriberTopics` in
@@ -127,9 +128,9 @@ export const EventSubscriptionSchema = z.object({
   turnstileToken,
 });
 
+export const condolenceBookingSchema = CondolenceBookingSchema;
 export type CondolenceBookingInput = z.infer<typeof CondolenceBookingSchema>;
 export type ContactMessageInput = z.infer<typeof ContactMessageSchema>;
 export type ProgramApplicationInput = z.infer<typeof ProgramApplicationSchema>;
-export type StaffSignInInput = z.infer<typeof StaffSignInSchema>;
 export type EventSubscriptionInput = z.infer<typeof EventSubscriptionSchema>;
 export type ProgramSlug = ProgramApplicationInput["programSlug"];

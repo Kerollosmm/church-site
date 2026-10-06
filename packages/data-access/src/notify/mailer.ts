@@ -19,6 +19,7 @@
 // Nothing else in the codebase changes: callers ask `getMailer()` and read `deliverEmails`.
 
 import type { Locale } from "../i18n/locales";
+import { noopMailer } from "./noop-mailer";
 
 /**
  * Unset, or set to a name that is not registered, selects `noop`.
@@ -73,10 +74,7 @@ export const RESEND_FROM_EMAIL_ENV_VAR = "RESEND_FROM_EMAIL";
  * to the no-op, and `getMailer()` logs that fallback loudly rather than pretending to send.
  */
 export const MAILER_FACTORIES: Record<string, () => Promise<Mailer>> = {
-  noop: async () => {
-    const { noopMailer } = await import("./noop-mailer");
-    return noopMailer;
-  },
+  noop: async () => noopMailer,
   resend: async () => {
     const apiKey = process.env[RESEND_API_KEY_ENV_VAR]?.trim();
     const fromEmail = process.env[RESEND_FROM_EMAIL_ENV_VAR]?.trim();
@@ -89,7 +87,6 @@ export const MAILER_FACTORIES: Record<string, () => Promise<Mailer>> = {
           hasFromEmail: Boolean(fromEmail && fromEmail.length > 0),
         }
       );
-      const { noopMailer } = await import("./noop-mailer");
       return noopMailer;
     }
 
@@ -116,7 +113,6 @@ export async function getMailer(): Promise<Mailer> {
   const requested = requestedMailProvider();
 
   if (requested === "noop") {
-    const { noopMailer } = await import("./noop-mailer");
     return noopMailer;
   }
 
@@ -126,9 +122,9 @@ export async function getMailer(): Promise<Mailer> {
       requested,
       implemented: ["noop", ...Object.keys(MAILER_FACTORIES)],
     });
-    const { noopMailer } = await import("./noop-mailer");
     return noopMailer;
   }
 
   return await factory();
 }
+

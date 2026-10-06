@@ -1,6 +1,6 @@
 import React from "react";
-import { getWeeklyMasses } from "@/lib/queries";
-import { getNextMass, type ScheduledMassLike } from "@/lib/utils/mass-schedule";
+import { getWeeklyMasses } from "@church-site/data-access";
+import { getNextMass, type ScheduledMassLike } from "@church-site/data-access/client";
 import { MassCountdownTicker } from "@/components/home/MassCountdownTicker";
 
 /**

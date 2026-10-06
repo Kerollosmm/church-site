@@ -671,9 +671,13 @@ export function MediaManager({ media, events, capabilities }: MediaManagerProps)
                       <div className="flex flex-wrap items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => {
-                            void navigator.clipboard?.writeText(item.url);
-                            setCopiedUrl(item.id);
+                          onClick={async () => {
+                            try {
+                              await navigator.clipboard?.writeText(item.url);
+                              setCopiedUrl(item.id);
+                            } catch (err) {
+                              console.warn("Failed to copy media URL to clipboard:", err);
+                            }
                           }}
                           className={ADMIN_BUTTON_QUIET}
                         >

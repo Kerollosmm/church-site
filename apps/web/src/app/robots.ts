@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getSiteUrl } from "@/lib/env";
+import { getSiteUrl } from "@church-site/data-access";
 
 // src/app/robots.ts
 // robots.txt for the parish portal.

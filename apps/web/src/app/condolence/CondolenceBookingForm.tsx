@@ -1,20 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { CondolenceBookingSchema, CondolenceBookingInput } from "@/lib/validations/church-schemas";
 import { submitCondolenceBooking } from "@/actions/condolence-actions";
 import { TurnstileWidget } from "@/components/security/TurnstileWidget";
-import { CheckCircle2, AlertCircle, Send, Loader2, Search } from "lucide-react";
+import { CheckCircle2, AlertCircle, Send, Loader2, Search, Copy, Check } from "lucide-react";
 
 export function CondolenceBookingForm() {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const [result, setResult] = useState<{
     success?: boolean;
     bookingCode?: string;
     message?: string;
   } | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copyError, setCopyError] = useState(false);
   // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
@@ -85,9 +90,51 @@ export function CondolenceBookingForm() {
                   <span className="text-xs text-slateText-secondary block">
                     رمز الحجز المرجعي (احتفظ به للمتابعة):
                   </span>
-                  <span className="font-english text-lg font-bold text-copticNavy tracking-wider">
-                    {result.bookingCode}
-                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-english text-lg font-bold text-copticNavy tracking-wider select-all">
+                      {result.bookingCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!result.bookingCode) return;
+                        try {
+                          await navigator.clipboard.writeText(result.bookingCode);
+                          setCopiedCode(true);
+                          setCopyError(false);
+                          setTimeout(() => setCopiedCode(false), 2500);
+                        } catch (err) {
+                          console.warn("Failed to copy booking code to clipboard:", err);
+                          setCopyError(true);
+                          setCopiedCode(false);
+                          setTimeout(() => setCopyError(false), 3000);
+                        }
+                      }}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                        copyError
+                          ? "bg-red-100 hover:bg-red-200 text-red-900"
+                          : "bg-emerald-100 hover:bg-emerald-200 text-emerald-900"
+                      }`}
+                      title={copyError ? "تعذر النسخ تلقائياً، يرجى التحديد والنسخ يدوياً" : "نسخ رمز الحجز"}
+                    >
+                      {copiedCode ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>تم النسخ</span>
+                        </>
+                      ) : copyError ? (
+                        <>
+                          <AlertCircle className="w-3.5 h-3.5 text-red-700" />
+                          <span>تعذر النسخ</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>نسخ</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <div className="mt-2">
                     <Link
                       href={`/condolence/track?code=${result.bookingCode}`}
@@ -104,7 +151,14 @@ export function CondolenceBookingForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        method="post"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void handleSubmit(onSubmit)(e);
+        }}
+        className="space-y-4"
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-copticNavy mb-1">
@@ -224,8 +278,8 @@ export function CondolenceBookingForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-copticNavy hover:bg-copticNavy-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl transition shadow-xs disabled:opacity-50"
+          disabled={!isMounted || isSubmitting}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-copticNavy hover:bg-copticNavy-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>

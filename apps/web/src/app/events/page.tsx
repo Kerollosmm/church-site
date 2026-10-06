@@ -32,15 +32,15 @@ import { EventList } from "@/components/events/EventList";
 import { EventsToolbar } from "@/components/events/EventsToolbar";
 import { MonthCalendar } from "@/components/events/MonthCalendar";
 import { PageHero } from "@/components/layout/PageHero";
-import { isEventSubscriptionsEnabled } from "@/lib/env";
-import type { TaxonomyDimension } from "@/lib/domain/types";
+import { isEventSubscriptionsEnabled } from "@church-site/data-access";
+import type { TaxonomyDimension } from "@church-site/domain";
 import {
   countTermsByDimension,
   filterFeedItems,
   getEventFeed,
   type EventFeedItem,
   type TermCount,
-} from "@/lib/events/feed";
+} from "@church-site/data-access";
 import {
   FILTER_DIMENSIONS,
   buildEventsHref,
@@ -49,19 +49,19 @@ import {
   type EventFilterSelection,
   type EventSearchParams,
   type EventViewMode,
-} from "@/lib/events/filters";
+} from "@church-site/data-access";
 import {
   currentMonthKey,
   formatEventMonthLabel,
   isValidMonthKey,
   listWindowRange,
   monthRange,
-} from "@/lib/events/format";
-import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@/lib/i18n/locales";
-import { t } from "@/lib/i18n/messages";
-import { getLocale } from "@/lib/i18n/server";
+} from "@church-site/data-access";
+import { DEFAULT_LOCALE, LOCALE_DIRECTION, type Locale } from "@church-site/ui";
+import { t } from "@church-site/ui";
+import { getLocale } from "@church-site/ui/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 /** The project-wide visible focus ring — one string, so every events control focuses identically. */
 const FOCUS_RING =

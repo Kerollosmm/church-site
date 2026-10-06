@@ -713,14 +713,35 @@ export class SupabaseEventRepository implements EventRepository {
     termIds: readonly string[],
     now: string
   ): Promise<void> {
-    const { error: deleteError } = await client.from("event_terms").delete().eq("event_id", eventId);
-    if (deleteError) throw toStoreError(deleteError, "events.replaceTerms", { eventId });
-    if (termIds.length === 0) return;
-
-    const { error } = await client
+    const { data: existing, error: fetchError } = await client
       .from("event_terms")
-      .insert(termIds.map((termId) => ({ event_id: eventId, term_id: termId, created_at: now })));
-    if (error) throw toStoreError(error, "events.replaceTerms", { eventId });
+      .select("term_id")
+      .eq("event_id", eventId);
+    if (fetchError) throw toStoreError(fetchError, "events.replaceTerms", { eventId });
+
+    const existingTermIds = (existing ?? []).map((row: { term_id: string }) => row.term_id);
+    const toAdd = termIds.filter((id) => !existingTermIds.includes(id));
+    const toRemove = existingTermIds.filter((id) => !termIds.includes(id));
+
+    if (toAdd.length === 0 && toRemove.length === 0) return;
+
+    // Insert new terms first so that if insert fails (e.g. FK constraint violation),
+    // existing terms remain intact and the event is not left unlinked without audit.
+    if (toAdd.length > 0) {
+      const { error: insertError } = await client
+        .from("event_terms")
+        .insert(toAdd.map((termId) => ({ event_id: eventId, term_id: termId, created_at: now })));
+      if (insertError) throw toStoreError(insertError, "events.replaceTerms", { eventId });
+    }
+
+    if (toRemove.length > 0) {
+      const { error: deleteError } = await client
+        .from("event_terms")
+        .delete()
+        .eq("event_id", eventId)
+        .in("term_id", toRemove);
+      if (deleteError) throw toStoreError(deleteError, "events.replaceTerms", { eventId });
+    }
   }
 
   private async nextAvailableSlug(base: string): Promise<string> {
@@ -1089,6 +1110,15 @@ export class SupabaseEventRepository implements EventRepository {
     if (usageError) throw toStoreError(usageError, "terms.delete");
     if ((count ?? 0) > 0) {
       throw new StoreError("conflict", "terms.delete", `Term ${id} is still used by ${count} event(s).`, { id });
+    }
+
+    const { count: seriesCount, error: seriesUsageError } = await client
+      .from("event_series")
+      .select("id", { count: "exact", head: true })
+      .contains("default_term_ids", [id]);
+    if (seriesUsageError) throw toStoreError(seriesUsageError, "terms.delete");
+    if ((seriesCount ?? 0) > 0) {
+      throw new StoreError("conflict", "terms.delete", `Term ${id} is still used by ${seriesCount} series.`, { id });
     }
 
     const { error } = await client.from("taxonomy_terms").delete().eq("id", id).select("id").single();

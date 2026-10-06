@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/layout/PageHero";
-import { BOOKING_REFERENCE_PREFIX } from "@/lib/domain/booking-reference";
+import { BOOKING_REFERENCE_PREFIX } from "@church-site/domain";
 import { Search, ChevronLeft, PhoneCall } from "lucide-react";
 import { ReservationTrackingCard } from "./ReservationTrackingCard";
 
@@ -56,11 +56,11 @@ export default async function CondolenceTrackPage({ searchParams }: Props) {
           </Link>
 
           <a
-            href="tel:01200000001"
+            href="tel:01220000001"
             className="inline-flex items-center gap-1.5 text-copticGold-800 font-bold hover:text-copticNavy"
           >
             <PhoneCall className="w-3.5 h-3.5" />
-            <span>سكرتارية العزاء: 01200000001</span>
+            <span>سكرتارية العزاء: 01220000001</span>
           </a>
         </div>
       </div>

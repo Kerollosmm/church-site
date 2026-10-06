@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { DAY_OF_WEEK_INDEX, DAY_OF_WEEK_LABELS_AR } from "@/lib/utils/mass-schedule";
-import { cn } from "@/lib/utils";
+import { DAY_OF_WEEK_INDEX, DAY_OF_WEEK_LABELS_AR } from "@church-site/data-access/client";
+import { cn } from "@church-site/ui";
 
 export interface DayOption {
   dayIndex: number | "all"; // 0 = Sunday, 1 = Monday, etc., or "all"

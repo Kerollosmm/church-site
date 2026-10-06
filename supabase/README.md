@@ -32,6 +32,7 @@ Files are named with a timestamp prefix so that lexicographic order == apply ord
 | 14 | `migrations/20260916140000_parish_videos.sql` | parish videos: `video_provider_enum` (`youtube`, `facebook`, `direct`), `parish_videos` table, `idx_parish_videos_public_active` index, RLS policies (public read of active/public videos; staff read/write for `admin`/`secretary`) |
 | 15 | `migrations/20260916150000_services_navigation.sql` | services & navigation CMS: additive columns on `public_services` (`name_en`, `description_en`, `updated_at`, `created_by`, `updated_by`), `nav_menu_items` table with parent-child dropdowns and section filtering (`main`/`secondary`), composite indexes, RLS policies (public read of active/public items; staff read/write for `admin`/`secretary`) |
 | 16 | `migrations/20260916160000_external_assets.sql` | external assets: additive columns on `public.media` (`source_url`, `resolved_url`, `host`, `kind`) |
+| 17 | `migrations/20260919100000_staff_role_narrowing.sql` | staff-role narrowing: `handle_new_user()` creates inactive profiles, `is_staff()` narrowed to `admin`/`secretary`, new `is_editor()` write predicate, and 26 write policies re-pointed at it |
 
 Applying in any other order fails: types must exist before tables, tables before
 indexes/policies, and `normalize_arabic()` before `bible_verses`.
@@ -55,17 +56,22 @@ File 16 (`20260916160000_external_assets.sql`) provisions external asset metadat
 
 ## Mandatory manual bootstrap step
 
-There is **no other path to a first admin**. Every staff profile is created by the
-`on_auth_user_created` trigger with the default role `servant`, which carries no
-administrative write access; the `"Admins manage profiles"` policy is itself gated by
-`is_admin()`, so an admin cannot be created from the application.
+There is **no other path to a first admin**. Every profile is created by the
+`on_auth_user_created` trigger as an **inactive** `servant` (file 17 sets
+`is_active = FALSE`), which carries no administrative access of any kind; the
+`"Admins manage profiles"` policy is itself gated by `is_admin()`, so an admin cannot be
+created from the application.
 
 After the first staff account has been created through Supabase Auth, promote it once,
-manually, in the SQL editor:
+manually, in the SQL editor — **both** the role and the activation flag are required,
+otherwise the account stays inert:
 
 ```sql
-UPDATE profiles SET role = 'admin' WHERE id = '<uuid-of-first-admin>';
+UPDATE profiles SET role = 'admin', is_active = TRUE WHERE id = '<uuid-of-first-admin>';
 ```
+
+A stray public signup therefore grants nothing until an admin deliberately activates it.
+Disabling public signups in Supabase Auth remains recommended defence in depth.
 
 Role changes are a spiritual/administrative decision (spec §2 — `ready-for-human`), not a
 product feature.
@@ -80,8 +86,12 @@ by explicit policies:
 - public writes are limited to `INSERT` into the five public forms
   (`condolence_bookings`, `contact_messages`, `program_applications`, `job_applications`,
   `clinic_alert_subscriptions`) — no public `UPDATE`/`DELETE` policy exists anywhere;
-- every administrative write goes through `is_staff()` and profile management through
-  `is_admin()`, both `SECURITY DEFINER` with a fixed `search_path`.
+- every administrative **write** goes through `is_editor()` (file 17), staff **reads**
+  through `is_staff()`, and profile management through `is_admin()` — all three
+  `SECURITY DEFINER` with a fixed `search_path`. `is_staff()` and `is_editor()` both
+  resolve to `role IN ('admin','secretary') AND is_active`, matching
+  `ADMIN_PORTAL_ROLES` in the admin app; the split exists so a future widening of staff
+  *reads* can never silently widen *writes*.
 
 There is **no `TO authenticated USING (true)` policy anywhere** — an authenticated session
 whose profile is missing, inactive, or non-staff has no write access to any table.
@@ -89,16 +99,17 @@ whose profile is missing, inactive, or non-staff has no write access to any tabl
 readable only through the `track_condolence_booking()` RPC by exact reference code.
 
 The events layer added by files 8–9 follows the same rules: published/active rows are publicly
-readable, every write is `is_staff()`, and `audit_log` is **append-only** — it has an `INSERT`
-policy for staff and no `UPDATE`/`DELETE` policy at all, so a recorded mutation cannot be edited
-away through the API.
+readable, every write is `is_editor()`, and `audit_log` is **append-only** — it has an `INSERT`
+policy for editors, a `SELECT` policy for staff and no `UPDATE`/`DELETE` policy at all, so a
+recorded mutation cannot be edited away through the API.
 
 `subscribers` (files 10–11) is the one table added by the events feature with **no public policy of
 any kind**: an e-mail address is personal data, so it is neither readable nor insertable with the
 anon key. The public subscribe form writes through the server with the service-role client (after
 rate limiting, zod validation and Turnstile verification — the same contract the other public forms
-follow in `src/actions/`), and the parish office manages the list through `is_staff()`. There is no
-`DELETE` policy: stopping a subscription sets `is_active = FALSE`.
+follow in `src/actions/`), the parish office reads the list through `is_staff()` and updates it
+through `is_editor()`. There is no `DELETE` policy: stopping a subscription sets
+`is_active = FALSE`.
 
 `storage.objects` (file 12) enforces public read on `bucket_id = 'media'` and restricts write operations (`INSERT`, `UPDATE`, `DELETE`) strictly to authenticated staff profiles with `role IN ('admin', 'secretary')`. Bare authenticated access is prohibited.
 

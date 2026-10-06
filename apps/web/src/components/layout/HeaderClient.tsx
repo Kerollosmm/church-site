@@ -9,8 +9,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown, HeartHandshake, Phone } from "lucide-react";
-import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/locales";
-import { applyDocumentLocale, readLocaleCookie } from "@/lib/i18n/dom";
+import { DEFAULT_LOCALE, type Locale } from "@church-site/ui";
+import { applyDocumentLocale, readLocaleCookie } from "@church-site/ui";
 import type { PublicNavItem } from "@church-site/domain";
 import { SEED_PUBLIC_NAVIGATION } from "@church-site/data-access/client";
 
@@ -220,10 +220,36 @@ export function buildStructuredNavigation(
 export function HeaderClient({ navigation, brand }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
+
+  const handleDropdownEnter = (id: string) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    setActiveDropdownId(id);
+  };
+
+  const handleDropdownLeave = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+    }
+    leaveTimeoutRef.current = setTimeout(() => {
+      setActiveDropdownId(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (leaveTimeoutRef.current) {
+        clearTimeout(leaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const resolved = readLocaleCookie();
@@ -295,7 +321,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
         className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5"
       >
         <div className="flex items-center justify-between">
-          {brand}
+          <div className="shrink-0">{brand}</div>
 
           {/* Desktop Nav Items (Structured <= 7 Primary Items) */}
           <nav
@@ -317,8 +343,8 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
                   <div
                     key={item.id}
                     className="relative"
-                    onMouseEnter={() => setActiveDropdownId(item.id)}
-                    onMouseLeave={() => setActiveDropdownId(null)}
+                    onMouseEnter={() => handleDropdownEnter(item.id)}
+                    onMouseLeave={handleDropdownLeave}
                   >
                     <button
                       type="button"
@@ -377,6 +403,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
                               <Link
                                 key={child.id}
                                 href={child.href}
+                                prefetch={false}
                                 role="menuitem"
                                 tabIndex={0}
                                 onClick={() => setActiveDropdownId(null)}
@@ -404,6 +431,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
                 <Link
                   key={item.id}
                   href={item.href}
+                  prefetch={false}
                   className={`px-3 py-2 rounded-xl text-xs 2xl:text-sm font-heading font-semibold transition-all duration-150 focus-visible:outline-2 focus-visible:outline-copticNavy focus-visible:outline-offset-2 ${
                     isActive
                       ? "bg-copticNavy text-white font-bold shadow-xs"
@@ -416,16 +444,18 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
             })}
           </nav>
 
-          {/* Mobile Fast Links & Hamburger Button */}
-          <div className="xl:hidden flex items-center gap-2">
+          {/* Fast Navigation Shortcut Links & Mobile Hamburger Button */}
+          <div className="flex items-center gap-2">
             <Link
               href="/masses"
+              prefetch={false}
               className="bg-copticGold-50 text-copticNavy border border-copticGold-300 text-xs px-2.5 py-1.5 rounded-lg font-bold hover:bg-copticGold-100 transition min-h-[36px] flex items-center"
             >
               القداسات
             </Link>
             <Link
               href="/events"
+              prefetch={false}
               className="bg-copticGold-50 text-copticNavy border border-copticGold-300 text-xs px-2.5 py-1.5 rounded-lg font-bold hover:bg-copticGold-100 transition min-h-[36px] flex items-center"
             >
               الفعاليات
@@ -433,7 +463,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-xl text-copticNavy hover:bg-copticGold-50 border border-copticGold-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-copticNavy"
+              className="xl:hidden p-2.5 rounded-xl text-copticNavy hover:bg-copticGold-50 border border-copticGold-300 transition min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-copticNavy"
               aria-label={mobileMenuOpen ? "إغلاق القائمة" : "فتح القائمة"}
               aria-expanded={mobileMenuOpen}
             >
@@ -462,6 +492,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
             </span>
             <Link
               href="/donations"
+              prefetch={false}
               onClick={() => setMobileMenuOpen(false)}
               className="inline-flex items-center gap-1 bg-copticGold-500 hover:bg-copticGold-600 text-copticNavy-900 font-bold px-3 py-1 rounded-full text-xs transition"
             >
@@ -488,6 +519,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
                         <Link
                           key={child.id}
                           href={child.href}
+                          prefetch={false}
                           onClick={() => setMobileMenuOpen(false)}
                           className={`min-h-[44px] flex items-center px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors border focus-visible:outline-2 focus-visible:outline-copticNavy ${
                             isChildCurrent
@@ -509,6 +541,7 @@ export function HeaderClient({ navigation, brand }: HeaderClientProps) {
               <Link
                 key={item.id}
                 href={item.href}
+                prefetch={false}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`min-h-[44px] flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-heading font-bold transition-colors border focus-visible:outline-2 focus-visible:outline-copticNavy ${
                   isCurrent

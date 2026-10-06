@@ -24,7 +24,7 @@ import {
 import { requireStaff } from "@/lib/auth/require-staff";
 import { ADMIN_ROLE_LABELS_AR, adminRoleFromStaffRole } from "@church-site/domain";
 import {
-  getWeeklyMasses,
+  listAdminWeeklyMasses,
   getParishFacilityRepository,
   getParishVideoRepository,
   listAdminEvents,
@@ -78,7 +78,7 @@ export default async function AdminDashboardPage(): Promise<React.ReactElement> 
     bookingsRes,
     subscribersRes,
   ] = await Promise.allSettled([
-    getWeeklyMasses(),
+    listAdminWeeklyMasses(),
     getParishFacilityRepository().listFacilities(),
     getParishVideoRepository().listVideos(),
     listAdminEvents(),

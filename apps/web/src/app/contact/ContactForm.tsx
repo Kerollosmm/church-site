@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ContactMessageSchema, ContactMessageInput } from "@/lib/validations/church-schemas";
@@ -9,6 +9,9 @@ import { TurnstileWidget } from "@/components/security/TurnstileWidget";
 import { Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 export function ContactForm() {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   const [result, setResult] = useState<{ success?: boolean; message?: string } | null>(null);
   // Turnstile tokens are single-use: every completed submit asks the widget for a fresh one.
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
@@ -51,8 +54,17 @@ export function ContactForm() {
     }
   };
 
+  // Pre-hydration guard: `method="post"` keeps a pre-React submit from serialising the field
+  // values into a GET query string; `onSubmit` cancels the native navigation once hydrated.
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form
+      method="post"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void handleSubmit(onSubmit)(event);
+      }}
+      className="space-y-4"
+    >
       {result && (
         <div
           className={`p-4 rounded-2xl flex items-start gap-3 text-xs sm:text-sm ${
@@ -156,10 +168,17 @@ export function ContactForm() {
         resetSignal={turnstileResetSignal}
       />
 
+      <div className="rounded-2xl border border-amber-300 bg-amber-50/70 p-3 text-[11px] leading-relaxed text-amber-900 flex items-start gap-2">
+        <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+        <p>
+          ملاحظة: المتابعة تتم هاتفياً أو عبر واتساب من سكرتارية الكنيسة أو الآباء الكهنة. لا تُرسل رسائل بريد إلكتروني آلية حالياً من هذا الموقع.
+        </p>
+      </div>
+
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-copticNavy hover:bg-copticNavy-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl transition shadow-xs disabled:opacity-50"
+        disabled={!isMounted || isSubmitting}
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-copticNavy hover:bg-copticNavy-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 rounded-xl transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>

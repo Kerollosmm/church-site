@@ -54,7 +54,9 @@ export function FontSizeSwitcher({ className }: { className?: string }) {
             key={opt.value}
             type="button"
             title={opt.title}
+            aria-label={opt.title}
             aria-pressed={isActive}
+            data-font-size-btn={opt.value}
             onClick={() => setSize(opt.value)}
             className={cn(
               "px-2 py-0.5 text-xs font-heading font-semibold transition-all rounded-lg select-none",

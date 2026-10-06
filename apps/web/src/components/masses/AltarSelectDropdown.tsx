@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ChevronDown, Church } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@church-site/ui";
 
 export interface AltarOption {
   id: string;

@@ -13,7 +13,7 @@
 // The audit write is BEST EFFORT (the repository's `recordAuditNote` is): a store that cannot be
 // written must not turn a successful subscription into an error the visitor has to handle.
 
-import { getEventRepository } from "../store";
+import { recordAuditLog } from "../store/audit";
 import type { Actor, SubscriberRecord } from "@church-site/domain";
 import type { Mailer, MailMessage, MailSendResult } from "./mailer";
 
@@ -65,15 +65,15 @@ export async function recordWouldSendNote(
   const actor: Actor = { id: null, name: NOTIFICATION_ACTOR_NAME_AR };
 
   try {
-    await getEventRepository().recordAuditNote(
-      {
-        action: "notify",
-        entityType: "subscriber",
-        entityId: subscriber.id,
-        summary: `${describeWouldSend(message)} — البريد: ${subscriber.email}`,
-      },
-      actor
-    );
+    await recordAuditLog({
+      actor,
+      action: "notify",
+      entityType: "subscriber",
+      entityId: subscriber.id,
+      before: null,
+      after: null,
+      summary: `${describeWouldSend(message)} — البريد: ${subscriber.email}`,
+    });
     return true;
   } catch (error) {
     console.error("[notify] could not record the would-send entry", {

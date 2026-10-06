@@ -3,14 +3,14 @@ import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import GalleryPage from "../page";
-import * as feedModule from "@/lib/events/feed";
-import * as serverI18n from "@/lib/i18n/server";
+import * as feedModule from "@church-site/data-access";
+import * as serverI18n from "@church-site/ui/server";
 
-vi.mock("@/lib/i18n/server", () => ({
+vi.mock("@church-site/ui/server", () => ({
   getLocale: vi.fn(),
 }));
 
-vi.mock("@/lib/events/feed", () => ({
+vi.mock("@church-site/data-access", () => ({
   getPublicGalleryMedia: vi.fn(),
 }));
 
@@ -24,10 +24,12 @@ vi.mock("next/link", () => ({
 
 describe("GalleryPage Component", () => {
   beforeEach(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://test.supabase.co";
     vi.mocked(serverI18n.getLocale).mockResolvedValue("ar");
   });
 
   afterEach(() => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     cleanup();
     vi.clearAllMocks();
   });

@@ -61,7 +61,7 @@ import {
   ADMIN_TD,
   ADMIN_TH,
 } from "@/components/admin/admin-ui";
-import { FlagBadge } from "@/components/events/FlagBadge";
+import { FlagBadge } from "@church-site/ui";
 import type { AdminCapabilities } from "@church-site/domain";
 import { EVENT_STATUS_LABELS_AR } from "@church-site/domain";
 import {
@@ -124,6 +124,8 @@ export function EventsManager({ events, series, capabilities, locale }: EventsMa
   const [moveWall, setMoveWall] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [sort, setSort] = useState<SortValue>("date-desc");
   const [seriesSearch, setSeriesSearch] = useState("");
 
@@ -131,6 +133,8 @@ export function EventsManager({ events, series, capabilities, locale }: EventsMa
   const visibleEvents = useMemo(() => {
     const filtered = events.filter((row) => {
       if (statusFilter !== "all" && row.event.status !== statusFilter) return false;
+      if (startDate && row.event.startsAt.slice(0, 10) < startDate) return false;
+      if (endDate && row.event.startsAt.slice(0, 10) > endDate) return false;
       if (term.length === 0) return true;
       return (
         row.event.titleAr.toLowerCase().includes(term) ||
@@ -146,17 +150,20 @@ export function EventsManager({ events, series, capabilities, locale }: EventsMa
       const comparison = a.event.startsAt.localeCompare(b.event.startsAt);
       return sort === "date-asc" ? comparison : -comparison;
     });
-  }, [events, statusFilter, term, sort]);
+  }, [events, statusFilter, startDate, endDate, term, sort]);
 
   const seriesTerm = seriesSearch.trim().toLowerCase();
   const visibleSeries = useMemo(
     () =>
-      seriesTerm.length === 0
-        ? series
-        : series.filter(
-            (row) => row.series.titleAr.toLowerCase().includes(seriesTerm) || (row.series.titleEn ?? "").toLowerCase().includes(seriesTerm)
-          ),
-    [series, seriesTerm]
+      series.filter((row) => {
+        if (statusFilter !== "all" && row.series.status !== statusFilter) return false;
+        if (seriesTerm.length === 0) return true;
+        return (
+          row.series.titleAr.toLowerCase().includes(seriesTerm) ||
+          (row.series.titleEn ?? "").toLowerCase().includes(seriesTerm)
+        );
+      }),
+    [series, seriesTerm, statusFilter]
   );
 
   /**
@@ -526,7 +533,7 @@ export function EventsManager({ events, series, capabilities, locale }: EventsMa
         <h2 id="events-filters-heading" className={ADMIN_SECTION_HEADING}>
           البحث والتصفية
         </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <FieldShell id="events-search" label="بحث في الفعاليات">
             <span className="relative block">
               <Search aria-hidden="true" className="pointer-events-none absolute end-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -554,6 +561,26 @@ export function EventsManager({ events, series, capabilities, locale }: EventsMa
                 </option>
               ))}
             </select>
+          </FieldShell>
+
+          <FieldShell id="events-start-date" label="من">
+            <input
+              id="events-start-date"
+              type="date"
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+              className={ADMIN_INPUT}
+            />
+          </FieldShell>
+
+          <FieldShell id="events-end-date" label="إلى">
+            <input
+              id="events-end-date"
+              type="date"
+              value={endDate}
+              onChange={(event) => setEndDate(event.target.value)}
+              className={ADMIN_INPUT}
+            />
           </FieldShell>
 
           <FieldShell id="events-sort" label="الترتيب">

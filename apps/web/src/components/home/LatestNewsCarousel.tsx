@@ -1,48 +1,66 @@
 import React from "react";
 import Link from "next/link";
 import { Bell, Calendar, ChevronLeft, Sparkles } from "lucide-react";
-import type { Tables } from "@/types/database.types";
+import type { Tables } from "@church-site/domain";
 
 interface LatestNewsCarouselProps {
   news?: Tables<"news_articles">[];
 }
 
 export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
-  const defaultNews: Partial<Tables<"news_articles">>[] = [
-    {
-      title_ar: "بدء نهضة الشهيد القوي الأنبا موسى الأسود السنوية",
-      summary_ar: "تتشرف الكنيسة بدعوة شعبها المبارك لحضور صلوات النهضة الروحية والعشيات بمشاركة نخبة من الآباء الأساقفة والكهنة الأجلاء.",
-      excerpt_ar: "تتشرف الكنيسة بدعوة شعبها المبارك لحضور صلوات النهضة الروحية والعشيات بمشاركة نخبة من الآباء الأساقفة والكهنة الأجلاء.",
-      category: "liturgical",
-      published_at: "2026-06-20",
-    },
-    {
-      title_ar: "استعدادات نهضة عيد الشهيد العظيم الأنبا موسى الأسود",
-      summary_ar: "استعدادات مكثفة لترتيبات النهضة الروحية السنوية لشفيع الكنيسة وتجهيز قاعات الترانيم والصلوات وبرامج الأطفال المصاحبة.",
-      excerpt_ar: "استعدادات مكثفة لترتيبات النهضة الروحية السنوية لشفيع الكنيسة وتجهيز قاعات الترانيم والصلوات وبرامج الأطفال المصاحبة.",
-      category: "service",
-      published_at: "2026-06-18",
-    },
-    {
-      title_ar: "فتح باب التسجيل في معهد الكتاب المقدس والشمامسة",
-      summary_ar: "يعلن معهد الكتاب المقدس ومدرسة القديس إستفانوس للشمامسة عن بدء قبول الدفعات الجديدة للموسم التعليمي القادم.",
-      excerpt_ar: "يعلن معهد الكتاب المقدس ومدرسة القديس إستفانوس للشمامسة عن بدء قبول الدفعات الجديدة للموسم التعليمي القادم.",
-      category: "education",
-      published_at: "2026-06-15",
-    },
-  ];
+  if (!news || news.length === 0) {
+    return (
+      <section
+        data-home-state="empty-news"
+        aria-labelledby="latest-news-title"
+        className="py-8 border-t border-copticGold-200"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
+          <div>
+            <span className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-copticGold-700" />
+              <span>بيانات وإعلانات رسمية</span>
+            </span>
+            <h2 id="latest-news-title" className="font-heading font-extrabold text-xl sm:text-2xl text-copticNavy mt-1">
+              أحدث الأخبار والبيانات الرسمية
+            </h2>
+            <p className="text-slateText-secondary text-xs sm:text-sm">
+              إعلانات النهضات، مواعيد الأعياد، وفعاليات الخدمة
+            </p>
+          </div>
 
-  const items = (news && news.length > 0) ? news : defaultNews;
+          <Link
+            href="/contact"
+            className="text-xs font-bold text-copticGold-800 hover:text-copticNavy flex items-center gap-1 shrink-0"
+          >
+            <span>تواصل مع السكرتارية</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="rounded-2xl border border-dashed border-copticGold-300 bg-white/60 p-8 text-center">
+          <Bell className="w-8 h-8 text-copticGold-600 mx-auto mb-2 opacity-60" />
+          <p className="text-xs sm:text-sm text-slateText-secondary font-medium">
+            لا توجد بيانات أو إعلانات جديدة منشورة حالياً. ستظهر هنا كافة الأخبار الرسمية والنهضات فور صدورها.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <div className="py-8 border-t border-copticGold-200">
+    <section
+      data-home-state="news-list"
+      aria-labelledby="latest-news-title"
+      className="py-8 border-t border-copticGold-200"
+    >
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
         <div>
           <span className="inline-flex items-center gap-1.5 bg-copticGold-100 text-copticGold-900 border border-copticGold-300 font-bold text-xs px-3 py-1 rounded-full mb-2">
             <Sparkles className="w-3.5 h-3.5 text-copticGold-700" />
             <span>بيانات وإعلانات رسمية</span>
           </span>
-          <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-copticNavy mt-1">
+          <h2 id="latest-news-title" className="font-heading font-extrabold text-xl sm:text-2xl text-copticNavy mt-1">
             أحدث الأخبار والبيانات الرسمية
           </h2>
           <p className="text-slateText-secondary text-xs sm:text-sm">
@@ -60,9 +78,9 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {items.map((item, idx) => (
+        {news.map((item) => (
           <div
-            key={idx}
+            key={item.id}
             className="rounded-2xl border border-copticGold-200 bg-white shadow-xs hover:border-copticGold-400 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none flex flex-col justify-between p-5 group"
           >
             <div>
@@ -76,7 +94,7 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
                 </span>
                 <span className="flex items-center gap-1 text-slateText-muted">
                   <Calendar className="w-3 h-3" />
-                  {item.published_at?.split("T")[0] || "يونيو 2026"}
+                  {item.published_at?.split("T")[0] || ""}
                 </span>
               </div>
 
@@ -95,6 +113,6 @@ export function LatestNewsCarousel({ news }: LatestNewsCarouselProps) {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

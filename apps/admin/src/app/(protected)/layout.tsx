@@ -8,10 +8,9 @@ import {
 import { requireStaff } from "@/lib/auth/require-staff";
 import { signOut } from "@/actions/auth-actions";
 import { ROLE_LABELS_AR } from "@/lib/auth/roles";
-import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
 import { ADMIN_ROLE_LABELS_AR, adminRoleFromStaffRole } from "@church-site/domain";
-import { LOCALE_DIRECTION } from "@church-site/ui";
+import { LocaleSwitcher, LOCALE_DIRECTION } from "@church-site/ui";
 import { getLocale } from "@church-site/ui/server";
 
 /**
@@ -41,7 +40,7 @@ export default async function AdminProtectedLayout({
       className="min-h-screen bg-slate-100 flex flex-col md:flex-row"
     >
       {/* Admin Sidebar */}
-      <aside className="w-full md:w-64 bg-copticNavy-950 text-white p-6 border-b md:border-b-0 md:border-l-4 border-copticGold-500 shrink-0 flex flex-col justify-between">
+      <aside className="w-full md:w-64 md:sticky md:top-0 md:h-screen md:overflow-y-auto bg-copticNavy-950 text-white p-6 border-b md:border-b-0 md:border-l-4 border-copticGold-500 shrink-0 flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-3 pb-6 border-b border-copticNavy-800 mb-6">
             <div className="w-10 h-10 rounded-xl bg-copticGold-500 text-copticNavy-950 flex items-center justify-center font-bold">

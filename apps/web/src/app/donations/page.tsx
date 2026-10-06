@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getDonationAccounts } from "@/lib/queries";
+import { getDonationAccounts } from "@church-site/data-access";
 import { DonationAccountsList } from "./DonationAccountsList";
 
 export const metadata: Metadata = {

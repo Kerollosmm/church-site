@@ -56,6 +56,7 @@ export type Capability =
   | "media:delete"
   // --- operations ---
   | "subscribers:write"
+  | "bookings:write"
   | "cache:republish"
   | "users:manage"
   // --- masses ---
@@ -134,6 +135,9 @@ const EDITOR_CAPABILITIES = [
   // Editing the notification list is an editorial act (retiring a subscription), not a destructive
   // one — the row is kept, so an editor may do it and only an owner can delete (there is no delete).
   "subscribers:write",
+  // Deciding a condolence-hall booking (approve / decline with a reason) is the parish office's
+  // own act, so it belongs to the same authoring role as the rest of the editorial surface.
+  "bookings:write",
   "cache:republish",
 ] as const satisfies readonly Capability[];
 
@@ -169,8 +173,10 @@ export function can(role: AdminRole | null | undefined, capability: Capability):
  * Maps an existing `profiles.role` to an event-system role, or null when the role has no access
  * to the management area at all (`priest` / `servant`, and anything unknown).
  *
- * `admin` → `owner`, `secretary` → `editor`. Priests and servants keep their database write access
- * through `is_staff()` RLS as before; they simply are not part of this decision table.
+ * `admin` → `owner`, `secretary` → `editor`. Priests and servants are not part of this decision
+ * table AND no longer hold any database access either: migration 17 narrows `is_staff()` /
+ * `is_editor()` to `admin`/`secretary` (see supabase/README.md), matching `ADMIN_PORTAL_ROLES`
+ * exactly, so the RLS layer and this table agree on who may touch what.
  */
 export function adminRoleFromStaffRole(staffRole: string | null | undefined): AdminRole | null {
   if (!isAdminPortalRole(staffRole)) return null;
@@ -220,6 +226,7 @@ export const CAPABILITY_LABELS_AR: Record<Capability, string> = {
   "media:update": "تعديل بيانات وسائط",
   "media:delete": "حذف بيانات وسائط",
   "subscribers:write": "إيقاف أو تنشيط اشتراك في التنبيهات",
+  "bookings:write": "اعتماد أو الاعتذار عن حجز قاعة العزاء",
   "cache:republish": "مسح ذاكرة الموقع المؤقتة",
   "users:manage": "إدارة المستخدمين",
   "mass:read": "قراءة القداسات",
@@ -275,6 +282,7 @@ export const CAPABILITY_AUDIT_ENTITY: Record<Capability, AuditEntityType> = {
   "media:update": "media",
   "media:delete": "media",
   "subscribers:write": "subscriber",
+  "bookings:write": "booking",
   "cache:republish": "event",
   "users:manage": "event",
   "mass:read": "mass",

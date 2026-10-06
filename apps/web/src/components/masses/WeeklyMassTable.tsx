@@ -1,7 +1,7 @@
 import React from "react";
 import { Clock, MapPin, User, Users } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { cn } from "@/lib/utils";
+import { Badge } from "@church-site/ui";
+import { cn } from "@church-site/ui";
 import type { MassPeriod } from "@/lib/utils/parish-contact";
 
 export interface MassScheduleItem {

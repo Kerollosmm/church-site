@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import { Calendar, Info } from "lucide-react";
 import { PageHero } from "@/components/layout/PageHero";
-import { getAltars, getWeeklyMasses } from "@/lib/queries";
+import { getAltars, getWeeklyMasses } from "@church-site/data-access";
 import { MassesExplorer } from "./MassesExplorer";
 
 export const metadata: Metadata = {

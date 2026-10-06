@@ -2,11 +2,10 @@ import React from "react";
 import { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Video, Calendar, Clock, ExternalLink, Radio, Youtube } from "lucide-react";
-import { getStreamEvents } from "@/lib/queries";
-import { getYoutubeChannelUrl } from "@/lib/env";
-import { getTrustedEmbedUrl } from "@/lib/security/trusted-embeds";
-import { formatCairoDateTime } from "@/lib/utils/cairo-time";
-import type { StreamStatusEnum } from "@/types/database.types";
+import { getStreamEvents } from "@church-site/data-access";
+import { getYoutubeChannelUrl } from "@church-site/data-access";
+import { getTrustedEmbedUrl, formatCairoDateTime } from "@church-site/data-access/client";
+import type { StreamStatusEnum } from "@church-site/domain";
 
 export const metadata: Metadata = {
   title: "البث المباشر وصلوات القداسات والنهضات",

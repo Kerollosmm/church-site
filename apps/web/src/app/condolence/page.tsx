@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "خدمة حجز قاعة العزاء المجهزة بكنيسة القديسين بالعصافرة: نظام صوتي وشاشات عرض وتكييف مركزي ومتابعة إلكترونية للحجز.",
 };
 
+export const revalidate = 3600;
+
 export default function CondolencePage() {
   const amenities = [
     { icon: AirVent, label: "تكييف مركزي كامل ونظام تهوية متطور" },
@@ -111,7 +113,7 @@ export default function CondolencePage() {
             • الحجز خاضع للتأكيد النهائي من سكرتارية الكنيسة بعد مراجعة الجداول والأسبقية الزمنية.
           </p>
           <p>
-            • في الحالات العاجلة جداً، يُرجى الاتصال المباشر بهاتف سكرتارية الطوارئ الكنسية: <strong className="font-english font-bold">01200000001</strong>.
+            • في الحالات العاجلة جداً، يُرجى الاتصال المباشر بهاتف سكرتارية الطوارئ الكنسية: <strong className="font-english font-bold">01220000001</strong>.
           </p>
         </div>
       </div>

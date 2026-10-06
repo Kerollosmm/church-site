@@ -9,7 +9,7 @@
 import React from "react";
 import { Video, AlertCircle } from "lucide-react";
 import type { PublicParishVideo, VideoProvider } from "@church-site/domain";
-import { getTrustedEmbedUrl } from "@/lib/security/trusted-embeds";
+import { getTrustedEmbedUrl } from "@church-site/data-access/client";
 
 export interface ChurchVideosSectionProps {
   videos: PublicParishVideo[];

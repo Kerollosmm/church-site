@@ -60,7 +60,10 @@ describe("MediaStorage - FileMediaStorage", () => {
 
   it("successful upload: generates YYYY/MM/<uuid>.<ext> path, accurate sha256 checksum, returns valid publicUrl, writes file", async () => {
     const storage = new FileMediaStorage(tempDir);
-    const content = Buffer.from("Coptic Orthodox Liturgy Media Test Bytes");
+    const content = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      Buffer.from("Coptic Orthodox Liturgy Media Test Bytes"),
+    ]);
     const expectedChecksum = createHash("sha256").update(content).digest("hex");
 
     const result = await storage.upload({
@@ -129,7 +132,7 @@ describe("MediaStorage - FileMediaStorage", () => {
 
   it("delete removes file from disk gracefully", async () => {
     const storage = new FileMediaStorage(tempDir);
-    const content = Buffer.from("Temporary file for delete test");
+    const content = Buffer.from("%PDF-1.4 Temporary file for delete test");
 
     const uploadResult = await storage.upload({
       filename: "temp-doc.pdf",
@@ -161,7 +164,10 @@ describe("MediaStorage - FileMediaStorage", () => {
   });
 
   it("helper functions route through active media storage instance", async () => {
-    const content = Buffer.from("Helper function test");
+    const content = Buffer.concat([
+      Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+      Buffer.from("Helper function test"),
+    ]);
     const uploadResult = await uploadMedia({
       filename: "helper.jpg",
       mimeType: "image/jpeg",
@@ -172,6 +178,32 @@ describe("MediaStorage - FileMediaStorage", () => {
     expect(getMediaPublicUrl(uploadResult.storagePath)).toBe(`/media-mock/${uploadResult.storagePath}`);
 
     await expect(deleteMediaObject(uploadResult.storagePath)).resolves.toBeUndefined();
+  });
+
+  it("rejects image/svg+xml upload to prevent stored XSS", async () => {
+    const storage = new FileMediaStorage(tempDir);
+    const svgBytes = Buffer.from("<svg><script>alert('xss')</script></svg>");
+
+    await expect(
+      storage.upload({
+        filename: "vector.svg",
+        mimeType: "image/svg+xml",
+        bytes: svgBytes,
+      })
+    ).rejects.toThrow(/نوع الملف غير مسموح به/);
+  });
+
+  it("rejects file buffer whose magic bytes do not match declared MIME", async () => {
+    const storage = new FileMediaStorage(tempDir);
+    const fakePng = Buffer.from("Not actually a PNG file");
+
+    await expect(
+      storage.upload({
+        filename: "fake.png",
+        mimeType: "image/png",
+        bytes: fakePng,
+      })
+    ).rejects.toThrow(/لا يطابق نوع MIME المعلن/);
   });
 });
 
